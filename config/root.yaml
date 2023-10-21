@@ -1,0 +1,4 @@
+defaults:
+  - _self_
+
+model: examples.neural_networks.pytorch.DummyNN
