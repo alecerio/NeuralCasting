@@ -1,4 +1,6 @@
 defaults:
+  - framework: pytorch
   - _self_
 
-model: examples.neural_networks.pytorch.DummyNN
+name: dummy
+temp_path: /home/alessandro/Desktop/temp_path/
