@@ -4,7 +4,8 @@ from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.input_node import InputNode
 
 class OpNode(Node, abc.ABC):
-    def __init__(self):
+    def __init__(self, name : str):
+        super(Node, self).__init__(name)
         self._inputs : list[Node] = []
         self._outputs : list[Node] = []
 
@@ -40,7 +41,7 @@ class OpNode(Node, abc.ABC):
         if isinstance(node, InputNode):
             raise Exception("Error: input node can't be the output for an op node")
         self._outputs.append(node)
-    
+
     def remove_output_by_name(self, name : str):
         i : int = self.__get_index_by_name__(self._outputs, name)
         if i == -1:
