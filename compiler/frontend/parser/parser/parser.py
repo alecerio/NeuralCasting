@@ -94,18 +94,38 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             in_names = in_dict[node.get_name()]
             out_names = out_dict[node.get_name()]
             if isinstance(node, Gemm):
-                pass
+                in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
+                out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+                node.append_input(in_node)
+                node.append_output(out_node)
             elif isinstance(node, ReLu):
-                pass
+                in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
+                out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+                node.append_input(in_node)
+                node.append_output(out_node)
             else:
                 raise Exception("Error: unexpected operation node")
-            
-            print(node.get_name())
-            print(in_names)
-            print(out_names)
 
-def __get_node_reference__(nodes : list[Node], name : str) -> Node:
+def __get_input_node_reference__(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
     for node in nodes:
-        if name == node.get_name():
-            return node
+        name : str = node.get_name()
+        if isinstance(node, OpNode):
+            out_list : list[str] = out_dict[name]
+            if in_name in out_list:
+                return node
+        elif isinstance(node, InputNode):
+            if in_name == name:
+                return node
+    return None
+
+def __get_output_node_reference__(nodes : list[Node], out_name : str, in_dict : dict) -> Node:
+    for node in nodes:
+        name : str = node.get_name()
+        if isinstance(node, OpNode):
+            in_list : list[str] = in_dict[name]
+            if out_name in in_list:
+                return node
+        elif isinstance(node, OutputNode):
+            if out_name == name:
+                return node
     return None

@@ -16,11 +16,11 @@ class OpNode(Node, abc.ABC):
         
         inputs : str = "inputs name: "
         for node in self._inputs:
-            inputs = inputs + node.name + ", "
+            inputs = inputs + node.get_name() + ", "
 
         outputs : str = "outputs name: "
         for node in self._outputs:
-            outputs = outputs + node.name + ", "
+            outputs = outputs + node.get_name() + ", "
 
         return super_str + "\n" + \
                 op_type + "\n" + \
