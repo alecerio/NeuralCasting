@@ -2,7 +2,7 @@ import hydra
 import numpy as np
 import torch.nn as nn
 from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
-from compiler.frontend.parser.parser import parse
+from compiler.frontend.parser.parser.parser import parse
 
 def run(config, model, dummy_input):
     print("run compiler ...")

@@ -6,6 +6,13 @@ class TensorType(NodeType):
         self._shape : list[int] = shape
         self._elem_type : int = elem_type
     
+    def __str__(self):
+        super_str = super().__str__()
+        if super_str != "": super_str = super_str + "\n"
+        return  super_str + \
+                "shape: " + str(self._shape) + "\n" + \
+                "elem_type: " + str(self._elem_type)
+
     def get_shape(self) -> list[int]:
         return self._shape
     

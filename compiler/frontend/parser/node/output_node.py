@@ -6,6 +6,11 @@ class OutputNode(Node):
         super().__init__(name=name)
         self._type = type
     
+    def __str__(self):
+        return super().__str__() + "\n" + \
+                "output node type:\n" + \
+                str(self._type)
+
     def get_node_type(self) ->  NodeType:
         return self._type
     

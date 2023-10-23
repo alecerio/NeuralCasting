@@ -7,8 +7,8 @@ import torch
 def main(config):
     print(config)
 
-    model = DummyNN()
-    dummy_input = torch.randn(1, 1)
+    model = DummyNN(3, 16, 3)
+    dummy_input = torch.randn(1, 3)
 
     run(config, model, dummy_input)
 
