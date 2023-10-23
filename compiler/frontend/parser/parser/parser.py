@@ -4,6 +4,9 @@ from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.parser.node.output_node import OutputNode
+from compiler.frontend.parser.node.op_node import OpNode
+from compiler.frontend.parser.ops.gemm import Gemm
+from compiler.frontend.parser.ops.relu import ReLu
 
 def parse(config):
     # load onnx file and create onnx graph
@@ -18,38 +21,13 @@ def parse(config):
     # create output nodes
     __create_output_nodes__(graph, nodes)
 
+    # create op nodes
+    __create_op_nodes__(graph, nodes)
+
     # print nodes
     for node in nodes:
         print(node)
         print(" ------------- ")
-
-    ## Print basic information about the graph
-    #print(f"Number of nodes in the graph: {len(graph.node)}")
-    #print(f"Input names: {graph.input}")
-    #print(f"Output names: {graph.output}")
-    #
-    #print("Input information:")
-    #for input_info in graph.input:
-    #    print(f"Name: {input_info.name}")
-    #    print(f"Type: {input_info.type}")
-    #    print(f"Shape: {input_info.type.tensor_type.shape.dim}")
-    #    print()
-#
-    ## Access and print information about outputs
-    #print("Output information:")
-    #for output_info in graph.output:
-    #    print(f"Name: {output_info.name}")
-    #    print(f"Type: {output_info.type}")
-    #    print(f"Shape: {output_info.type.tensor_type.shape.dim}")
-    #    print()
-    #
-    ## Iterate through the nodes in the graph
-    #for node in graph.node:
-    #    print(f"Node name: {node.name}")
-    #    print(f"Op type: {node.op_type}")
-    #    print(f"Input names: {node.input}")
-    #    print(f"Output names: {node.output}")
-
 
 def __create_onnx_graph__(config):
     temp_path : str = str(config.temp_path)
@@ -94,3 +72,40 @@ def __create_output_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[No
             nodes.append(output_node)
         else:
             raise Exception("Error: unexpected type name of the output node")
+
+def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+    in_dict = {}
+    out_dict = {}
+    for op in graph.node:
+        name : str = op.name
+        optype : str = op.op_type
+        in_dict[name] = op.input
+        out_dict[name] = op.output
+        if optype == 'Gemm':
+            opnode : Gemm = Gemm(name)
+        elif optype == 'Relu':
+            opnode : ReLu = ReLu(name)
+        else:
+            raise Exception("Error: unexpected operation node")
+        nodes.append(opnode)
+    
+    for node in nodes:
+        if isinstance(node, OpNode):
+            in_names = in_dict[node.get_name()]
+            out_names = out_dict[node.get_name()]
+            if isinstance(node, Gemm):
+                pass
+            elif isinstance(node, ReLu):
+                pass
+            else:
+                raise Exception("Error: unexpected operation node")
+            
+            print(node.get_name())
+            print(in_names)
+            print(out_names)
+
+def __get_node_reference__(nodes : list[Node], name : str) -> Node:
+    for node in nodes:
+        if name == node.get_name():
+            return node
+    return None
