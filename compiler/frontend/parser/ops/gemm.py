@@ -9,11 +9,34 @@ import numpy as np
 from compiler.frontend.parser.node.op_node import OpNode
 
 class Gemm(OpNode):
-    def __init__(self, name : str, n : int, m : int):
+    def __init__(self, name : str, n : int = 1, m : int = 1):
         super().__init__(name)
         self._weights : np.ndarray = np.zeros((n, m), dtype=float)
         self._bias : np.ndarray = np.zeros((n,), dtype=float)
     
+    def __str__(self):
+        return super().__str__() + "\n" + \
+                "weights: " + str(self._weights) + "\n" + \
+                "bias: " + str(self._bias)
+
+    def set_weights_and_bias(self, weights : np.ndarray, bias : np.ndarray):
+        w_shape = weights.shape
+        b_shape = bias.shape
+
+        if len(w_shape) != 2: 
+            raise Exception("Error: weights must be a 2D matrix")
+        if len(b_shape) != 2:
+            raise Exception("Error: bias must be a 2D vector")
+        if b_shape[1] != 1:
+            raise Exception("Error: bias must be a vector")
+        if w_shape[1] != b_shape[0]:
+            raise Exception("Error: number of weights columns must be equal to number of bias rows")
+        
+        self._weights = weights
+        self._bias = bias
+
+
+
     def set_weights(self, weights : np.ndarray):
         """
         Method to set all the weights of the gemm.
@@ -76,10 +99,17 @@ class Gemm(OpNode):
             bias: The new bias for the gemm.
         """
         n : int = bias.shape[0]
+        m : int = bias.shape[1]
         
         if n != self._bias.shape[0]:
             raise Exception("Error: invalid new bias shape")
         
+        if m != 1:
+            raise Exception("Error: bias must be a vector and not a matrix")
+        
+        if len(bias.shape) != 2:
+            raise Exception("Error: bias must be in two dimensions [n,1]")
+
         self._bias = bias
     
     def set_bias_elem(self, bias_elem : float, i : int):
@@ -126,3 +156,6 @@ class Gemm(OpNode):
         """
         # TO DO
         return ""
+    
+    def get_op_type(self) -> str:
+        return "Gemm"

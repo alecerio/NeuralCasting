@@ -5,9 +5,28 @@ from compiler.frontend.parser.node.input_node import InputNode
 
 class OpNode(Node, abc.ABC):
     def __init__(self, name : str):
-        super(Node, self).__init__(name)
+        super().__init__(name)
         self._inputs : list[Node] = []
         self._outputs : list[Node] = []
+
+    def __str__(self):
+        super_str : str = super().__str__()
+
+        op_type : str = "op type: " + self.get_op_type()
+        
+        inputs : str = "inputs name: "
+        for node in self._inputs:
+            inputs = inputs + node.name + ", "
+
+        outputs : str = "outputs name: "
+        for node in self._outputs:
+            outputs = outputs + node.name + ", "
+
+        return super_str + "\n" + \
+                op_type + "\n" + \
+                inputs + "\n" + \
+                outputs + "\n"
+
 
     def append_input(self, node : Node):
         if isinstance(node, OutputNode):
@@ -75,4 +94,8 @@ class OpNode(Node, abc.ABC):
 
     @abc.abstractmethod
     def generate_code(self) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_op_type(self) -> str:
         pass

@@ -10,6 +10,9 @@ class ReLu(OpNode):
     def __init__(self, name : str):
         super().__init__(name)
     
+    def __str__(self):
+        return super().__str__()
+
     def generate_code(self) -> str:
         """
         Method to generate the code related to the ReLu function.
@@ -19,3 +22,6 @@ class ReLu(OpNode):
         """
         # TO DO
         return ""
+    
+    def get_op_type(self) -> str:
+        return "ReLu"
