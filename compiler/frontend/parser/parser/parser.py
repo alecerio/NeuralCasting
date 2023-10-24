@@ -9,7 +9,7 @@ from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.ops.gemm import Gemm
 from compiler.frontend.parser.ops.relu import ReLu
 
-def parse(config):
+def parse(config) -> list[Node]:
     # load onnx file and create onnx graph
     graph : onnx.onnx_ml_pb2.GraphProto = __create_onnx_graph__(config)
 
@@ -25,10 +25,7 @@ def parse(config):
     # create op nodes
     __create_op_nodes__(graph, nodes)
 
-    # print nodes
-    for node in nodes:
-        print(node)
-        print(" ------------- ")
+    return nodes
 
 def __create_onnx_graph__(config):
     temp_path : str = str(config.temp_path)

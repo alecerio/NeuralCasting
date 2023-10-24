@@ -3,6 +3,7 @@ import numpy as np
 import torch.nn as nn
 from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
 from compiler.frontend.parser.parser.parser import parse
+from compiler.frontend.parser.node.node import Node
 
 def run(config, model, dummy_input):
     print("run compiler ...")
@@ -19,4 +20,7 @@ def run(config, model, dummy_input):
         raise Exception("Error: unexpected framework")
     
     # parse onnx
-    parse(config)
+    nodes : list[Node] = parse(config)
+
+    # create dag
+    
