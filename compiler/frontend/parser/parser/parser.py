@@ -1,4 +1,5 @@
 import onnx
+import numpy as np
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.parser.node.node import Node
@@ -94,17 +95,31 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             in_names = in_dict[node.get_name()]
             out_names = out_dict[node.get_name()]
             if isinstance(node, Gemm):
-                in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
-                out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
-                node.append_input(in_node)
-                node.append_output(out_node)
+                __fill_gemm_node__(node, nodes, in_names, out_names, in_dict, out_dict, graph)
             elif isinstance(node, ReLu):
-                in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
-                out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
-                node.append_input(in_node)
-                node.append_output(out_node)
+                __fill_relu_node__(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise Exception("Error: unexpected operation node")
+
+def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
+    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
+    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+    node.append_input(in_node)
+    node.append_output(out_node)
+    for init in graph.initializer:
+        if init.name == in_names[1]:
+            dims = init.dims
+            break
+    node.set_weights_and_bias(
+        np.zeros((dims[1], dims[0]), dtype=float), 
+        np.zeros((dims[0],), dtype=float)
+    )
+
+def __fill_relu_node__(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
+    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+    node.append_input(in_node)
+    node.append_output(out_node)
 
 def __get_input_node_reference__(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
     for node in nodes:

@@ -25,16 +25,13 @@ class Gemm(OpNode):
 
         if len(w_shape) != 2: 
             raise Exception("Error: weights must be a 2D matrix")
-        if len(b_shape) != 2:
-            raise Exception("Error: bias must be a 2D vector")
-        if b_shape[1] != 1:
+        if len(b_shape) != 1:
             raise Exception("Error: bias must be a vector")
         if w_shape[1] != b_shape[0]:
             raise Exception("Error: number of weights columns must be equal to number of bias rows")
         
         self._weights = weights
         self._bias = bias
-
 
 
     def set_weights(self, weights : np.ndarray):
