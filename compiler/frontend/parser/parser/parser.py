@@ -101,8 +101,8 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
 def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
     in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
     out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
-    node.append_input(in_node)
-    node.append_output(out_node)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
     for init in graph.initializer:
         if init.name == in_names[1]:
             dims = init.dims
@@ -115,8 +115,8 @@ def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], ou
 def __fill_relu_node__(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
     out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
-    node.append_input(in_node)
-    node.append_output(out_node)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
 
 def __get_input_node_reference__(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
     for node in nodes:

@@ -4,6 +4,7 @@ import torch.nn as nn
 from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
 from compiler.frontend.parser.parser.parser import parse
 from compiler.frontend.parser.node.node import Node
+from compiler.frontend.parser.parser.dag import DAG
 
 def run(config, model, dummy_input):
     print("run compiler ...")
@@ -23,4 +24,5 @@ def run(config, model, dummy_input):
     nodes : list[Node] = parse(config)
 
     # create dag
-    
+    dag : DAG = DAG(nodes)
+    print(dag)
