@@ -12,3 +12,7 @@ class Node(abc.ABC):
     
     def set_name(self, name : str):
         self._name = name
+    
+    @abc.abstractmethod
+    def generate_code(self) -> str:
+        pass

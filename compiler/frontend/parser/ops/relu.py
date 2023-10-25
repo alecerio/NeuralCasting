@@ -21,7 +21,7 @@ class ReLu(OpNode):
             The code related to the ReLu function.
         """
         # TO DO
-        return ""
+        return "ReLu"
     
     def get_op_type(self) -> str:
         return "ReLu"

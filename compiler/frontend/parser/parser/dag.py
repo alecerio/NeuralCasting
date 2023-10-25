@@ -61,6 +61,7 @@ class DAG:
     def traversal_dag_and_generate_code(self) -> str:
         generated : list[Node] = []
         active : list[Node] = []
+        code_generated : str = ""
 
         # set input nodes active
         for node in self._nodes:
@@ -80,10 +81,11 @@ class DAG:
                     
                     # if the node is ready, turn it to active and generate the code
                     if ready:
-                        self._turn_to_active_and_generated_code(inputs, active, generated, node)
+                        code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
+                        code_generated = code_generated + code
                         gen_occured = True
                         
-        return ""
+        return code_generated
 
     def _get_input_nodes_from_opnode_or_output_node(self, node : Node) -> list[Node]:
         if isinstance(node, OpNode):
@@ -100,18 +102,25 @@ class DAG:
                 break
         return ready
     
-    def _turn_to_active_and_generated_code(self, inputs : list[Node], active : list[Node], generated : list[Node], node : Node):
+    def _turn_to_active_and_generated_code(self, inputs : list[Node], active : list[Node], generated : list[Node], node : Node) -> str:
+        code_generated : str = ""
+
         for input in inputs:
             if input in active:
-                print(input)
-                print(" ----------------- ")
+                # generate input node code
+                code : str = input.generate_code()
+                code_generated = code_generated + code + "\n"
+
+                # remove input node from active
                 for i in range(len(active)):
                     temp : Node = active[i]
                     if temp == input:
                         active.pop(i)
                         break
+                # add input node in generated
                 generated.append(input)
         active.append(node)
+        return code_generated
 
     def _is_name_in_list(self, name : str) -> bool:
         return name in self.get_list_names()

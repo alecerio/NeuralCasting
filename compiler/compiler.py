@@ -28,3 +28,5 @@ def run(config, model, dummy_input):
     
     # generated code
     code : str = dag.traversal_dag_and_generate_code()
+
+    print(code)

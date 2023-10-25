@@ -62,6 +62,10 @@ class OutputNode(Node):
     def get_input_nodes_list(self) -> list[Node]:
         return self._inputs
 
+    def generate_code(self) -> str:
+        # TO DO ... 
+        return "output"
+
     def _get_input_node_index_by_name(self, name : str) -> int:
         for i in range(len(self._inputs)):
             node : Node = self._inputs[i]

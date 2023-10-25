@@ -152,7 +152,7 @@ class Gemm(OpNode):
             The code related to gemm operation.
         """
         # TO DO
-        return ""
+        return "Gemm"
     
     def get_op_type(self) -> str:
         return "Gemm"
