@@ -87,6 +87,7 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             raise Exception("Error: unexpected operation node")
         nodes.append(opnode)
     
+    # update op nodes references
     for node in nodes:
         if isinstance(node, OpNode):
             in_names = in_dict[node.get_name()]
@@ -97,6 +98,22 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
                 __fill_relu_node__(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise Exception("Error: unexpected operation node")
+    
+    # update input nodes references
+    for input_node in nodes:
+        if isinstance(input_node, InputNode):
+            for op_node in nodes:
+                if isinstance(op_node, OpNode):
+                    if input_node.get_name() in op_node.get_input_names():
+                        input_node.append_output_node(op_node)
+    
+    # update output nodes references
+    for output_node in nodes:
+        if isinstance(output_node, OutputNode):
+            for op_node in nodes:
+                if isinstance(op_node, OpNode):
+                    if output_node.get_name() in op_node.get_output_names():
+                        output_node.append_input_node(op_node)
 
 def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
     in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
