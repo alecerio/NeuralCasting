@@ -25,4 +25,6 @@ def run(config, model, dummy_input):
 
     # create dag
     dag : DAG = DAG(nodes)
-    print(dag)
+    
+    # generated code
+    code : str = dag.traversal_dag_and_generate_code()
