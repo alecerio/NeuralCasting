@@ -40,21 +40,9 @@ class DAG:
             names.append(name)
         return names
 
-    #def check_if_dag(self) -> bool:
-    #    visited : dict = {}
-    #    stack : list[Node]
-#
-    #    for node in self._nodes:
-    #        if node not in visited:
-    #            no_cycles_found = self._depth_first_search(node, visited, stack)
-    #            if not no_cycles_found:
-    #                return False
-    #    return True
-    #
-    #def _depth_first_search(self, node : Node, visited : dict, stack : list[Node]):
-    #    visited[node] = "visiting"
-#
-    #    for 
+    def check_if_dag(self) -> bool:
+        # TO DO ...
+        pass
 
         
 
