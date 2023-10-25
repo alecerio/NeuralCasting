@@ -58,6 +58,9 @@ class OutputNode(Node):
     
     def num_input_nodes(self) -> int:
         return len(self._inputs)
+    
+    def get_input_nodes_list(self) -> list[Node]:
+        return self._inputs
 
     def _get_input_node_index_by_name(self, name : str) -> int:
         for i in range(len(self._inputs)):

@@ -161,6 +161,12 @@ class OpNode(Node, abc.ABC):
 
     def num_inputs(self) -> int:
         return len(self._input)
+    
+    def get_output_nodes_list(self) -> list[Node]:
+        return self._outputs
+    
+    def get_input_nodes_list(self) -> list[Node]:
+        return self._inputs
 
     def __get_index_by_name__(self, node_list : list[Node], name : str) -> int:
         i : int = 0
