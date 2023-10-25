@@ -128,6 +128,40 @@ class OpNode(Node, abc.ABC):
             raise Exception("Error: invalid output node index")
         return self._output_varnames[index]
 
+    def get_input_names(self) -> list[str]:
+        names : list[str] = []
+        for input in self._inputs:
+            name : str = input.get_name()
+            names.append(name)
+        return names
+
+    def get_input_varnames(self) -> list[str]:
+        varnames : list[str] = []
+        for inputvar in self._input_varnames:
+            varname : str = inputvar
+            varnames.append(varname)
+        return varnames
+
+    def get_output_names(self) -> list[str]:
+        names : list[str] = []
+        for output in self._outputs:
+            name : str = output.get_name()
+            names.append(name)
+        return names
+
+    def get_output_varnames(self) -> list[str]:
+        varnames : list[str] = []
+        for outputvar in self._output_varnames:
+            varname : str = outputvar
+            varnames.append(varname)
+        return varnames
+
+    def num_outputs(self) -> int:
+        return len(self._outputs)
+
+    def num_inputs(self) -> int:
+        return len(self._input)
+
     def __get_index_by_name__(self, node_list : list[Node], name : str) -> int:
         i : int = 0
         for node in node_list:
