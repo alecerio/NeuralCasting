@@ -20,8 +20,16 @@ class ReLu(OpNode):
         Return:
             The code related to the ReLu function.
         """
-        # TO DO
-        return "ReLu"
+        
+        input_name : str = self._input_varnames[0].replace("/", "")
+        output_name : str = self._output_varnames[0].replace("/", "")
+
+        code : str = self._read_template_c("ReLu.c")
+
+        code = self._expand_pattern(code, "$INPUT_NAME", input_name)
+        code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
+
+        return code
     
     def get_op_type(self) -> str:
         return "ReLu"
