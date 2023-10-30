@@ -174,7 +174,7 @@ class Gemm(OpNode):
         output_init_code = self._gen_output_init_code(out_size)
         
         # read template c code
-        code : str = self._read_template_c()
+        code : str = self._read_template_c("Gemm.c")
 
         code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
         code = self._expand_pattern(code, "$OUTPUT_SIZE", str(out_size))
@@ -211,16 +211,7 @@ class Gemm(OpNode):
         
         return output_init_code
     
-    def _read_template_c(self) -> str:
-        import os
-        curr_dir : str = os.path.dirname(__file__)
-        template_file_dir : str = curr_dir + '/../../code_generation/c/'
-        file_name : str = 'Gemm.c'
-        template_file_path : str = template_file_dir + file_name
-        f = open(template_file_path)
-        code : str = f.read()
-        f.close()
-        return code
+    
 
     def get_op_type(self) -> str:
         return "Gemm"
