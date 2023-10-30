@@ -155,6 +155,9 @@ class Gemm(OpNode):
         # node identifier
         name : str = self._name.replace("/", "")
 
+        # input identifier
+        input_name : str = self._input_varnames[0].replace("/", "")
+
         # output identifier
         output_name : str = self._output_varnames[0].replace("/", "")
 
@@ -177,6 +180,7 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$OUTPUT_SIZE", str(out_size))
         code = self._expand_pattern(code, "$BATCH_SIZE", str(batch_size))
         code = self._expand_pattern(code, "$NAME", name)
+        code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$WEIGHTS", weights_code)
         code = self._expand_pattern(code, "$BIAS", bias_code)
