@@ -183,3 +183,7 @@ class OpNode(Node, abc.ABC):
     @abc.abstractmethod
     def get_op_type(self) -> str:
         pass
+
+    @abc.abstractmethod
+    def infer_output_shape(self) -> list[list[int]]:
+        pass

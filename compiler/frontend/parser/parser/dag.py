@@ -2,6 +2,8 @@ from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.op_node import OpNode
+from compiler.frontend.parser.node_types.node_type import NodeType
+from compiler.frontend.parser.node_types.tensor_type import TensorType
 
 class DAG:
     def __init__(self, nodes : list[Node]):
@@ -131,13 +133,13 @@ class DAG:
         for node in self._nodes:
             if isinstance(node, InputNode):
                 name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
-                param :str = "float** " + name
+                param :str = "float* " + name
                 params_list.append(param)
         
         for node in self._nodes:
             if isinstance(node, OutputNode):
                 name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
-                param : str = "float** " + name
+                param : str = "float* " + name
                 params_list.append(param)
 
         n_params : int = len(params_list)

@@ -1,3 +1,14 @@
 // RELU OPERATOR $NAME
 
-float tensor_$OUTPUT_NAME = tensor_$INPUT_NAME > 0.0f ? tensor_$INPUT_NAME : 0.0f;
+$DEFINE_CONNECTED_OUTPUT
+
+#ifdef CONNECTED_OUTPUT
+float tensor_$OUTPUT_NAME[$INPUT_SIZE * $BATCH_SIZE];
+#undef CONNECTED_OUTPUT
+#endif
+
+for(int i=0; i<$INPUT_SIZE; i++) {
+    for(int j=0; j<$BATCH_SIZE; j++) {
+        tensor_$OUTPUT_NAME[i * $INPUT_SIZE + j] = tensor_$INPUT_NAME[i * $INPUT_SIZE + j] > 0.0f ? tensor_$INPUT_NAME[i * $INPUT_SIZE + j] : 0.0f;
+    }
+}

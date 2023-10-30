@@ -7,6 +7,7 @@ Description:
 
 import numpy as np
 from compiler.frontend.parser.node.op_node import OpNode
+from compiler.frontend.parser.node.output_node import OutputNode
 
 class Gemm(OpNode):
     def __init__(self, name : str, n : int = 1, m : int = 1):
@@ -162,11 +163,14 @@ class Gemm(OpNode):
         output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
 
         # weights size
-        [out_size, in_size] = self._weights.shape
+        [in_size, out_size] = self._weights.shape
 
         # batch size
         if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
         else: batch_size = 1
+
+        # define connected output
+        define_connected_output : str = self._gen_define_connected_output()
 
         # generate code blocks
         weights_code = self._gen_weights_code(out_size, in_size)
@@ -176,6 +180,7 @@ class Gemm(OpNode):
         # read template c code
         code : str = self._read_template_c("Gemm.c")
 
+        code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
         code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
         code = self._expand_pattern(code, "$OUTPUT_SIZE", str(out_size))
         code = self._expand_pattern(code, "$BATCH_SIZE", str(batch_size))
@@ -188,6 +193,16 @@ class Gemm(OpNode):
 
         return code
     
+    def infer_output_shape(self) -> list[list[int]]:
+        # batch size
+        if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
+        else: batch_size = 1
+
+        # output size
+        [_, out_size] = self._weights.shape
+
+        return [out_size, batch_size]
+
     def _gen_weights_code(self, out_size : int, in_size : int) -> str:
         weights_code = ""
         for _ in range(in_size*out_size):
@@ -211,7 +226,15 @@ class Gemm(OpNode):
         
         return output_init_code
     
+    def _gen_define_connected_output(self, ) -> str:
+        connected_output : bool = isinstance(self._outputs[0], OutputNode)
+        
+        if connected_output:
+            define_connected_output = ""
+        else:
+            define_connected_output = "#define CONNECTED_OUTPUT"
+        
+        return define_connected_output
     
-
     def get_op_type(self) -> str:
         return "Gemm"
