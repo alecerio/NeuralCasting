@@ -151,8 +151,72 @@ class Gemm(OpNode):
         Return:
             The code related to gemm operation.
         """
-        # TO DO
-        return "Gemm"
+
+        # node identifier
+        name : str = self._name.replace("/", "")
+
+        # output identifier
+        output_name : str = self._output_varnames[0].replace("/", "")
+
+        # weights size
+        [out_size, in_size] = self._weights.shape
+
+        # batch size
+        if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
+        else: batch_size = 1
+
+        # generate code blocks
+        weights_code = self._gen_weights_code(out_size, in_size)
+        bias_code = self._gen_bias_code(out_size, batch_size)
+        output_init_code = self._gen_output_init_code(out_size)
+        
+        # read template c code
+        code : str = self._read_template_c()
+
+        code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
+        code = self._expand_pattern(code, "$OUTPUT_SIZE", str(out_size))
+        code = self._expand_pattern(code, "$BATCH_SIZE", str(batch_size))
+        code = self._expand_pattern(code, "$NAME", name)
+        code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
+        code = self._expand_pattern(code, "$WEIGHTS", weights_code)
+        code = self._expand_pattern(code, "$BIAS", bias_code)
+        code = self._expand_pattern(code, "$OUTPUT_INIT", output_init_code)
+
+        return code
     
+    def _gen_weights_code(self, out_size : int, in_size : int) -> str:
+        weights_code = ""
+        for _ in range(in_size*out_size):
+            weights_code = weights_code + "0.0f, "
+        
+        return weights_code
+    
+    def _gen_bias_code(self, out_size : int, batch_size : int) -> str:
+        bias_code = ""
+
+        for _ in range(out_size*batch_size):
+            bias_code = bias_code + "0.0f, "
+        
+        return bias_code
+    
+    def _gen_output_init_code(self, out_size : int) -> str:
+        output_init_code = ""
+
+        for _ in range(out_size):
+            output_init_code = output_init_code + "0.0f, "
+        
+        return output_init_code
+    
+    def _read_template_c(self) -> str:
+        import os
+        curr_dir : str = os.path.dirname(__file__)
+        template_file_dir : str = curr_dir + '/../../code_generation/c/'
+        file_name : str = 'Gemm.c'
+        template_file_path : str = template_file_dir + file_name
+        f = open(template_file_path)
+        code : str = f.read()
+        f.close()
+        return code
+
     def get_op_type(self) -> str:
         return "Gemm"

@@ -13,6 +13,9 @@ class Node(abc.ABC):
     def set_name(self, name : str):
         self._name = name
     
+    def _expand_pattern(self, code : str, pattern : str, expanded : str):
+        return code.replace(pattern, expanded)
+
     @abc.abstractmethod
     def generate_code(self) -> str:
         pass
