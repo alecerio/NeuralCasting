@@ -44,12 +44,16 @@ class DAG:
         # TO DO ...
         pass
 
-        
-
     def traversal_dag_and_generate_code(self) -> str:
         generated : list[Node] = []
         active : list[Node] = []
         code_generated : str = ""
+
+        # generate file header
+        code_generated += self._gen_header_code()
+
+        # generate function header code
+        code_generated += self._gen_function_header_code()
 
         # set input nodes active
         for node in self._nodes:
@@ -72,7 +76,8 @@ class DAG:
                         code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
                         code_generated = code_generated + code
                         gen_occured = True
-                        
+
+        code_generated += "}" 
         return code_generated
 
     def _get_input_nodes_from_opnode_or_output_node(self, node : Node) -> list[Node]:
@@ -109,6 +114,40 @@ class DAG:
                 generated.append(input)
         active.append(node)
         return code_generated
+
+    def _gen_header_code(self) -> str:
+        import datetime
+        current_datetime = datetime.datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        message : str = "// *****************************************************************************\n"
+        message += "// \tTHIS CODE WAS AUTOMATICALLY GENERATED ON " + formatted_datetime + "\n"
+        message  += "// *****************************************************************************\n\n"
+        return message
+
+    def _gen_function_header_code(self) -> str:
+        header_code : str = "void run_inference("
+        params_list : list[str] = []
+        
+        for node in self._nodes:
+            if isinstance(node, InputNode):
+                name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
+                param :str = "float** " + name
+                params_list.append(param)
+        
+        for node in self._nodes:
+            if isinstance(node, OutputNode):
+                name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
+                param : str = "float** " + name
+                params_list.append(param)
+
+        n_params : int = len(params_list)
+
+        for i in range(n_params):
+            header_code += params_list[i]
+            if i < n_params-1: header_code += ", "
+        header_code += ") {\n"
+        
+        return header_code
 
     def _is_name_in_list(self, name : str) -> bool:
         return name in self.get_list_names()

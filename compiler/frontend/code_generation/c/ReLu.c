@@ -1,5 +1,3 @@
-// *********************************************************************************
-//                CODE AUTOMATICALLY GENERATED FOR RELU OPERATOR
-// *********************************************************************************
+// RELU OPERATOR $NAME
 
-float $OUTPUT_NAME = $INPUT_NAME > 0.0f ? $INPUT_NAME : 0.0f;
+float tensor_$OUTPUT_NAME = tensor_$INPUT_NAME > 0.0f ? tensor_$INPUT_NAME : 0.0f;

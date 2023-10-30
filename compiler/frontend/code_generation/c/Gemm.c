@@ -1,6 +1,4 @@
-// *********************************************************************************
-//                CODE AUTOMATICALLY GENERATED FOR GEMM OPERATOR
-// *********************************************************************************
+// GEMM OPERATOR $NAME
 
 float weight_$NAME[$OUTPUT_SIZE][$INPUT_SIZE] = {
     $WEIGHTS

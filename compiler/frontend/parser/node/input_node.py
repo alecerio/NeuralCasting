@@ -64,8 +64,7 @@ class InputNode(Node):
         return self._outputs
 
     def generate_code(self) -> str:
-        # TO DO ...
-        return "input"
+        return ""
 
     def _get_output_node_index_by_name(self, name : str) -> int:
         for i in range(len(self._outputs)):

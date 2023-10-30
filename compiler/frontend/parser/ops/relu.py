@@ -21,11 +21,13 @@ class ReLu(OpNode):
             The code related to the ReLu function.
         """
         
-        input_name : str = self._input_varnames[0].replace("/", "")
-        output_name : str = self._output_varnames[0].replace("/", "")
+        name : str = self._name.replace("/", "").replace(":", "")
+        input_name : str = self._input_varnames[0].replace("/", "").replace(":", "")
+        output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
 
         code : str = self._read_template_c("ReLu.c")
 
+        code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
 

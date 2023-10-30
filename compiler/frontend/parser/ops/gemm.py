@@ -153,13 +153,13 @@ class Gemm(OpNode):
         """
 
         # node identifier
-        name : str = self._name.replace("/", "")
+        name : str = self._name.replace("/", "").replace(":", "")
 
         # input identifier
-        input_name : str = self._input_varnames[0].replace("/", "")
+        input_name : str = self._input_varnames[0].replace("/", "").replace(":", "")
 
         # output identifier
-        output_name : str = self._output_varnames[0].replace("/", "")
+        output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
 
         # weights size
         [out_size, in_size] = self._weights.shape
