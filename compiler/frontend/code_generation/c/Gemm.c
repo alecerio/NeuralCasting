@@ -2,11 +2,11 @@
 
 $DEFINE_CONNECTED_OUTPUT
 
-float weight_$NAME[$OUTPUT_SIZE * $INPUT_SIZE] = {
+$TYPE_WEIGHTS weight_$NAME[$OUTPUT_SIZE * $INPUT_SIZE] = {
     $WEIGHTS
 };
 
-float bias_$NAME[$OUTPUT_SIZE] = {
+$TYPE_BIAS bias_$NAME[$OUTPUT_SIZE] = {
     $BIAS
 };
 

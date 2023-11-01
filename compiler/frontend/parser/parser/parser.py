@@ -123,11 +123,16 @@ def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], ou
     for init in graph.initializer:
         if init.name == in_names[1]:
             dims = init.dims
-            break
+            w_type = init.data_type
+        elif init.name == in_names[2]:
+            b_type = init.data_type
+    
     node.set_weights_and_bias(
         np.zeros((dims[1], dims[0]), dtype=float), 
         np.zeros((dims[0],), dtype=float)
     )
+    node.set_weight_data_type(w_type)
+    node.set_bias_data_type(b_type)
 
 def __fill_relu_node__(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)

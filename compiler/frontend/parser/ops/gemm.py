@@ -8,17 +8,39 @@ Description:
 import numpy as np
 from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.node.output_node import OutputNode
+from compiler.frontend.common.common import is_valid_onnx_data_type
+from compiler.frontend.common.common import onnx_type_to_c_dictionary
 
 class Gemm(OpNode):
-    def __init__(self, name : str, n : int = 1, m : int = 1):
+    def __init__(self, name : str, n : int = 1, m : int = 1, weight_data_type = 1, bias_data_type = 1):
         super().__init__(name)
         self._weights : np.ndarray = np.zeros((n, m), dtype=float)
         self._bias : np.ndarray = np.zeros((n,), dtype=float)
+        self._weight_data_type : int = weight_data_type
+        self._bias_data_type : int = bias_data_type
     
     def __str__(self):
         return super().__str__() + "\n" + \
                 "weights: " + str(self._weights) + "\n" + \
                 "bias: " + str(self._bias)
+
+    def set_weight_data_type(self, weight_data_type) -> None:
+        if is_valid_onnx_data_type(weight_data_type):
+            self._weight_data_type = weight_data_type
+        else:
+            raise Exception("Error: invalid onnx data type")
+
+    def get_weight_data_type(self) -> int:
+        return self._weight_data_type
+    
+    def set_bias_data_type(self, bias_data_type) -> None:
+        if is_valid_onnx_data_type(bias_data_type):
+            self._bias_data_type = bias_data_type
+        else:
+            raise Exception("Error: invalid onnx data type")
+    
+    def get_bias_data_type(self) -> int:
+        return self._bias_data_type
 
     def set_weights_and_bias(self, weights : np.ndarray, bias : np.ndarray):
         w_shape = weights.shape
@@ -169,6 +191,12 @@ class Gemm(OpNode):
         if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
         else: batch_size = 1
 
+        # weight type
+        w_type : str = onnx_type_to_c_dictionary(self._weight_data_type)
+
+        # bias type
+        b_type : str = onnx_type_to_c_dictionary(self._bias_data_type)
+
         # define connected output
         define_connected_output : str = self._gen_define_connected_output()
 
@@ -190,6 +218,8 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$WEIGHTS", weights_code)
         code = self._expand_pattern(code, "$BIAS", bias_code)
         code = self._expand_pattern(code, "$OUTPUT_INIT", output_init_code)
+        code = self._expand_pattern(code, "$TYPE_WEIGHTS", w_type)
+        code = self._expand_pattern(code, "$TYPE_BIAS", b_type)
 
         return code
     
