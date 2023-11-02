@@ -143,9 +143,13 @@ class DAG:
         
         for node in self._nodes:
             if isinstance(node, OutputNode):
-                name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
-                param : str = "float* " + name
-                params_list.append(param)
+                node_type : NodeType = node.get_node_type()
+                if isinstance(node_type, TensorType):
+                    name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
+                    param : str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
+                    params_list.append(param)
+                else:
+                    raise Exception("Error: input tensor not supported")
 
         n_params : int = len(params_list)
 

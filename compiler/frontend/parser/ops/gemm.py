@@ -50,7 +50,7 @@ class Gemm(OpNode):
             raise Exception("Error: weights must be a 2D matrix")
         if len(b_shape) != 1:
             raise Exception("Error: bias must be a vector")
-        if w_shape[1] != b_shape[0]:
+        if w_shape[0] != b_shape[0]:
             raise Exception("Error: number of weights columns must be equal to number of bias rows")
         
         self._weights = weights
@@ -185,7 +185,7 @@ class Gemm(OpNode):
         output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
 
         # weights size
-        [in_size, out_size] = self._weights.shape
+        [out_size, in_size] = self._weights.shape
 
         # batch size
         if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
@@ -229,22 +229,24 @@ class Gemm(OpNode):
         else: batch_size = 1
 
         # output size
-        [_, out_size] = self._weights.shape
+        [out_size, _] = self._weights.shape
 
         return [out_size, batch_size]
 
     def _gen_weights_code(self, out_size : int, in_size : int) -> str:
         weights_code = ""
-        for _ in range(in_size*out_size):
-            weights_code = weights_code + "0.0f, "
+        
+        for i in range(out_size):
+            for j in range(in_size):
+                weights_code = weights_code + str(self._weights[i][j]) + ", "
         
         return weights_code
     
     def _gen_bias_code(self, out_size : int, batch_size : int) -> str:
         bias_code = ""
 
-        for _ in range(out_size*batch_size):
-            bias_code = bias_code + "0.0f, "
+        for o in range(out_size):
+            bias_code = bias_code + str(self._bias[o]) + ", "
         
         return bias_code
     

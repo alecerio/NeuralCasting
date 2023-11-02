@@ -33,6 +33,7 @@ def __create_onnx_graph__(config):
     path = temp_path + "/" + name + ".onnx"
     model = onnx.load(path)
     graph = model.graph
+
     return graph
 
 def __create_input_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
@@ -122,15 +123,14 @@ def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], ou
     node.append_output(out_node, out_names[0])
     for init in graph.initializer:
         if init.name == in_names[1]:
-            dims = init.dims
             w_type = init.data_type
+            w = onnx.numpy_helper.to_array(init)
+
         elif init.name == in_names[2]:
             b_type = init.data_type
-    
-    node.set_weights_and_bias(
-        np.zeros((dims[1], dims[0]), dtype=float), 
-        np.zeros((dims[0],), dtype=float)
-    )
+            b = onnx.numpy_helper.to_array(init)
+
+    node.set_weights_and_bias(w, b)
     node.set_weight_data_type(w_type)
     node.set_bias_data_type(b_type)
 
