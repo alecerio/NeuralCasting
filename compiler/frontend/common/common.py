@@ -38,3 +38,27 @@ def onnx_type_to_c_dictionary(data_type_index : int) -> str:
         return "double complex"
     else:
         raise Exception("Error: unknown onnx data type")
+    
+def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
+    if tensor_elem_type == 0:
+        return "void*"
+    elif tensor_elem_type == 1:
+        return "float32_t*"
+    elif tensor_elem_type == 2:
+        return "uint8_t*"
+    elif tensor_elem_type == 3:
+        return "int8_t*"
+    elif tensor_elem_type == 4:
+        return "uint16_t*"
+    elif tensor_elem_type == 5:
+        return "int16_t*"
+    elif tensor_elem_type == 6:
+        return "int32_t*"
+    elif tensor_elem_type == 7:
+        return "int64_t*"
+    elif tensor_elem_type == 8:
+        return "char*"
+    elif tensor_elem_type == 9:
+        return "bool*"
+    else:
+        raise Exception("Error: unknown input tensor elem type")
