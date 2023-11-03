@@ -13,23 +13,23 @@ from compiler.frontend.parser.ops.tanh import Tanh
 
 def parse(config) -> list[Node]:
     # load onnx file and create onnx graph
-    graph : onnx.onnx_ml_pb2.GraphProto = __create_onnx_graph__(config)
+    graph : onnx.onnx_ml_pb2.GraphProto = _create_onnx_graph(config)
 
     # create list of nodes
     nodes : list[Node] = []
 
     # create input nodes
-    __create_input_nodes__(graph, nodes)
+    _create_input_nodes(graph, nodes)
 
     # create output nodes
-    __create_output_nodes__(graph, nodes)
+    _create_output_nodes(graph, nodes)
 
     # create op nodes
-    __create_op_nodes__(graph, nodes)
+    _create_op_nodes(graph, nodes)
 
     return nodes
 
-def __create_onnx_graph__(config):
+def _create_onnx_graph(config):
     temp_path : str = str(config.temp_path)
     name : str = str(config.name)
     path = temp_path + "/" + name + ".onnx"
@@ -38,7 +38,7 @@ def __create_onnx_graph__(config):
 
     return graph
 
-def __create_input_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+def _create_input_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
     for input in graph.input:
         name = input.name
         type_info : str = str(input.type)
@@ -56,7 +56,7 @@ def __create_input_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Nod
         else:
             raise Exception("Error: unexpected type name of the input node")
 
-def __create_output_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+def _create_output_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
     for output in graph.output:
         name = output.name
         type_info : str = str(output.type)
@@ -74,7 +74,7 @@ def __create_output_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[No
         else:
             raise Exception("Error: unexpected type name of the output node")
 
-def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
     in_dict = {}
     out_dict = {}
     for op in graph.node:
@@ -100,9 +100,9 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             in_names = in_dict[node.get_name()]
             out_names = out_dict[node.get_name()]
             if isinstance(node, Gemm):
-                __fill_gemm_node__(node, nodes, in_names, out_names, in_dict, out_dict, graph)
+                _fill_gemm_node(node, nodes, in_names, out_names, in_dict, out_dict, graph)
             elif isinstance(node, ReLu):
-                __fill_relu_node__(node, nodes, in_names, out_names, in_dict, out_dict)
+                _fill_relu_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Sigmoid):
                 _fill_sigmoid_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Tanh):
@@ -126,9 +126,9 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
                     if output_node.get_name() in op_node.get_output_names():
                         output_node.append_input_node(op_node)
 
-def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
-    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
-    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+def _fill_gemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
     for init in graph.initializer:
@@ -144,25 +144,25 @@ def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], ou
     node.set_weight_data_type(w_type)
     node.set_bias_data_type(b_type)
 
-def __fill_relu_node__(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
-    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
-    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+def _fill_relu_node(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _fill_sigmoid_node(node : Sigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
-    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
-    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _fill_tanh_node(node : Tanh, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
-    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
-    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
-def __get_input_node_reference__(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
+def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
     for node in nodes:
         name : str = node.get_name()
         if isinstance(node, OpNode):
@@ -174,7 +174,7 @@ def __get_input_node_reference__(nodes : list[Node], in_name : str, out_dict : d
                 return node
     return None
 
-def __get_output_node_reference__(nodes : list[Node], out_name : str, in_dict : dict) -> Node:
+def _get_output_node_reference(nodes : list[Node], out_name : str, in_dict : dict) -> Node:
     for node in nodes:
         name : str = node.get_name()
         if isinstance(node, OpNode):

@@ -47,7 +47,7 @@ class OpNode(Node, abc.ABC):
         self._input_varnames.append(name)
     
     def remove_input_by_name(self, name : str):
-        i : int = self.__get_index_by_name__(self._inputs, name)
+        i : int = self._get_index_by_name(self._inputs, name)
         if i == -1:
             raise Exception("Error: input node to remove not found")
         else:
@@ -61,14 +61,14 @@ class OpNode(Node, abc.ABC):
         self._input_varnames.pop(index)
     
     def get_input_by_name(self, name : str) -> Node:
-        i : int = self.__get_index_by_name__(self._inputs, name)
+        i : int = self._get_index_by_name(self._inputs, name)
         if i == -1:
             raise Exception("Error: input node not found")
         else:
             return self._inputs[i]
     
     def get_input_varname_by_name(self, name : str) -> Node:
-        i : int = self.__get_index_by_name__(self._inputs, name)
+        i : int = self._get_index_by_name(self._inputs, name)
         if i == -1:
             raise Exception("Error: input node not found")
         else:
@@ -91,7 +91,7 @@ class OpNode(Node, abc.ABC):
         self._output_varnames.append(name)
 
     def remove_output_by_name(self, name : str):
-        i : int = self.__get_index_by_name__(self._outputs, name)
+        i : int = self._get_index_by_name(self._outputs, name)
         if i == -1:
             raise Exception("Error: output node to remove not found")
         else:
@@ -105,14 +105,14 @@ class OpNode(Node, abc.ABC):
         self._output_varnames.pop(index)
     
     def get_output_by_name(self, name : str) -> Node:
-        i : int = self.__get_index_by_name__(self._outputs, name)
+        i : int = self._get_index_by_name(self._outputs, name)
         if i == -1:
             raise Exception("Error: output node not found")
         else:
             return self._outputs[i]
     
     def get_output_varname_by_name(self, name : str) -> Node:
-        i : int = self.__get_index_by_name__(self._outputs, name)
+        i : int = self._get_index_by_name(self._outputs, name)
         if i == -1:
             raise Exception("Error: output node not found")
         else:
@@ -168,7 +168,7 @@ class OpNode(Node, abc.ABC):
     def get_input_nodes_list(self) -> list[Node]:
         return self._inputs
 
-    def __get_index_by_name__(self, node_list : list[Node], name : str) -> int:
+    def _get_index_by_name(self, node_list : list[Node], name : str) -> int:
         i : int = 0
         for node in node_list:
             if node.get_name() == name:
