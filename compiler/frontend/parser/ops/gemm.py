@@ -289,3 +289,6 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$BIAS", bias_code)
 
         return code
+    
+    def generate_includes_code_c(self) -> str:
+        return ""

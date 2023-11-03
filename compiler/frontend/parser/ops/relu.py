@@ -72,3 +72,6 @@ class ReLu(OpNode):
 
     def get_op_type(self) -> str:
         return "ReLu"
+    
+    def generate_includes_code_c(self) -> str:
+        return ""

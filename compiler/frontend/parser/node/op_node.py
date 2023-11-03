@@ -177,6 +177,10 @@ class OpNode(Node, abc.ABC):
         return -1
 
     @abc.abstractmethod
+    def generate_includes_code_c(self) -> str:
+        pass
+
+    @abc.abstractmethod
     def generate_declaration_code_c(self) -> str:
         pass
 

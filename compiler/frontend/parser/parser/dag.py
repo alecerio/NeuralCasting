@@ -52,6 +52,15 @@ class DAG:
         active : list[Node] = []
         code_generated : str = ""
 
+        list_includes : list[str] = []
+        for node in self._nodes:
+            if isinstance(node, OpNode):
+                inc_code : str = node.generate_includes_code_c()
+                list_includes.append(inc_code)
+        list_includes = list(set(list_includes))
+        for inc in list_includes:
+            code_generated += inc
+
         # generate file header
         code_generated += self._gen_header_code()
 

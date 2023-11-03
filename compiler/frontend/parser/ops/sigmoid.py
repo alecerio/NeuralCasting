@@ -58,3 +58,9 @@ class Sigmoid(OpNode):
             define_connected_output = "#define CONNECTED_OUTPUT"
         
         return define_connected_output
+    
+    def generate_includes_code_c(self) -> str:
+        optype : str = self.get_op_type()
+        code : str = self._read_template_c("Sigmoid_inc.c")
+        code = self._expand_pattern(code, "$TYPE", optype)
+        return code
