@@ -33,12 +33,12 @@ class DummyNN3(nn.Module):
     def __init__(self, input_size=2, output_size=3):
         super(DummyNN3, self).__init__()
         self.fc1 = nn.Linear(input_size, output_size)
-        self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
     
     def forward(self, x):
         print(x)
         x = self.fc1(x)
         print(x)
-        x = self.sigmoid(x)
+        x = self.tanh(x)
         print(x)
         return x
