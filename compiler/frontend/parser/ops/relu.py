@@ -57,6 +57,9 @@ class ReLu(OpNode):
             raise Exception("Error: invalid ReLu input node")
         return shape
     
+    def generate_declaration_code_c(self) -> str:
+        return ""
+
     def _gen_define_connected_output(self, ) -> str:
         connected_output : bool = isinstance(self._outputs[0], OutputNode)
         

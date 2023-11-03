@@ -166,7 +166,7 @@ class Gemm(OpNode):
         if i < 0 or i >= self._bias.shape[0]:
             raise Exception("Error: invalid bias index")
         return self._bias[i]
-    
+
     def generate_code(self) -> str:
         """
         Method to generate the code related to gemm operation.
@@ -191,18 +191,10 @@ class Gemm(OpNode):
         if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
         else: batch_size = 1
 
-        # weight type
-        w_type : str = onnx_type_to_c_dictionary(self._weight_data_type)
-
-        # bias type
-        b_type : str = onnx_type_to_c_dictionary(self._bias_data_type)
-
         # define connected output
         define_connected_output : str = self._gen_define_connected_output()
 
         # generate code blocks
-        weights_code = self._gen_weights_code(out_size, in_size)
-        bias_code = self._gen_bias_code(out_size, batch_size)
         output_init_code = self._gen_output_init_code(out_size)
         
         # read template c code
@@ -215,11 +207,7 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
-        code = self._expand_pattern(code, "$WEIGHTS", weights_code)
-        code = self._expand_pattern(code, "$BIAS", bias_code)
         code = self._expand_pattern(code, "$OUTPUT_INIT", output_init_code)
-        code = self._expand_pattern(code, "$TYPE_WEIGHTS", w_type)
-        code = self._expand_pattern(code, "$TYPE_BIAS", b_type)
 
         return code
     
@@ -270,3 +258,34 @@ class Gemm(OpNode):
     
     def get_op_type(self) -> str:
         return "Gemm"
+    
+    def generate_declaration_code_c(self) -> str:
+        # node identifier
+        name : str = self._name.replace("/", "").replace(":", "")
+
+        # weight type
+        w_type : str = onnx_type_to_c_dictionary(self._weight_data_type)
+
+        # bias type
+        b_type : str = onnx_type_to_c_dictionary(self._bias_data_type)
+
+        # weights size
+        [out_size, in_size] = self._weights.shape
+
+        # weights and bias code
+        weights_code = self._gen_weights_code(out_size, in_size)
+        bias_code = self._gen_bias_code(out_size, 1)
+
+        # read template c code
+        code : str = self._read_template_c("Gemm_decl.c")
+
+        # expand
+        code = self._expand_pattern(code, "$NAME", name)
+        code = self._expand_pattern(code, "$TYPE_WEIGHTS", w_type)
+        code = self._expand_pattern(code, "$TYPE_BIAS", b_type)
+        code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
+        code = self._expand_pattern(code, "$OUTPUT_SIZE", str(out_size))
+        code = self._expand_pattern(code, "$WEIGHTS", weights_code)
+        code = self._expand_pattern(code, "$BIAS", bias_code)
+
+        return code

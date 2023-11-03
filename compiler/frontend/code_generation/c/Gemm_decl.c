@@ -1,0 +1,10 @@
+
+// DECLARATIONS FOR GEMM OPERATOR $NAME
+
+static $TYPE_WEIGHTS weight_$NAME[$OUTPUT_SIZE * $INPUT_SIZE] = {
+    $WEIGHTS
+};
+
+static $TYPE_BIAS bias_$NAME[$OUTPUT_SIZE] = {
+    $BIAS
+};

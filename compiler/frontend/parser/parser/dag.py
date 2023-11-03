@@ -55,6 +55,11 @@ class DAG:
         # generate file header
         code_generated += self._gen_header_code()
 
+        # generate declarations
+        for node in self._nodes:
+            if isinstance(node, OpNode):
+                code_generated += node.generate_declaration_code_c()
+
         # generate function header code
         code_generated += self._gen_function_header_code()
 
