@@ -56,10 +56,15 @@ class DAG:
         for node in self._nodes:
             if isinstance(node, OpNode):
                 inc_code : str = node.generate_includes_code_c()
-                list_includes.append(inc_code)
+                inc_lines : list[str] = inc_code.split('\n')
+                filtered_inc_lines : list[str] = [line for line in inc_lines if line.startswith('#include')]
+                for line in filtered_inc_lines:
+                    list_includes.append(line) 
         list_includes = list(set(list_includes))
+        code_generated += "// INCLUDE\n\n"
         for inc in list_includes:
-            code_generated += inc
+            code_generated += inc + "\n"
+        code_generated += "\n\n"
 
         # generate file header
         code_generated += self._gen_header_code()
