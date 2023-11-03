@@ -62,3 +62,6 @@ def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
         return "bool*"
     else:
         raise Exception("Error: unknown input tensor elem type")
+
+def fix_identifier(name : str) -> str:
+    return name.replace("/", "").replace(":", "").replace(".", "")

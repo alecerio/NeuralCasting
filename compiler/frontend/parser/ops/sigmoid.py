@@ -4,6 +4,7 @@ from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
+from compiler.frontend.common.common import fix_identifier
 
 class Sigmoid(OpNode):
     def __init__(self, name : str):
@@ -13,10 +14,10 @@ class Sigmoid(OpNode):
         return super.__str__()
 
     def generate_code(self) -> str:
-        name : str = self.get_name().replace("/", "").replace(":", "")
+        name : str = fix_identifier(self.get_name())
         define_connected_output : str = self._gen_define_connected_output()
-        input_name : str = self._input_varnames[0].replace("/", "").replace(":", "")
-        output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
+        input_name : str = fix_identifier(self._input_varnames[0])
+        output_name : str = fix_identifier(self._output_varnames[0])
         in_size : int = self.infer_output_shape()[0]
 
         code : str = self._read_template_c("Sigmoid.c")

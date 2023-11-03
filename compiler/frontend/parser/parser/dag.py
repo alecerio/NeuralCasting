@@ -5,6 +5,7 @@ from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import onnx_tensor_elem_type_to_c_dictionary
+from compiler.frontend.common.common import fix_identifier
 
 class DAG:
     def __init__(self, nodes : list[Node]):
@@ -154,7 +155,7 @@ class DAG:
             if isinstance(node, InputNode):
                 node_type : NodeType = node.get_node_type()
                 if isinstance(node_type, TensorType):
-                    name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
+                    name : str = "tensor_" + fix_identifier(node.get_name())
                     param :str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
                     params_list.append(param)
                 else:
@@ -164,7 +165,7 @@ class DAG:
             if isinstance(node, OutputNode):
                 node_type : NodeType = node.get_node_type()
                 if isinstance(node_type, TensorType):
-                    name : str = "tensor_" + node.get_name().replace("/", "").replace(":", "")
+                    name : str = "tensor_" + fix_identifier(node.get_name())
                     param : str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
                     params_list.append(param)
                 else:

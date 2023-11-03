@@ -10,6 +10,7 @@ from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.common.common import is_valid_onnx_data_type
 from compiler.frontend.common.common import onnx_type_to_c_dictionary
+from compiler.frontend.common.common import fix_identifier
 
 class Gemm(OpNode):
     def __init__(self, name : str, n : int = 1, m : int = 1, weight_data_type = 1, bias_data_type = 1):
@@ -176,13 +177,13 @@ class Gemm(OpNode):
         """
 
         # node identifier
-        name : str = self._name.replace("/", "").replace(":", "")
+        name : str = fix_identifier(self._name)
 
         # input identifier
-        input_name : str = self._input_varnames[0].replace("/", "").replace(":", "")
+        input_name : str = fix_identifier(self._input_varnames[0])
 
         # output identifier
-        output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
+        output_name : str = fix_identifier(self._output_varnames[0])
 
         # weights size
         [out_size, in_size] = self._weights.shape
@@ -261,7 +262,7 @@ class Gemm(OpNode):
     
     def generate_declaration_code_c(self) -> str:
         # node identifier
-        name : str = self._name.replace("/", "").replace(":", "")
+        name : str = fix_identifier(self._name)
 
         # weight type
         w_type : str = onnx_type_to_c_dictionary(self._weight_data_type)

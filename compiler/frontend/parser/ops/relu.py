@@ -10,6 +10,7 @@ from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
+from compiler.frontend.common.common import fix_identifier
 
 class ReLu(OpNode):
     def __init__(self, name : str):
@@ -28,9 +29,9 @@ class ReLu(OpNode):
         
         define_connected_output : str = self._gen_define_connected_output()
         shape : list[int] = self.infer_output_shape()
-        name : str = self._name.replace("/", "").replace(":", "")
-        input_name : str = self._input_varnames[0].replace("/", "").replace(":", "")
-        output_name : str = self._output_varnames[0].replace("/", "").replace(":", "")
+        name : str = fix_identifier(self._name)
+        input_name : str = fix_identifier(self._input_varnames[0])
+        output_name : str = fix_identifier(self._output_varnames[0])
 
         code : str = self._read_template_c("ReLu.c")
 
