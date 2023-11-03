@@ -8,6 +8,7 @@ from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.ops.gemm import Gemm
 from compiler.frontend.parser.ops.relu import ReLu
+from compiler.frontend.parser.ops.sigmoid import Sigmoid
 
 def parse(config) -> list[Node]:
     # load onnx file and create onnx graph
@@ -84,6 +85,8 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             opnode : Gemm = Gemm(name)
         elif optype == 'Relu':
             opnode : ReLu = ReLu(name)
+        elif optype == 'Sigmoid':
+            opnode : Sigmoid = Sigmoid(name)
         else:
             raise Exception("Error: unexpected operation node")
         nodes.append(opnode)
@@ -97,6 +100,8 @@ def __create_op_nodes__(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
                 __fill_gemm_node__(node, nodes, in_names, out_names, in_dict, out_dict, graph)
             elif isinstance(node, ReLu):
                 __fill_relu_node__(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Sigmoid):
+                _fill_sigmoid_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise Exception("Error: unexpected operation node")
     
@@ -135,6 +140,12 @@ def __fill_gemm_node__(node : Gemm, nodes : list[Node], in_names : list[str], ou
     node.set_bias_data_type(b_type)
 
 def __fill_relu_node__(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
+    out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_sigmoid_node(node : Sigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node = __get_input_node_reference__(nodes, in_names[0], out_dict)
     out_node = __get_output_node_reference__(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
