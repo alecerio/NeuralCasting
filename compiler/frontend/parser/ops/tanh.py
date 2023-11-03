@@ -18,7 +18,7 @@ class Tanh(OpNode):
         define_connected_output : str = self._gen_define_connected_output()
         output_name : str = fix_identifier(self._output_varnames[0])
         input_name : str = fix_identifier(self._input_varnames[0])
-        input_size : int = self.infer_output_shape()[0]
+        input_size : int = self.infer_output_shape()[1]
 
         code : str = self._read_template_c("Tanh.c")
 
@@ -47,7 +47,7 @@ class Tanh(OpNode):
         elif isinstance(input, OpNode):
             shape = input.infer_output_shape()
         else:
-            raise Exception("Error: invalid ReLu input node")
+            raise Exception("Error: invalid Tanh input node")
         return shape
     
     def get_op_type(self) -> str:

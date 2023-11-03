@@ -19,7 +19,7 @@ def main(config):
     curr_path = os.path.dirname(curr_file)
     params_path = curr_path + '/examples/params/pytorch/'
     params_path += 'dummy_nn_params_3.pth'
-    #torch.save(model.state_dict(), params_path)
+    torch.save(model.state_dict(), params_path)
 
     params = torch.load(params_path)
     model.load_state_dict(params)

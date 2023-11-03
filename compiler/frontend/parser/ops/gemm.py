@@ -220,7 +220,7 @@ class Gemm(OpNode):
         # output size
         [out_size, _] = self._weights.shape
 
-        return [out_size, batch_size]
+        return [batch_size, out_size]
 
     def _gen_weights_code(self, out_size : int, in_size : int) -> str:
         weights_code = ""

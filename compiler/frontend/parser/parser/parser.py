@@ -10,6 +10,7 @@ from compiler.frontend.parser.ops.gemm import Gemm
 from compiler.frontend.parser.ops.relu import ReLu
 from compiler.frontend.parser.ops.sigmoid import Sigmoid
 from compiler.frontend.parser.ops.tanh import Tanh
+from compiler.frontend.parser.ops.add import Add
 
 def parse(config) -> list[Node]:
     # load onnx file and create onnx graph
@@ -90,6 +91,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             opnode : Sigmoid = Sigmoid(name)
         elif optype == 'Tanh':
             opnode : Tanh = Tanh(name)
+        elif optype == 'Add':
+            opnode : Add = Add(name)
         else:
             raise Exception("Error: unexpected operation node")
         nodes.append(opnode)
@@ -107,6 +110,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                 _fill_sigmoid_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Tanh):
                 _fill_tanh_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Add):
+                _fill_add_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise Exception("Error: unexpected operation node")
     
@@ -160,6 +165,14 @@ def _fill_tanh_node(node : Tanh, nodes : list[Node], in_names : list[str], out_n
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_add_node(node : Add, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node_1, in_names[0])
+    node.append_input(in_node_2, in_names[1])
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
