@@ -26,3 +26,12 @@ for(int b=0; b<$BATCH_SIZE; b++) {
         tensor_$OUTPUT_NAME[i + b * $BATCH_SIZE] = temp + bias_$NAME[i];
     }
 }
+
+#ifdef COMPILER_DEBUG
+printf("----------------- DEBUG OUTPUT $NAME -----------------\n");
+for(int i=0; i<$OUTPUT_SIZE; i++) {
+    printf("%f ", tensor_$OUTPUT_NAME[i]);
+}
+printf("\n");
+printf("------------------------------------------------------\n\n");
+#endif
