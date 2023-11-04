@@ -36,8 +36,9 @@ class DummyNN3(nn.Module):
         self.tanh = nn.Tanh()
     
     def forward(self, x):
+        x_in = x
         x = self.fc1(x)
         print(x)
-        x = self.tanh(x)
+        x = x * x_in
         print(x)
         return x

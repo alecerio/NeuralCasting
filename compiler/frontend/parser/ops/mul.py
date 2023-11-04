@@ -1,12 +1,12 @@
 from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.node.node import Node
-from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.parser.node.output_node import OutputNode
+from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
 
-class Add(OpNode):
+class Mul(OpNode):
     def __init__(self, name : str):
         super().__init__(name)
 
@@ -21,7 +21,7 @@ class Add(OpNode):
         output_name : str = fix_identifier(self._output_varnames[0])
         in_size : int = self.infer_output_shape()[1]
 
-        code : str = self._read_template_c("Add.c")
+        code : str = self._read_template_c("Mul.c")
 
         code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
@@ -46,12 +46,12 @@ class Add(OpNode):
         shape2 : list[int] = self._node_shape(input2)
 
         if shape1 != shape2:
-            raise Exception("Error: inputs in Add operator must have the same shape")
+            raise Exception("Error: inputs in Mul operator must have the same shape")
         
         return shape1
     
     def get_op_type(self) -> str:
-        return "Add"
+        return "Mul"
     
     def _gen_define_connected_output(self, ) -> str:
         connected_output : bool = isinstance(self._outputs[0], OutputNode)
@@ -73,5 +73,5 @@ class Add(OpNode):
         elif isinstance(node, OpNode):
             shape = node.infer_output_shape()
         else:
-            raise Exception("Error: invalid Add input node")
+            raise Exception("Error: invalid Mul input node")
         return shape

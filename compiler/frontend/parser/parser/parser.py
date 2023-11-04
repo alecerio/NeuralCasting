@@ -11,6 +11,7 @@ from compiler.frontend.parser.ops.relu import ReLu
 from compiler.frontend.parser.ops.sigmoid import Sigmoid
 from compiler.frontend.parser.ops.tanh import Tanh
 from compiler.frontend.parser.ops.add import Add
+from compiler.frontend.parser.ops.mul import Mul
 
 def parse(config) -> list[Node]:
     # load onnx file and create onnx graph
@@ -93,6 +94,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             opnode : Tanh = Tanh(name)
         elif optype == 'Add':
             opnode : Add = Add(name)
+        elif optype == 'Mul':
+            opnode : Mul = Mul(name)
         else:
             raise Exception("Error: unexpected operation node")
         nodes.append(opnode)
@@ -112,6 +115,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                 _fill_tanh_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Add):
                 _fill_add_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Mul):
+                _fill_mul_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise Exception("Error: unexpected operation node")
     
@@ -168,6 +173,14 @@ def _fill_tanh_node(node : Tanh, nodes : list[Node], in_names : list[str], out_n
     node.append_output(out_node, out_names[0])
 
 def _fill_add_node(node : Add, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node_1, in_names[0])
+    node.append_input(in_node_2, in_names[1])
+    node.append_output(out_node, out_names[0])
+
+def _fill_mul_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)

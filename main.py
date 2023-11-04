@@ -12,7 +12,7 @@ def main(config):
 
     #model = DummyNN(2, 3, 2)
     #model = DummyNN2(2, 3)
-    model = DummyNN3(2, 3)
+    model = DummyNN3(2, 2)
     dummy_input = torch.randn(1, 2)
 
     curr_file = os.path.abspath(__file__)
