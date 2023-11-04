@@ -33,12 +33,12 @@ class DummyNN3(nn.Module):
     def __init__(self, input_size=3, output_size=3):
         super(DummyNN3, self).__init__()
         self.fc1 = nn.Linear(input_size, output_size)
-        self.tanh = nn.Tanh()
+        self.relu = nn.ReLU()
     
     def forward(self, x):
         x_in = x
         x = self.fc1(x)
         print(x)
-        x = x * x_in
+        x = self.relu(x)
         print(x)
         return x

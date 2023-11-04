@@ -12,14 +12,14 @@ def main(config):
 
     #model = DummyNN(2, 3, 2)
     #model = DummyNN2(2, 3)
-    model = DummyNN3(2, 2)
+    model = DummyNN3(2, 3)
     dummy_input = torch.randn(1, 2)
 
     curr_file = os.path.abspath(__file__)
     curr_path = os.path.dirname(curr_file)
     params_path = curr_path + '/examples/params/pytorch/'
     params_path += 'dummy_nn_params_3.pth'
-    torch.save(model.state_dict(), params_path)
+    #torch.save(model.state_dict(), params_path)
 
     params = torch.load(params_path)
     model.load_state_dict(params)

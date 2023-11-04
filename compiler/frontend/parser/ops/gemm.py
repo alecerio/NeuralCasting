@@ -188,10 +188,6 @@ class Gemm(OpNode):
         # weights size
         [out_size, in_size] = self._weights.shape
 
-        # batch size
-        if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
-        else: batch_size = 1
-
         # define connected output
         define_connected_output : str = self._gen_define_connected_output()
 
@@ -204,7 +200,6 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
         code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
         code = self._expand_pattern(code, "$OUTPUT_SIZE", str(out_size))
-        code = self._expand_pattern(code, "$BATCH_SIZE", str(batch_size))
         code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
@@ -213,14 +208,10 @@ class Gemm(OpNode):
         return code
     
     def infer_output_shape(self) -> list[list[int]]:
-        # batch size
-        if len(self._bias.shape) > 1: [_, batch_size] = self._bias.shape
-        else: batch_size = 1
-
         # output size
         [out_size, _] = self._weights.shape
 
-        return [batch_size, out_size]
+        return [1, out_size]
 
     def _gen_weights_code(self, out_size : int, in_size : int) -> str:
         weights_code = ""
@@ -231,7 +222,7 @@ class Gemm(OpNode):
         
         return weights_code
     
-    def _gen_bias_code(self, out_size : int, batch_size : int) -> str:
+    def _gen_bias_code(self, out_size : int) -> str:
         bias_code = ""
 
         for o in range(out_size):
@@ -275,7 +266,7 @@ class Gemm(OpNode):
 
         # weights and bias code
         weights_code = self._gen_weights_code(out_size, in_size)
-        bias_code = self._gen_bias_code(out_size, 1)
+        bias_code = self._gen_bias_code(out_size)
 
         # read template c code
         code : str = self._read_template_c("Gemm_decl.c")
