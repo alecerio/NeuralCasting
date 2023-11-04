@@ -40,7 +40,6 @@ class ReLu(OpNode):
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$INPUT_SIZE", str(shape[1]))
-        code = self._expand_pattern(code, "$BATCH_SIZE", str(shape[0]))
 
         return code
     
