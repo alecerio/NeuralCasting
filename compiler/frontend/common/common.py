@@ -1,5 +1,4 @@
 import logging
-from compiler.frontend.exceptions.CompilerException import CompilerException
 
 def is_valid_onnx_data_type(data_type_index : int):
     if data_type_index < 0 or data_type_index > 15:
@@ -40,7 +39,7 @@ def onnx_type_to_c_dictionary(data_type_index : int) -> str:
     elif data_type_index == 15: 
         return "double complex"
     else:
-        raise CompilerException("Error: unknown onnx data type")
+        raise Exception("Error: unknown onnx data type")
     
 def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
     if tensor_elem_type == 0:
@@ -64,7 +63,7 @@ def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
     elif tensor_elem_type == 9:
         return "bool*"
     else:
-        raise CompilerException("Error: unknown input tensor elem type")
+        raise Exception("Error: unknown input tensor elem type")
 
 def fix_identifier(name : str) -> str:
     return name.replace("/", "").replace(":", "").replace(".", "")
