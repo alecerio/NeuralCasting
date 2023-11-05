@@ -1,5 +1,6 @@
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node_types.node_type import NodeType
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 class InputNode(Node):
     def __init__(self, name : str, type : NodeType):
@@ -26,29 +27,29 @@ class InputNode(Node):
     
     def append_output_node(self, node : Node):
         if isinstance(node, InputNode):
-            raise Exception("Error: an input node can't be an output node")
+            raise CompilerException("Error: an input node can't be an output node")
         self._outputs.append(node)
     
     def remove_output_node_by_name(self, name : str):
         index : int = self._get_output_node_index_by_name(name)
         if index == -1:
-            raise Exception("Error: output not found in input node")
+            raise CompilerException("Error: output not found in input node")
         self._outputs.pop(index)
 
     def remove_output_node_by_index(self, index : int):
         if index == -1:
-            raise Exception("Error: output not found in input node")
+            raise CompilerException("Error: output not found in input node")
         self._outputs.pop(index)
 
     def get_output_node_by_name(self, name : str) -> Node:
         index : int = self._get_output_node_index_by_name(name)
         if index == -1:
-            raise Exception("Error: output not found in input node")
+            raise CompilerException("Error: output not found in input node")
         return self._outputs[index]
 
     def get_output_node_by_index(self, index : int) -> Node:
         if index == -1:
-            raise Exception("Error: output not found in input node")
+            raise CompilerException("Error: output not found in input node")
         return self._outputs[index]
 
     def get_output_nodes_name(self) -> list[str]:

@@ -42,3 +42,12 @@ class DummyNN3(nn.Module):
         x = self.relu(x)
         print(x)
         return x
+    
+class DummyGRU(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(DummyGRU, self).__init__()
+        self.gru = nn.GRU(input_size, hidden_size, num_layers)
+    
+    def forward(self, x):
+        out, _ = self.gru(x)
+        return out

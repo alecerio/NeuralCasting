@@ -2,6 +2,7 @@ import abc
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.input_node import InputNode
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 class OpNode(Node, abc.ABC):
     def __init__(self, name : str):
@@ -42,90 +43,90 @@ class OpNode(Node, abc.ABC):
 
     def append_input(self, node : Node, name : str):
         if isinstance(node, OutputNode):
-            raise Exception("Error: output node can't be the input for an op node")
+            raise CompilerException("Error: output node can't be the input for an op node")
         self._inputs.append(node)
         self._input_varnames.append(name)
     
     def remove_input_by_name(self, name : str):
         i : int = self._get_index_by_name(self._inputs, name)
         if i == -1:
-            raise Exception("Error: input node to remove not found")
+            raise CompilerException("Error: input node to remove not found")
         else:
             self._inputs.pop(i)
             self._input_varnames.pop(i)
     
     def remove_input_by_index(self, index : int):
         if index < 0 or index >= len(self._inputs):
-            raise Exception("Error: invalid input node index")
+            raise CompilerException("Error: invalid input node index")
         self._inputs.pop(index)
         self._input_varnames.pop(index)
     
     def get_input_by_name(self, name : str) -> Node:
         i : int = self._get_index_by_name(self._inputs, name)
         if i == -1:
-            raise Exception("Error: input node not found")
+            raise CompilerException("Error: input node not found")
         else:
             return self._inputs[i]
     
     def get_input_varname_by_name(self, name : str) -> Node:
         i : int = self._get_index_by_name(self._inputs, name)
         if i == -1:
-            raise Exception("Error: input node not found")
+            raise CompilerException("Error: input node not found")
         else:
             return self._input_varnames[i]
 
     def get_input_name_by_index(self, index : int) -> Node:
         if index < 0 or index >= len(self._inputs):
-            raise Exception("Error: invalid input node index")
+            raise CompilerException("Error: invalid input node index")
         return self._inputs[index].get_name()
 
     def get_input_varname_by_index(self, index : int) -> Node:
         if index < 0 or index >= len(self._inputs):
-            raise Exception("Error: invalid input node index")
+            raise CompilerException("Error: invalid input node index")
         return self._input_varnames[index]
 
     def append_output(self, node : Node, name : str):
         if isinstance(node, InputNode):
-            raise Exception("Error: input node can't be the output for an op node")
+            raise CompilerException("Error: input node can't be the output for an op node")
         self._outputs.append(node)
         self._output_varnames.append(name)
 
     def remove_output_by_name(self, name : str):
         i : int = self._get_index_by_name(self._outputs, name)
         if i == -1:
-            raise Exception("Error: output node to remove not found")
+            raise CompilerException("Error: output node to remove not found")
         else:
             self._outputs.pop(i)
             self._output_varnames.pop(i)
     
     def remove_output_by_index(self, index : int):
         if index < 0 or index >= len(self._outputs):
-            raise Exception("Error: invalid output node index")
+            raise CompilerException("Error: invalid output node index")
         self._outputs.pop(index)
         self._output_varnames.pop(index)
     
     def get_output_by_name(self, name : str) -> Node:
         i : int = self._get_index_by_name(self._outputs, name)
         if i == -1:
-            raise Exception("Error: output node not found")
+            raise CompilerException("Error: output node not found")
         else:
             return self._outputs[i]
     
     def get_output_varname_by_name(self, name : str) -> Node:
         i : int = self._get_index_by_name(self._outputs, name)
         if i == -1:
-            raise Exception("Error: output node not found")
+            raise CompilerException("Error: output node not found")
         else:
             return self._output_varnames[i]
         
     def get_output_by_index(self, index : int) -> Node:
         if index < 0 or index >= len(self._outputs):
-            raise Exception("Error: invalid output node index")
+            raise CompilerException("Error: invalid output node index")
         return self._outputs[index]
     
     def get_output_varname_by_index(self, index : int) -> Node:
         if index < 0 or index >= len(self._outputs):
-            raise Exception("Error: invalid output node index")
+            raise CompilerException("Error: invalid output node index")
         return self._output_varnames[index]
 
     def get_input_names(self) -> list[str]:

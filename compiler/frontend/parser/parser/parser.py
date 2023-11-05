@@ -12,8 +12,12 @@ from compiler.frontend.parser.ops.sigmoid import Sigmoid
 from compiler.frontend.parser.ops.tanh import Tanh
 from compiler.frontend.parser.ops.add import Add
 from compiler.frontend.parser.ops.mul import Mul
+from compiler.frontend.common.common import CompilerLogger
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 def parse(config) -> list[Node]:
+    CompilerLogger().info("run parser")
+
     # load onnx file and create onnx graph
     graph : onnx.onnx_ml_pb2.GraphProto = _create_onnx_graph(config)
 
@@ -32,6 +36,8 @@ def parse(config) -> list[Node]:
     return nodes
 
 def _create_onnx_graph(config):
+    CompilerLogger().info("Create onnx graph")
+
     temp_path : str = str(config.temp_path)
     name : str = str(config.name)
     path = temp_path + "/" + name + ".onnx"
@@ -41,7 +47,10 @@ def _create_onnx_graph(config):
     return graph
 
 def _create_input_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+    CompilerLogger().info("Create input nodes")
     for input in graph.input:
+        CompilerLogger().info("Create input node: " + input.name)
+
         name = input.name
         type_info : str = str(input.type)
         type_name : str = type_info.split("{")[0].strip()
@@ -56,10 +65,14 @@ def _create_input_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             input_node : InputNode = InputNode(name=name, type=node_type)
             nodes.append(input_node)
         else:
-            raise Exception("Error: unexpected type name of the input node")
+            raise CompilerException("Error: unexpected type name of the input node")
 
 def _create_output_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+    CompilerLogger().info("Create output nodes")
+
     for output in graph.output:
+        CompilerLogger().info("Create output node: " + output.name)
+
         name = output.name
         type_info : str = str(output.type)
         type_name : str = type_info.split("{")[0].strip()
@@ -74,12 +87,15 @@ def _create_output_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]
             output_node : OutputNode = OutputNode(name=name, type=node_type)
             nodes.append(output_node)
         else:
-            raise Exception("Error: unexpected type name of the output node")
+            raise CompilerException("Error: unexpected type name of the output node")
 
 def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+    CompilerLogger().info("Create op nodes")
     in_dict = {}
     out_dict = {}
     for op in graph.node:
+        CompilerLogger().info("Create op node: " + op.name)
+
         name : str = op.name
         optype : str = op.op_type
         in_dict[name] = op.input
@@ -97,12 +113,14 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
         elif optype == 'Mul':
             opnode : Mul = Mul(name)
         else:
-            raise Exception("Error: unexpected operation node")
+            raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
     
     # update op nodes references
+    CompilerLogger().info("Create input / output nodes references for op nodes")
     for node in nodes:
         if isinstance(node, OpNode):
+            CompilerLogger().info("Create input / output nodes references for op node: " + node.get_name())
             in_names = in_dict[node.get_name()]
             out_names = out_dict[node.get_name()]
             if isinstance(node, Gemm):
@@ -118,25 +136,30 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             elif isinstance(node, Mul):
                 _fill_mul_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
-                raise Exception("Error: unexpected operation node")
+                raise CompilerException("Error: unexpected op node")
     
     # update input nodes references
+    CompilerLogger().info("Create references for input nodes")
     for input_node in nodes:
         if isinstance(input_node, InputNode):
+            CompilerLogger().info("Create references for input node: " + input_node.get_name())
             for op_node in nodes:
                 if isinstance(op_node, OpNode):
                     if input_node.get_name() in op_node.get_input_names():
                         input_node.append_output_node(op_node)
     
     # update output nodes references
+    CompilerLogger().info("Create references for output nodes")
     for output_node in nodes:
         if isinstance(output_node, OutputNode):
+            CompilerLogger().info("Create references for output node: " + output_node.get_name())
             for op_node in nodes:
                 if isinstance(op_node, OpNode):
                     if output_node.get_name() in op_node.get_output_names():
                         output_node.append_input_node(op_node)
 
 def _fill_gemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
+    CompilerLogger().info("Update Gemm node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
@@ -155,24 +178,28 @@ def _fill_gemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_n
     node.set_bias_data_type(b_type)
 
 def _fill_relu_node(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update ReLu node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _fill_sigmoid_node(node : Sigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Sigmoid node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _fill_tanh_node(node : Tanh, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Tanh node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _fill_add_node(node : Add, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Add node")
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
@@ -181,6 +208,7 @@ def _fill_add_node(node : Add, nodes : list[Node], in_names : list[str], out_nam
     node.append_output(out_node, out_names[0])
 
 def _fill_mul_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Mul node")
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)

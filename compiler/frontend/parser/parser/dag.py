@@ -6,6 +6,8 @@ from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import onnx_tensor_elem_type_to_c_dictionary
 from compiler.frontend.common.common import fix_identifier
+from compiler.frontend.common.common import CompilerLogger
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 class DAG:
     def __init__(self, nodes : list[Node]):
@@ -22,19 +24,19 @@ class DAG:
     def append_node(self, node : Node):
         name = node.get_name()
         if self._is_name_in_list(name):
-            raise Exception("Error: node name is unique in dag")
+            raise CompilerException("Error: node name is unique in dag")
         self._nodes.append(node)
 
     def get_node(self, name : str):
         index : int = self._get_node_index_by_name(name)
         if index == -1:
-            raise Exception("Error: node not found in dag")
+            raise CompilerException("Error: node not found in dag")
         return self._nodes[index]
 
     def remove_node(self, name : str):
         index : int = self._get_node_index_by_name(name)
         if index == -1:
-            raise Exception("Error: node not found in dag")
+            raise CompilerException("Error: node not found in dag")
         self._nodes.pop(index)
 
     def get_list_names(self) -> list[str]:
@@ -49,38 +51,33 @@ class DAG:
         pass
 
     def traversal_dag_and_generate_code(self) -> str:
+        CompilerLogger().info("Start code generation")
+
         generated : list[Node] = []
         active : list[Node] = []
         code_generated : str = ""
 
-        list_includes : list[str] = []
-        for node in self._nodes:
-            if isinstance(node, OpNode):
-                inc_code : str = node.generate_includes_code_c()
-                inc_lines : list[str] = inc_code.split('\n')
-                filtered_inc_lines : list[str] = [line for line in inc_lines if line.startswith('#include')]
-                for line in filtered_inc_lines:
-                    list_includes.append(line) 
-        list_includes = list(set(list_includes))
-        code_generated += "// INCLUDE\n\n"
-        for inc in list_includes:
-            code_generated += inc + "\n"
-        code_generated += "\n\n"
-
+        # generate include code
+        code_generated += self._gen_include_code()
+        
         # generate file header
         code_generated += self._gen_header_code()
 
         # generate declarations
+        CompilerLogger().info("Generate declaration C code")
         for node in self._nodes:
             if isinstance(node, OpNode):
+                CompilerLogger().info("Generate declaration code C for: " + node.get_name())
                 code_generated += node.generate_declaration_code_c()
 
         # generate function header code
         code_generated += self._gen_function_header_code()
 
         # set input nodes active
+        CompilerLogger().info("Set input nodes ready to generate code")
         for node in self._nodes:
             if isinstance(node, InputNode):
+                CompilerLogger().info("Set ready to generate code: " + node.get_name())
                 active.append(node)
         
         gen_occured : bool = True
@@ -92,10 +89,12 @@ class DAG:
                     inputs : list[Node] = self._get_input_nodes_from_opnode_or_output_node(node)
                     
                     # check if node is ready to turn active
+                    CompilerLogger().info("Check if node " + node.get_name() + " is ready to turn active")
                     ready : bool = self._check_if_ready_to_turn_active(inputs, active, generated)
                     
                     # if the node is ready, turn it to active and generate the code
                     if ready:
+                        CompilerLogger().info("Generate code for " + node.get_name())
                         code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
                         code_generated = code_generated + code
                         gen_occured = True
@@ -139,6 +138,7 @@ class DAG:
         return code_generated
 
     def _gen_header_code(self) -> str:
+        CompilerLogger().info("Generate file header code")
         import datetime
         current_datetime = datetime.datetime.now()
         formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
@@ -148,6 +148,8 @@ class DAG:
         return message
 
     def _gen_function_header_code(self) -> str:
+        CompilerLogger().info("Generate function header")
+
         header_code : str = "void run_inference("
         params_list : list[str] = []
         
@@ -159,7 +161,7 @@ class DAG:
                     param :str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
                     params_list.append(param)
                 else:
-                    raise Exception("Error: input tensor not supported")
+                    raise CompilerException("Error: input tensor not supported")
         
         for node in self._nodes:
             if isinstance(node, OutputNode):
@@ -169,7 +171,7 @@ class DAG:
                     param : str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
                     params_list.append(param)
                 else:
-                    raise Exception("Error: input tensor not supported")
+                    raise CompilerException("Error: input tensor not supported")
 
         n_params : int = len(params_list)
 
@@ -189,3 +191,25 @@ class DAG:
             if node.get_name() == name:
                 return i
         return -1
+    
+    def _gen_include_code(self) -> str:
+        CompilerLogger().info("Generate include code")
+
+        code_generated : str = ""
+        list_includes : list[str] = []
+        for node in self._nodes:
+            if isinstance(node, OpNode):
+                CompilerLogger().info("Generate include code for: " + node.get_name())
+                inc_code : str = node.generate_includes_code_c()
+                inc_lines : list[str] = inc_code.split('\n')
+                filtered_inc_lines : list[str] = [line for line in inc_lines if line.startswith('#include')]
+                for line in filtered_inc_lines:
+                    list_includes.append(line) 
+        list_includes = list(set(list_includes))
+
+        code_generated += "// INCLUDE\n\n"
+        for inc in list_includes:
+            code_generated += inc + "\n"
+        code_generated += "\n\n"
+
+        return code_generated

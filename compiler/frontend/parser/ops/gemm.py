@@ -11,6 +11,7 @@ from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.common.common import is_valid_onnx_data_type
 from compiler.frontend.common.common import onnx_type_to_c_dictionary
 from compiler.frontend.common.common import fix_identifier
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 class Gemm(OpNode):
     def __init__(self, name : str, n : int = 1, m : int = 1, weight_data_type = 1, bias_data_type = 1):
@@ -29,7 +30,7 @@ class Gemm(OpNode):
         if is_valid_onnx_data_type(weight_data_type):
             self._weight_data_type = weight_data_type
         else:
-            raise Exception("Error: invalid onnx data type")
+            raise CompilerException("Error: invalid onnx data type")
 
     def get_weight_data_type(self) -> int:
         return self._weight_data_type
@@ -38,7 +39,7 @@ class Gemm(OpNode):
         if is_valid_onnx_data_type(bias_data_type):
             self._bias_data_type = bias_data_type
         else:
-            raise Exception("Error: invalid onnx data type")
+            raise CompilerException("Error: invalid onnx data type")
     
     def get_bias_data_type(self) -> int:
         return self._bias_data_type
@@ -48,11 +49,11 @@ class Gemm(OpNode):
         b_shape = bias.shape
 
         if len(w_shape) != 2: 
-            raise Exception("Error: weights must be a 2D matrix")
+            raise CompilerException("Error: weights must be a 2D matrix")
         if len(b_shape) != 1:
-            raise Exception("Error: bias must be a vector")
+            raise CompilerException("Error: bias must be a vector")
         if w_shape[0] != b_shape[0]:
-            raise Exception("Error: number of weights columns must be equal to number of bias rows")
+            raise CompilerException("Error: number of weights columns must be equal to number of bias rows")
         
         self._weights = weights
         self._bias = bias
@@ -70,7 +71,7 @@ class Gemm(OpNode):
         m : int = weights.shape[1]
 
         if n != self._weights.shape[0] or m != self._weights.shape[1]:
-            raise Exception("Error: invalid new weights shape")
+            raise CompilerException("Error: invalid new weights shape")
         
         self._weights = weights
     
@@ -85,7 +86,7 @@ class Gemm(OpNode):
             j: col index
         """
         if i < 0 or i >= self._weights.shape[0] or j < 0 or j >= self._weights.shape[1]:
-            raise Exception("Error: invalid weight indices")
+            raise CompilerException("Error: invalid weight indices")
         self._weights[i][j] = weight
     
     def get_weights(self) -> np.ndarray:
@@ -109,7 +110,7 @@ class Gemm(OpNode):
             The weight in position (i,j).
         """
         if i < 0 or i >= self._weights.shape[0] or j < 0 or j >= self._weights.shape[1]:
-            raise Exception("Error: invalid weight indices")
+            raise CompilerException("Error: invalid weight indices")
         return self._weights[i][j]
 
     def set_bias(self, bias: np.ndarray):
@@ -123,13 +124,13 @@ class Gemm(OpNode):
         m : int = bias.shape[1]
         
         if n != self._bias.shape[0]:
-            raise Exception("Error: invalid new bias shape")
+            raise CompilerException("Error: invalid new bias shape")
         
         if m != 1:
-            raise Exception("Error: bias must be a vector and not a matrix")
+            raise CompilerException("Error: bias must be a vector and not a matrix")
         
         if len(bias.shape) != 2:
-            raise Exception("Error: bias must be in two dimensions [n,1]")
+            raise CompilerException("Error: bias must be in two dimensions [n,1]")
 
         self._bias = bias
     
@@ -142,7 +143,7 @@ class Gemm(OpNode):
             i: The position of the element in the bias vector.
         """
         if i < 0 or i >= self._bias.shape[0]:
-            raise Exception("Error: invalid bias index")
+            raise CompilerException("Error: invalid bias index")
         self._bias[i] = bias_elem
     
     def get_bias(self) -> np.ndarray:
@@ -165,7 +166,7 @@ class Gemm(OpNode):
             The bias element in position i-th.
         """
         if i < 0 or i >= self._bias.shape[0]:
-            raise Exception("Error: invalid bias index")
+            raise CompilerException("Error: invalid bias index")
         return self._bias[i]
 
     def generate_code(self) -> str:

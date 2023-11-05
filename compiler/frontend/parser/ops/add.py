@@ -5,6 +5,7 @@ from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 class Add(OpNode):
     def __init__(self, name : str):
@@ -46,7 +47,7 @@ class Add(OpNode):
         shape2 : list[int] = self._node_shape(input2)
 
         if shape1 != shape2:
-            raise Exception("Error: inputs in Add operator must have the same shape")
+            raise CompilerException("Error: inputs in Add operator must have the same shape")
         
         return shape1
     
@@ -69,9 +70,9 @@ class Add(OpNode):
             if isinstance(t, TensorType):
                 shape = t.get_shape()
             else:
-                raise Exception("Error: input node type not supported")
+                raise CompilerException("Error: input node type not supported")
         elif isinstance(node, OpNode):
             shape = node.infer_output_shape()
         else:
-            raise Exception("Error: invalid Add input node")
+            raise CompilerException("Error: invalid Add input node")
         return shape

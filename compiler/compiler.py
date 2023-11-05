@@ -1,17 +1,24 @@
 import hydra
 import numpy as np
 import torch.nn as nn
+import logging
 from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
 from compiler.frontend.parser.parser.parser import parse
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.parser.dag import DAG
+from compiler.frontend.exceptions.CompilerException import CompilerException
+from compiler.frontend.common.common import CompilerLogger
 
 def run(config, model, dummy_input, params = None):
-    print("run compiler ...")
+
+    # create logger
+    CompilerLogger(config).info("Run compiler")
 
     # lower from python framework to onnx
     fr = config.framework
     if(fr.framework_name == 'pytorch'):
+        CompilerLogger().info("Converting pytorch model to onnx")
+
         # load parameters to the model
         model.load_state_dict(params)
 
@@ -22,7 +29,7 @@ def run(config, model, dummy_input, params = None):
         verbose : bool = bool(fr.verbose)
         torch2onnx(model, dummy_input, path, verbose)
     else:
-        raise Exception("Error: unexpected framework")
+        raise CompilerException("Error: unexpected framework")
     
     # parse onnx
     nodes : list[Node] = parse(config)

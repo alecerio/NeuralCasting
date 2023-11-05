@@ -1,3 +1,6 @@
+import logging
+from compiler.frontend.exceptions.CompilerException import CompilerException
+
 def is_valid_onnx_data_type(data_type_index : int):
     if data_type_index < 0 or data_type_index > 15:
         return False
@@ -37,7 +40,7 @@ def onnx_type_to_c_dictionary(data_type_index : int) -> str:
     elif data_type_index == 15: 
         return "double complex"
     else:
-        raise Exception("Error: unknown onnx data type")
+        raise CompilerException("Error: unknown onnx data type")
     
 def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
     if tensor_elem_type == 0:
@@ -61,7 +64,24 @@ def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
     elif tensor_elem_type == 9:
         return "bool*"
     else:
-        raise Exception("Error: unknown input tensor elem type")
+        raise CompilerException("Error: unknown input tensor elem type")
 
 def fix_identifier(name : str) -> str:
     return name.replace("/", "").replace(":", "").replace(".", "")
+
+class CompilerLogger:
+    _logger = None
+
+    def __new__(cls, config=None):
+        if cls._logger is None:
+            logger_name : str = 'log_compiler'
+            cls._logger = logging.getLogger('log_compiler')
+            cls._logger.setLevel(logging.DEBUG)
+            log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            path : str = config.framework.temp_path
+            filename : str = path + logger_name + ".log"
+            log_handler = logging.FileHandler(filename)
+            log_handler.setLevel(logging.DEBUG)
+            log_handler.setFormatter(log_format)
+            cls._logger.addHandler(log_handler)
+        return cls._logger

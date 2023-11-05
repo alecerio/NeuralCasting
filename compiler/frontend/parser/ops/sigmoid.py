@@ -5,6 +5,7 @@ from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
+from compiler.frontend.exceptions.CompilerException import CompilerException
 
 class Sigmoid(OpNode):
     def __init__(self, name : str):
@@ -40,11 +41,11 @@ class Sigmoid(OpNode):
             if isinstance(t, TensorType):
                 shape = t.get_shape()
             else:
-                raise Exception("Error: input node type not supported")
+                raise CompilerException("Error: input node type not supported")
         elif isinstance(input, OpNode):
             shape = input.infer_output_shape()
         else:
-            raise Exception("Error: invalid Sigmoid input node")
+            raise CompilerException("Error: invalid Sigmoid input node")
         return shape
     
     def get_op_type(self) -> str:
