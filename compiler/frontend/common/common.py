@@ -68,6 +68,18 @@ def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
 def fix_identifier(name : str) -> str:
     return name.replace("/", "").replace(":", "").replace(".", "")
 
+def generate_files(code : list[str], names : list[str]):
+    if(len(code) != len(names)):
+        raise Exception("Error: code content and code names should be the same number")
+    
+    output_path : str = CompilerConfig().output_path
+    N : int = len(names)
+    for i in range(N):
+        path : str = output_path + names[i]
+        f = open(path, 'w')
+        f.write(code[i])
+        f.close()
+
 class CompilerLogger:
     _logger = None
 
@@ -84,3 +96,11 @@ class CompilerLogger:
             log_handler.setFormatter(log_format)
             cls._logger.addHandler(log_handler)
         return cls._logger
+    
+class CompilerConfig:
+    _config = None
+
+    def __new__(cls, config=None):
+        if cls._config is None:
+            cls._config = config
+        return cls._config

@@ -4,3 +4,8 @@ defaults:
 
 name: dummy
 temp_path: /home/alessandro/Desktop/temp_path/
+codegen_c_path: /home/alessandro/repo2/compiler/compiler/frontend/code_generation/c/
+output_path: /home/alessandro/Desktop/output/
+create_output_files: True
+
+test_path: /home/alessandro/repo2/compiler/tests/

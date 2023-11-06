@@ -1,21 +1,25 @@
 import hydra
 import numpy as np
 import torch.nn as nn
-import logging
 from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
 from compiler.frontend.parser.parser.parser import parse
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.parser.dag import DAG
 from compiler.frontend.exceptions.CompilerException import CompilerException
 from compiler.frontend.common.common import CompilerLogger
+from compiler.frontend.common.common import CompilerConfig
+from compiler.frontend.common.common import generate_files
 
 def run(config, model, dummy_input, params = None):
+
+    # init config singleton
+    CompilerConfig(config)
 
     # create logger
     CompilerLogger(config).info("Run compiler")
 
     # lower from python framework to onnx
-    fr = config.framework
+    fr = CompilerConfig().framework
     if(fr.framework_name == 'pytorch'):
         CompilerLogger().info("Converting pytorch model to onnx")
 
@@ -32,12 +36,16 @@ def run(config, model, dummy_input, params = None):
         raise CompilerException("Error: unexpected framework")
     
     # parse onnx
-    nodes : list[Node] = parse(config)
+    nodes : list[Node] = parse()
 
     # create dag
     dag : DAG = DAG(nodes)
     
     # generated code
-    code : str = dag.traversal_dag_and_generate_code()
+    [code, names] = dag.traversal_dag_and_generate_code()
 
-    print(code)
+    # generate files
+    if CompilerConfig().create_output_files:
+        generate_files(code, names)
+
+    return [code, names]

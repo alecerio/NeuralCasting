@@ -14,12 +14,13 @@ from compiler.frontend.parser.ops.add import Add
 from compiler.frontend.parser.ops.mul import Mul
 from compiler.frontend.common.common import CompilerLogger
 from compiler.frontend.exceptions.CompilerException import CompilerException
+from compiler.frontend.common.common import CompilerConfig
 
-def parse(config) -> list[Node]:
+def parse() -> list[Node]:
     CompilerLogger().info("run parser")
 
     # load onnx file and create onnx graph
-    graph : onnx.onnx_ml_pb2.GraphProto = _create_onnx_graph(config)
+    graph : onnx.onnx_ml_pb2.GraphProto = _create_onnx_graph()
 
     # create list of nodes
     nodes : list[Node] = []
@@ -35,11 +36,11 @@ def parse(config) -> list[Node]:
 
     return nodes
 
-def _create_onnx_graph(config):
+def _create_onnx_graph():
     CompilerLogger().info("Create onnx graph")
 
-    temp_path : str = str(config.temp_path)
-    name : str = str(config.name)
+    temp_path : str = str(CompilerConfig().temp_path)
+    name : str = str(CompilerConfig().name)
     path = temp_path + "/" + name + ".onnx"
     model = onnx.load(path)
     graph = model.graph

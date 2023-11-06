@@ -8,6 +8,7 @@ from compiler.frontend.common.common import onnx_tensor_elem_type_to_c_dictionar
 from compiler.frontend.common.common import fix_identifier
 from compiler.frontend.common.common import CompilerLogger
 from compiler.frontend.exceptions.CompilerException import CompilerException
+from compiler.frontend.common.common import CompilerConfig
 
 class DAG:
     def __init__(self, nodes : list[Node]):
@@ -50,18 +51,23 @@ class DAG:
         # TO DO ...
         pass
 
-    def traversal_dag_and_generate_code(self) -> str:
+    def traversal_dag_and_generate_code(self) -> [list[str], list[str]]:
         CompilerLogger().info("Start code generation")
 
         generated : list[Node] = []
         active : list[Node] = []
+
+        header_file_code : str = ""
         code_generated : str = ""
 
         # generate include code
-        code_generated += self._gen_include_code()
+        header_file_code += self._gen_include_code()
         
         # generate file header
         code_generated += self._gen_header_code()
+
+        # generate include in source file
+        code_generated += self._gen_inc_in_source()
 
         # generate declarations
         CompilerLogger().info("Generate declaration C code")
@@ -71,7 +77,9 @@ class DAG:
                 code_generated += node.generate_declaration_code_c()
 
         # generate function header code
-        code_generated += self._gen_function_header_code()
+        function_header : str = self._gen_function_header_code()
+        code_generated += function_header
+        header_file_code += function_header[:-3] + ";\n"
 
         # set input nodes active
         CompilerLogger().info("Set input nodes ready to generate code")
@@ -99,8 +107,12 @@ class DAG:
                         code_generated = code_generated + code
                         gen_occured = True
 
-        code_generated += "}" 
-        return code_generated
+        code_generated += "}"
+
+        files_content : list[str] = [header_file_code, code_generated]
+        files_name : list[str] = [CompilerConfig().name + ".h", CompilerConfig().name + ".c"]
+
+        return [files_content, files_name]
 
     def _get_input_nodes_from_opnode_or_output_node(self, node : Node) -> list[Node]:
         if isinstance(node, OpNode):
@@ -206,10 +218,18 @@ class DAG:
                 for line in filtered_inc_lines:
                     list_includes.append(line) 
         list_includes = list(set(list_includes))
+        stdint_inc : str = "#include <stdint.h>"
+        list_includes.append(stdint_inc)
 
         code_generated += "// INCLUDE\n\n"
         for inc in list_includes:
             code_generated += inc + "\n"
         code_generated += "\n\n"
 
+        code_generated += "typedef float float32_t;\n\n"
+
         return code_generated
+    
+    def _gen_inc_in_source(self) -> str:
+        code_gen : str = "#include \"" + CompilerConfig().name + ".h\"\n\n"
+        return code_gen
