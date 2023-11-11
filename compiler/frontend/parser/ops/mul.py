@@ -6,6 +6,7 @@ from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
 from compiler.frontend.exceptions.CompilerException import CompilerException
+import math
 
 class Mul(OpNode):
     def __init__(self, name : str):
@@ -20,7 +21,11 @@ class Mul(OpNode):
         input_name_1 : str = fix_identifier(self._input_varnames[0])
         input_name_2 : str = fix_identifier(self._input_varnames[1])
         output_name : str = fix_identifier(self._output_varnames[0])
-        in_size : int = self.infer_output_shape()[1]
+        in_shape : int = self.infer_output_shape()
+        in_size : int = math.prod(in_shape)
+        for_loop_begin : str = self._gen_for_loop_begin(in_shape)
+        for_loop_end : str = self._gen_for_loop_end(in_shape)
+        index : str = self._gen_for_loop_index(in_shape)
 
         code : str = self._read_template_c("Mul.c")
 
@@ -30,6 +35,9 @@ class Mul(OpNode):
         code = self._expand_pattern(code, "$INPUT2_NAME", input_name_2)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
+        code = self._expand_pattern(code, "$FOR_LOOPS_BEGIN", for_loop_begin)
+        code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
+        code = self._expand_pattern(code, "$INDEX", index)
 
         return code
     
@@ -76,3 +84,33 @@ class Mul(OpNode):
         else:
             raise CompilerException("Error: invalid Mul input node")
         return shape
+
+    def _gen_for_loop_begin(self, shape : list[int]) -> str:
+        code : str = ""
+        n_dims = len(shape)
+        for dim in range(n_dims):
+            size : int = shape[dim]
+            index : str = "i" + str(dim)
+            code += "for(" + \
+                    "int " + index + "=0; " + index + "<" + str(size) + "; " + index + "++) {\n"
+        return code
+    
+    def _gen_for_loop_end(self, shape : list[int]) -> str:
+        code : str = ""
+        n_dims = len(shape)
+        for _ in range(n_dims):
+            code += "}\n"
+        return code
+    
+    def _gen_for_loop_index(self, shape : list[int]) -> str:
+        code : str = ""
+        n_dims : int = len(shape)
+        for i in range(n_dims):
+            index : str = "i" + str(i)
+            size : int = 1
+            for j in range(i+1, n_dims):
+                size *= shape[j]
+            code += index + "*" + str(size)
+            if i < n_dims-1:
+                code += " + "
+        return code
