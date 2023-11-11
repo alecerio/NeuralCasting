@@ -31,3 +31,11 @@ echo "                    RUN TESTS FOR FC-TANH                            "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/fc_tanh/main_test.py
+
+# run test fc_add
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR FC-ADD                             "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/fc_add/main_test.py

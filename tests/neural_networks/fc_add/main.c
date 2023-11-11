@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define INPUT_SIZE (2)
-#define OUTPUT_SIZE (3)
+#define OUTPUT_SIZE (2)
 
 int main() {
     float input[INPUT_SIZE] = {
