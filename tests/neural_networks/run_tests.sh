@@ -23,3 +23,11 @@ echo "                    RUN TESTS FOR FC-SIGMOID                         "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/fc_sigmoid/main_test.py
+
+# run test fc_tanh
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR FC-TANH                            "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/fc_tanh/main_test.py
