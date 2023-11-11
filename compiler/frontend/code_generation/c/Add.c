@@ -7,9 +7,9 @@ float tensor_$OUTPUT_NAME[$INPUT_SIZE];
 #undef CONNECTED_OUTPUT
 #endif
 
-for(int i=0; i<$INPUT_SIZE; i++) {
-    tensor_$OUTPUT_NAME[i] = tensor_$INPUT1_NAME[i] + tensor_$INPUT2_NAME[i];
-}
+$FOR_LOOPS_BEGIN
+tensor_$OUTPUT_NAME[$INDEX] = tensor_$INPUT1_NAME[$INDEX] + tensor_$INPUT2_NAME[$INDEX];
+$FOR_LOOPS_END
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");
