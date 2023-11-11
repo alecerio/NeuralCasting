@@ -8,7 +8,7 @@ import subprocess
 import unittest
 from hydra.experimental import compose, initialize
 
-class TestFcRelu(unittest.TestCase):
+class TestFcSigmoid(unittest.TestCase):
     def test_00(self):
         # init config file
         name : str = CompilerConfig().name
@@ -73,7 +73,7 @@ def run_tests():
     initialize(config_path="../../../config/")
     config = compose(config_name="root.yaml")
     CompilerConfig(config)
-    TestFcRelu.config = config
+    TestFcSigmoid.config = config
     unittest.main()
 
 if __name__ == "__main__":

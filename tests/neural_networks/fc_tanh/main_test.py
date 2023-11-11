@@ -22,7 +22,7 @@ class TestFcTanh(unittest.TestCase):
         # load params
         test_path : str = test_path + 'neural_networks/fc_tanh/'
         params_path = test_path + 'params.pth'
-        torch.save(model.state_dict(), params_path)
+        #torch.save(model.state_dict(), params_path)
         params = torch.load(params_path)
         model.load_state_dict(params)
 
