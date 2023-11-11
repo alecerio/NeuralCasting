@@ -39,3 +39,11 @@ echo "                    RUN TESTS FOR FC-ADD                             "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/fc_add/main_test.py
+
+# run test fc_mul
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR FC-MUL                             "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/fc_mul/main_test.py
