@@ -32,7 +32,7 @@ class TestFcAdd(unittest.TestCase):
         output_python = torch.squeeze(output_python)
 
         # run compiler
-        run(CompilerConfig(), model, dummy_input, params)
+        run(CompilerConfig(), framework='pytorch', model=model, dummy_input=dummy_input, params=params)
 
         # read main.c code and add include to nn
         f = open(test_path + 'main.c', 'r')

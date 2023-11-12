@@ -9,8 +9,9 @@ from compiler.frontend.exceptions.CompilerException import CompilerException
 from compiler.frontend.common.common import CompilerLogger
 from compiler.frontend.common.common import CompilerConfig
 from compiler.frontend.common.common import generate_files
+import onnx
 
-def run(config, model, dummy_input, params = None):
+def run(config, **kwargs):
 
     # init config singleton
     CompilerConfig(config)
@@ -19,19 +20,32 @@ def run(config, model, dummy_input, params = None):
     CompilerLogger(config).info("Run compiler")
 
     # lower from python framework to onnx
-    fr = CompilerConfig().framework
-    if(fr.framework_name == 'pytorch'):
+    framework = kwargs['framework']
+    if framework == 'pytorch':
+        model = kwargs['model']
+        dummy_input = kwargs['dummy_input']
+        params = kwargs['params']
+
         CompilerLogger().info("Converting pytorch model to onnx")
 
         # load parameters to the model
         model.load_state_dict(params)
 
         # create onnx file
-        temp_path : str = str(fr.temp_path)
-        name : str = str(fr.name)
+        temp_path : str = str(CompilerConfig().temp_path)
+        name : str = str(CompilerConfig().name)
         path = temp_path + name + '.onnx'
-        verbose : bool = bool(fr.verbose)
+        verbose : bool = bool(CompilerConfig().framework.verbose)
         torch2onnx(model, dummy_input, path, verbose)
+    elif framework == 'onnx':
+        path = kwargs['path']
+
+        CompilerLogger().info("Copy onnx file to temp path")
+
+        model = onnx.load(path)
+        temp_path : str = str(CompilerConfig().temp_path)
+        name : str = str(CompilerConfig().name)
+        onnx.save(model, temp_path + name + '.onnx')
     else:
         raise CompilerException("Error: unexpected framework")
     
