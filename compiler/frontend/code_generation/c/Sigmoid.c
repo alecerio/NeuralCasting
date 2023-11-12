@@ -7,10 +7,10 @@ float tensor_$OUTPUT_NAME[$INPUT_SIZE];
 #undef CONNECTED_OUTPUT
 #endif
 
-for(int i=0; i<$INPUT_SIZE; i++) {
-    float ex = exp(tensor_$INPUT_NAME[i]);
-    tensor_$OUTPUT_NAME[i] = ex / (1.0f + ex);
-}
+$FOR_LOOPS_BEGIN
+float ex = exp(tensor_$INPUT_NAME[$INDEX]);
+tensor_$OUTPUT_NAME[$INDEX] = ex / (1.0f + ex);
+$FOR_LOOPS_END
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");
