@@ -28,6 +28,7 @@ class Tanh(OpNode):
 
         code : str = self._read_template_c("Tanh.c")
 
+        code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
