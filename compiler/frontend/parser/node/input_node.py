@@ -74,6 +74,17 @@ class InputNode(Node):
                 return i
         return -1
     
+    def generate_includes_code_c(self) -> str:
+        return ""
 
-            
-        
+    def generate_declaration_code_c(self) -> str:
+        return ""
+
+    def generate_code(self) -> str:
+        return ""
+
+    def get_op_type(self) -> str:
+        return ""
+
+    def infer_output_shape(self) -> list[list[int]]:
+        return ""

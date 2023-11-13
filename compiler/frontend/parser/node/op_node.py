@@ -176,23 +176,3 @@ class OpNode(Node, abc.ABC):
                 return i
             i = i+1
         return -1
-
-    @abc.abstractmethod
-    def generate_includes_code_c(self) -> str:
-        pass
-
-    @abc.abstractmethod
-    def generate_declaration_code_c(self) -> str:
-        pass
-
-    @abc.abstractmethod
-    def generate_code(self) -> str:
-        pass
-
-    @abc.abstractmethod
-    def get_op_type(self) -> str:
-        pass
-
-    @abc.abstractmethod
-    def infer_output_shape(self) -> list[list[int]]:
-        pass
