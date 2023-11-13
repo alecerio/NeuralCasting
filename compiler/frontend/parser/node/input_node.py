@@ -82,9 +82,3 @@ class InputNode(Node):
 
     def generate_code(self) -> str:
         return ""
-
-    def get_op_type(self) -> str:
-        return ""
-
-    def infer_output_shape(self) -> list[list[int]]:
-        return ""

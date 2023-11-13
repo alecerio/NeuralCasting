@@ -1,11 +1,12 @@
-from compiler.frontend.parser.node.op_node import OpNode
+from compiler.frontend.parser.node.node import Node
 from compiler.frontend.common.common import fix_identifier
 import math
 
-class InitializerNode(OpNode):
+class InitializerNode(Node):
     def __init__(self, name: str, tensor):
         super().__init__(name)
         self._tensor = tensor
+        self._outputs = []
     
     def __str__(self):
         return super().__str__() + "\n" + \

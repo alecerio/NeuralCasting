@@ -176,3 +176,11 @@ class OpNode(Node, abc.ABC):
                 return i
             i = i+1
         return -1
+    
+    @abc.abstractmethod
+    def get_op_type(self) -> str:
+        return ""
+
+    @abc.abstractmethod
+    def infer_output_shape(self) -> list[list[int]]:
+        return ""
