@@ -12,9 +12,9 @@ float tensor_$OUTPUT_NAME[$OUTPUT_SIZE] = {
 for(int i=0; i<$OUTPUT_SIZE; i++) {
     float temp = 0.0f;
     for(int j=0; j<$INPUT_SIZE; j++) {
-        temp += weight_$NAME[i * $INPUT_SIZE + j] * tensor_$INPUT_NAME[j];
+        temp += tensor_$INPUT_NAME_W[i * $INPUT_SIZE + j] * tensor_$INPUT_NAME_X[j];
     }
-    tensor_$OUTPUT_NAME[i] = temp + bias_$NAME[i];
+    tensor_$OUTPUT_NAME[i] = temp + tensor_$INPUT_NAME_B[i];
 }
 
 #ifdef COMPILER_DEBUG

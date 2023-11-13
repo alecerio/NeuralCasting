@@ -4,6 +4,7 @@ from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.input_node import InputNode
+from compiler.frontend.parser.node.init_node import InitializerNode
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.ops.gemm import Gemm
@@ -28,6 +29,9 @@ def parse() -> list[Node]:
 
     # create input nodes
     _create_input_nodes(graph, nodes)
+
+    # create init nodes
+    _create_init_nodes(graph, nodes)
 
     # create output nodes
     _create_output_nodes(graph, nodes)
@@ -68,6 +72,18 @@ def _create_input_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node])
             nodes.append(input_node)
         else:
             raise CompilerException("Error: unexpected type name of the input node")
+
+def _create_init_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+    CompilerLogger().info("Create init nodes")
+    for init in graph.initializer:
+        CompilerLogger().info("Create initializer node: " + init.name)
+
+        name : str = init.name
+        data_type = init.data_type
+        tensor = onnx.numpy_helper.to_array(init)
+
+        init_node : InitializerNode = InitializerNode(name, tensor, data_type)
+        nodes.append(init_node)
 
 def _create_output_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
     CompilerLogger().info("Create output nodes")
@@ -119,7 +135,7 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
-    
+
     # update op nodes references
     CompilerLogger().info("Create input / output nodes references for op nodes")
     for node in nodes:
@@ -128,7 +144,7 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             in_names = in_dict[node.get_name()]
             out_names = out_dict[node.get_name()]
             if isinstance(node, Gemm):
-                _fill_gemm_node(node, nodes, in_names, out_names, in_dict, out_dict, graph)
+                _fill_gemm_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, ReLu):
                 _fill_relu_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Sigmoid):
@@ -143,7 +159,17 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                 _fill_sub_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
-    
+
+    # update init nodes references
+    CompilerLogger().info("Create references for init nodes")
+    for init_node in nodes:
+        if isinstance(init_node, InitializerNode):
+            CompilerLogger().info("Create references for init node: " + init_node.get_name())
+            for op_node in nodes:
+                if isinstance(op_node, OpNode):
+                    if init_node.get_name() in op_node.get_input_names():
+                        init_node.append_output_node(op_node)
+
     # update input nodes references
     CompilerLogger().info("Create references for input nodes")
     for input_node in nodes:
@@ -164,24 +190,16 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                     if output_node.get_name() in op_node.get_output_names():
                         output_node.append_input_node(op_node)
 
-def _fill_gemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict, graph: onnx.onnx_ml_pb2.GraphProto):
+def _fill_gemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update Gemm node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_w = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_b = _get_input_node_reference(nodes, in_names[2], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
+    node.append_input(in_node_w, in_names[1])
+    node.append_input(in_node_b, in_names[2])
     node.append_output(out_node, out_names[0])
-    for init in graph.initializer:
-        if init.name == in_names[1]:
-            w_type = init.data_type
-            w = onnx.numpy_helper.to_array(init)
-
-        elif init.name == in_names[2]:
-            b_type = init.data_type
-            b = onnx.numpy_helper.to_array(init)
-
-    node.set_weights_and_bias(w, b)
-    node.set_weight_data_type(w_type)
-    node.set_bias_data_type(b_type)
 
 def _fill_relu_node(node : ReLu, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update ReLu node")
@@ -239,6 +257,9 @@ def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict
             if in_name in out_list:
                 return node
         elif isinstance(node, InputNode):
+            if in_name == name:
+                return node
+        elif isinstance(node, InitializerNode):
             if in_name == name:
                 return node
     return None

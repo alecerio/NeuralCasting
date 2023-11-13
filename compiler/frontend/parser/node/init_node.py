@@ -1,6 +1,7 @@
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.input_node import InputNode
 from compiler.frontend.exceptions.CompilerException import CompilerException
+from compiler.frontend.common.common import fix_identifier
 import math
 
 class InitializerNode(Node):
@@ -89,7 +90,8 @@ class InitializerNode(Node):
     def generate_declaration_code_c(self) -> str:
         tensor_flat = self._tensor.flatten()
         size : int = len(tensor_flat)
-        code : str = "float32 tensor_" + self.get_name() + "[" + str(size) + "] = {"
+        code : str = "static float32_t tensor_" + fix_identifier(self.get_name()) + "[" + str(size) + "] = {"
         for i in range(size):
             code += str(tensor_flat[i]) + ", "
-        code += "};"
+        code += "};\n"
+        return code

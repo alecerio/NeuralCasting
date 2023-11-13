@@ -1,5 +1,6 @@
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node.input_node import InputNode
+from compiler.frontend.parser.node.init_node import InitializerNode
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.node_types.node_type import NodeType
@@ -72,7 +73,7 @@ class DAG:
         # generate declarations
         CompilerLogger().info("Generate declaration C code")
         for node in self._nodes:
-            if isinstance(node, OpNode):
+            if isinstance(node, OpNode) or isinstance(node, InitializerNode):
                 CompilerLogger().info("Generate declaration code C for: " + node.get_name())
                 code_generated += node.generate_declaration_code_c()
 
@@ -84,7 +85,7 @@ class DAG:
         # set input nodes active
         CompilerLogger().info("Set input nodes ready to generate code")
         for node in self._nodes:
-            if isinstance(node, InputNode):
+            if isinstance(node, InputNode) or isinstance(node, InitializerNode):
                 CompilerLogger().info("Set ready to generate code: " + node.get_name())
                 active.append(node)
         
@@ -115,6 +116,7 @@ class DAG:
         return [files_content, files_name]
 
     def _get_input_nodes_from_opnode_or_output_node(self, node : Node) -> list[Node]:
+        print(node.get_name())
         if isinstance(node, OpNode):
             inputs : list[Node] = node.get_input_nodes_list()
         elif isinstance(node, OutputNode):

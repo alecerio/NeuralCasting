@@ -1,6 +1,7 @@
 from compiler.frontend.parser.node.op_node import OpNode
 from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.node.input_node import InputNode
+from compiler.frontend.parser.node.init_node import InitializerNode
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
@@ -56,6 +57,8 @@ class Tanh(OpNode):
                 raise CompilerException("Error: input node type not supported")
         elif isinstance(input, OpNode):
             shape = input.infer_output_shape()
+        elif isinstance(input, InitializerNode):
+            shape = input.get_tensor().shape
         else:
             raise CompilerException("Error: invalid Tanh input node")
         return shape
