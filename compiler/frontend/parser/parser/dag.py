@@ -88,6 +88,9 @@ class DAG:
             if isinstance(node, InputNode) or isinstance(node, InitializerNode):
                 CompilerLogger().info("Set ready to generate code: " + node.get_name())
                 active.append(node)
+            elif isinstance(node, OpNode):
+                if node.num_inputs() == 0:
+                    active.append(node)
         
         gen_occured : bool = True
         while gen_occured:
