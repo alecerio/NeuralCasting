@@ -55,3 +55,11 @@ echo "                    RUN TESTS FOR FC-SUB                             "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/fc_sub/main_test.py
+
+# run test matmul
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR MATMUL                             "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/matmul/main_test.py

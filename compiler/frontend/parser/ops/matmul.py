@@ -26,16 +26,16 @@ class MatMul(OpNode):
         input_name_2 : str = fix_identifier(self._input_varnames[1])
         n_cols_left : int = self._infer_ncols_left()
 
-        code : str = self._read_template_c("Mul.c")
+        code : str = self._read_template_c("MatMul.c")
 
         code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
         code = self._expand_pattern(code, "$INPUT_NAME_1", input_name_1)
         code = self._expand_pattern(code, "$INPUT_NAME_2", input_name_2)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
-        code = self._expand_pattern(code, "$N_ROWS_LEFT", n_rows_left)
-        code = self._expand_pattern(code, "$N_COLS_RIGHT", n_cols_right)
-        code = self._expand_pattern(code, "$N_COLS_LEFT", n_cols_left)
+        code = self._expand_pattern(code, "$N_ROWS_LEFT", str(n_rows_left))
+        code = self._expand_pattern(code, "$N_COLS_RIGHT", str(n_cols_right))
+        code = self._expand_pattern(code, "$N_COLS_LEFT", str(n_cols_left))
 
         return code
     
