@@ -14,6 +14,7 @@ from compiler.frontend.parser.ops.tanh import Tanh
 from compiler.frontend.parser.ops.add import Add
 from compiler.frontend.parser.ops.mul import Mul
 from compiler.frontend.parser.ops.sub import Sub
+from compiler.frontend.parser.ops.matmul import MatMul
 from compiler.frontend.common.common import CompilerLogger
 from compiler.frontend.exceptions.CompilerException import CompilerException
 from compiler.frontend.common.common import CompilerConfig
@@ -132,6 +133,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             opnode : Mul = Mul(name)
         elif optype == 'Sub':
             opnode : Sub = Sub(name)
+        elif optype == 'MatMul':
+            opnode : MatMul = MatMul(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -157,6 +160,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                 _fill_mul_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Sub):
                 _fill_sub_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, MatMul):
+                _fill_matmul_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -242,6 +247,15 @@ def _fill_mul_node(node : Mul, nodes : list[Node], in_names : list[str], out_nam
 
 def _fill_sub_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update Sub node")
+    in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node_1, in_names[0])
+    node.append_input(in_node_2, in_names[1])
+    node.append_output(out_node, out_names[0])
+
+def _fill_matmul_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update MatMul node")
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
