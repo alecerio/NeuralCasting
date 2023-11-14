@@ -63,3 +63,11 @@ echo "                    RUN TESTS FOR MATMUL                             "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/matmul/main_test.py
+
+# run test constant
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR CONSTANT                           "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/constant/main_test.py

@@ -161,7 +161,7 @@ class OpNode(Node, abc.ABC):
         return len(self._outputs)
 
     def num_inputs(self) -> int:
-        return len(self._input)
+        return len(self._inputs)
     
     def get_output_nodes_list(self) -> list[Node]:
         return self._outputs
