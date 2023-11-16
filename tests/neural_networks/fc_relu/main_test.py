@@ -104,6 +104,9 @@ class TestFcRelu(unittest.TestCase):
         output_shape_onnx = output_onnx.shape
         output_onnx = np.squeeze(output_onnx)
 
+        # run compiler
+        run(CompilerConfig(), framework='onnx', path=path_onnx)
+
         # read inferred output shape
         output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
         with open(output_shape_path, 'r') as json_file:
@@ -117,9 +120,6 @@ class TestFcRelu(unittest.TestCase):
         self.assertEqual(len(output_shape_onnx), len(output_shape_c))
         for i in range(len(output_shape_onnx)):
             self.assertEquals(output_shape_onnx[i], output_shape_c[i])
-
-        # run compiler
-        run(CompilerConfig(), framework='onnx', path=path_onnx)
 
         # read main.c code and add include to nn
         f = open(test_path + 'main.c', 'r')

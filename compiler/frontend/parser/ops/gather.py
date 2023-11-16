@@ -66,10 +66,16 @@ class Gather(OpNode):
     
     def infer_output_shape(self) -> list[list[int]]:
         val_shape : list[int] = self._get_values_shape()
+        if self._axis == 0: val_shape = [val_shape[1]]
+        elif self._axis == 1: val_shape = [val_shape[0]]
         ind_shape : list[int] = self._get_indices_shape()
         shape = []
-        for i in range(len(val_shape)): shape.append(val_shape[i])
-        for i in range(len(ind_shape)): shape.append(ind_shape[i])
+        if self._axis == 0:
+            for i in range(len(ind_shape)): shape.append(ind_shape[i])
+            for i in range(len(val_shape)): shape.append(val_shape[i])
+        elif self._axis == 1:
+            for i in range(len(val_shape)): shape.append(val_shape[i])
+            for i in range(len(ind_shape)): shape.append(ind_shape[i])
         return shape
     
     def get_op_type(self) -> str:

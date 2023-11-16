@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 // if you want to change the axis and the other parameters here reported, you also need to change the input onnx file
-#define AXIS (0)
+#define AXIS (1)
 
 #define VAL_SIZE_ROWS (4)
 #define VAL_SIZE_COLS (3)
