@@ -8,6 +8,7 @@ import unittest
 import onnxruntime as ort
 import numpy as np
 from hydra.experimental import compose, initialize
+import json
 
 class TestGather(unittest.TestCase):
     def test_00(self):
@@ -35,26 +36,41 @@ class TestGather(unittest.TestCase):
         ], dtype=np.int64)
         outputs = session.run(None, {input_name_1: values, input_name_2: indices})
         output_onnx = outputs[0]
+        output_shape_onnx = output_onnx.shape
         output_onnx = np.squeeze(output_onnx)
         output_onnx = output_onnx.flatten()
 
         # run compiler
         run(CompilerConfig(), framework='onnx', path=path_onnx)
 
+        # read inferred output shape
+        output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
+        with open(output_shape_path, 'r') as json_file:
+            data = json.load(json_file)
+            output_keys = list(data.keys())
+        output_shape_c = data[output_keys[0]]
+
+        # compare shape
+        print("Output shape onnx: ", output_shape_onnx)
+        print("Output shape C: ", output_shape_c)
+        self.assertEqual(len(output_shape_onnx), len(output_shape_c))
+        for i in range(len(output_shape_onnx)):
+            self.assertEquals(output_shape_onnx[i], output_shape_c[i])
+
         # read main.c code and add include to nn
-        f = open(test_path + 'main_axis0.c', 'r')
+        f = open(test_path + 'main_axis1.c', 'r')
         main_code : str = "#include \"" + name + ".h\"\n"
         main_code += f.read()
         f.close()
 
         # generate main.c in output directory
-        f = open(output_path + 'main_axis0.c', 'w')
+        f = open(output_path + 'main_axis1.c', 'w')
         f.write(main_code)
         f.close()
         
         # run command
         try:
-            subprocess.run(["bash", test_path + "build_axis0.sh", name, output_path], check=True)
+            subprocess.run(["bash", test_path + "build_axis1.sh", name, output_path], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error: {e}")
 
@@ -101,26 +117,41 @@ class TestGather(unittest.TestCase):
         ], dtype=np.int64)
         outputs = session.run(None, {input_name_1: values, input_name_2: indices})
         output_onnx = outputs[0]
+        output_shape_onnx = output_onnx.shape
         output_onnx = np.squeeze(output_onnx)
         output_onnx = output_onnx.flatten()
 
         # run compiler
         run(CompilerConfig(), framework='onnx', path=path_onnx)
 
+        # read inferred output shape
+        output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
+        with open(output_shape_path, 'r') as json_file:
+            data = json.load(json_file)
+            output_keys = list(data.keys())
+        output_shape_c = data[output_keys[0]]
+
+        # compare shape
+        print("Output shape onnx: ", output_shape_onnx)
+        print("Output shape C: ", output_shape_c)
+        self.assertEqual(len(output_shape_onnx), len(output_shape_c))
+        for i in range(len(output_shape_onnx)):
+            self.assertEquals(output_shape_onnx[i], output_shape_c[i])
+
         # read main.c code and add include to nn
-        f = open(test_path + 'main_axis1.c', 'r')
+        f = open(test_path + 'main_axis0.c', 'r')
         main_code : str = "#include \"" + name + ".h\"\n"
         main_code += f.read()
         f.close()
 
         # generate main.c in output directory
-        f = open(output_path + 'main_axis1.c', 'w')
+        f = open(output_path + 'main_axis0.c', 'w')
         f.write(main_code)
         f.close()
         
         # run command
         try:
-            subprocess.run(["bash", test_path + "build_axis1.sh", name, output_path], check=True)
+            subprocess.run(["bash", test_path + "build_axis0.sh", name, output_path], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error: {e}")
 
@@ -141,7 +172,7 @@ class TestGather(unittest.TestCase):
         N : int = len(output_onnx)
         for i in range(N):
             self.assertAlmostEqual(output_onnx[i], output_c[i], delta=1e-6)
-
+        
 def run_tests():
     initialize(config_path="../../../config/")
     config = compose(config_name="root.yaml")
