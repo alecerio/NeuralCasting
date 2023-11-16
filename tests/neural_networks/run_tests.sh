@@ -71,3 +71,11 @@ echo "                    RUN TESTS FOR CONSTANT                           "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/constant/main_test.py
+
+# run test gather
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR GATHER                             "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/gather/main_test.py

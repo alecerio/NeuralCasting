@@ -16,6 +16,7 @@ from compiler.frontend.parser.ops.mul import Mul
 from compiler.frontend.parser.ops.sub import Sub
 from compiler.frontend.parser.ops.matmul import MatMul
 from compiler.frontend.parser.ops.constant import Constant
+from compiler.frontend.parser.ops.gather import Gather
 from compiler.frontend.common.common import CompilerLogger
 from compiler.frontend.exceptions.CompilerException import CompilerException
 from compiler.frontend.common.common import CompilerConfig
@@ -140,6 +141,9 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             data_type : int = int(op.attribute[0].t.data_type)
             tensor = onnx.numpy_helper.to_array(op.attribute[0].t)
             opnode : Constant = Constant(name, tensor, data_type)
+        elif optype == 'Gather':
+            axis : int = int(op.attribute[0].i)
+            opnode : Gather = Gather(name, axis)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -169,6 +173,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                 _fill_matmul_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Constant):
                 _fill_constant_node(node, nodes, out_names, in_dict)
+            elif isinstance(node, Gather):
+                _fill_gather_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -273,6 +279,15 @@ def _fill_matmul_node(node : Mul, nodes : list[Node], in_names : list[str], out_
 def _fill_constant_node(node : Mul, nodes : list[Node], out_names : list[str], in_dict : dict):
     CompilerLogger().info("Update Constant node")
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_output(out_node, out_names[0])
+
+def _fill_gather_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Gather node")
+    in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node_1, in_names[0])
+    node.append_input(in_node_2, in_names[1])
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
