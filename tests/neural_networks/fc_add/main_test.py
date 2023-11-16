@@ -7,6 +7,7 @@ from compiler.frontend.common.common import CompilerConfig
 import subprocess
 import unittest
 from hydra.experimental import compose, initialize
+import json
 
 class TestFcAdd(unittest.TestCase):
     def test_00(self):
@@ -29,10 +30,25 @@ class TestFcAdd(unittest.TestCase):
         # inference pytorch
         input0 = torch.ones(1, 2)
         output_python = model(input0)
+        output_shape_python = output_python.shape
         output_python = torch.squeeze(output_python)
 
         # run compiler
         run(CompilerConfig(), framework='pytorch', model=model, dummy_input=dummy_input, params=params)
+
+        # read inferred output shape
+        output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
+        with open(output_shape_path, 'r') as json_file:
+            data = json.load(json_file)
+            output_keys = list(data.keys())
+        output_shape_c = data[output_keys[0]]
+
+        # compare shape
+        print("Output shape python: ", output_shape_python)
+        print("Output shape C: ", output_shape_c)
+        self.assertEqual(len(output_shape_python), len(output_shape_c))
+        for i in range(len(output_shape_python)):
+            self.assertEquals(output_shape_python[i], output_shape_c[i])
 
         # read main.c code and add include to nn
         f = open(test_path + 'main.c', 'r')

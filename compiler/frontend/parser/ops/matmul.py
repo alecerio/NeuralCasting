@@ -7,6 +7,7 @@ from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
 from compiler.frontend.exceptions.CompilerException import CompilerException
+from compiler.frontend.parser.ops.common.common import node_shape
 
 class MatMul(OpNode):
     def __init__(self, name : str):
@@ -47,11 +48,19 @@ class MatMul(OpNode):
     
     def infer_output_shape(self) -> list[list[int]]:
         input1 : Node = self._inputs[0]
-        shape1 : list[int] = self._node_shape(input1)
+        shape1 : list[int] = node_shape(input1)
 
         input2 : Node = self._inputs[1]
-        shape2 : list[int] = self._node_shape(input2)
+        shape2 : list[int] = node_shape(input2)
 
+        if len(shape1) == 1 and len(shape2) == 1 and shape1[0] == shape2[0]:
+            shape1 = [1, shape1[0]]
+            shape2 = [shape2[0], 1]
+        elif len(shape1) == 1 and shape1[0] == shape2[0]:
+            shape1 = [1, shape1[0]]
+        elif len(shape2) == 1 and shape2[0] == shape1[1]:
+            shape2 = [shape2[0], 1]
+        
         if shape1[1] != shape2[0]:
             raise CompilerException("Error: in MatMul, the number of columns of the left matrix must be equal to the number of columns of the right matrix")
         
@@ -71,23 +80,8 @@ class MatMul(OpNode):
             define_connected_output = "#define CONNECTED_OUTPUT"
         
         return define_connected_output
-
-    def _node_shape(self, node : Node) -> list[int]:
-        if isinstance(node, InputNode):
-            t : NodeType = node.get_node_type()
-            if isinstance(t, TensorType):
-                shape = t.get_shape()
-            else:
-                raise CompilerException("Error: input node type not supported")
-        elif isinstance(node, OpNode):
-            shape = node.infer_output_shape()
-        elif isinstance(node, InitializerNode):
-            shape = node.get_tensor().shape
-        else:
-            raise CompilerException("Error: invalid MatMul input node")
-        return shape
     
     def _infer_ncols_left(self) -> int:
         input_left : Node = self._inputs[0]
-        shape_left : list[int] = self._node_shape(input_left)
+        shape_left : list[int] = node_shape(input_left)
         return shape_left[1]

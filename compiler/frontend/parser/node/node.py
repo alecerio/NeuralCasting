@@ -39,3 +39,7 @@ class Node(abc.ABC):
     @abc.abstractmethod
     def generate_code(self) -> str:
         pass
+
+    @abc.abstractmethod
+    def infer_output_shape(self) -> list[list[int]]:
+        pass

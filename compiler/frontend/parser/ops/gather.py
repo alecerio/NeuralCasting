@@ -8,6 +8,8 @@ from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
 from compiler.frontend.exceptions.CompilerException import CompilerException
 import math
+import numpy as np
+from compiler.frontend.parser.ops.common.common import node_shape
 
 class Gather(OpNode):
     def __init__(self, name : str, axis : int):
@@ -33,7 +35,10 @@ class Gather(OpNode):
         indices_shape : list[int] = self._get_indices_shape()
         indices_size : int = math.prod(indices_shape)
         indices_name : str = fix_identifier(self._inputs[1].get_name())
-        values_col : int = self._get_values_shape()[1]
+        
+        val_shape : list[int] = self._get_values_shape()
+        if len(val_shape) == 2: values_col : int = val_shape[1]
+        else: values_col = 1
         output_name : str = fix_identifier(self._output_varnames[0])
         values_name : str = fix_identifier(self._inputs[0].get_name())
         values_row : int = self._get_values_shape()[0]
@@ -62,12 +67,10 @@ class Gather(OpNode):
     def infer_output_shape(self) -> list[list[int]]:
         val_shape : list[int] = self._get_values_shape()
         ind_shape : list[int] = self._get_indices_shape()
-        if self._axis == 0:
-            return [val_shape[1], ind_shape[0], ind_shape[1]]
-        elif self._axis == 1:
-            return [val_shape[0], ind_shape[0], ind_shape[1]]
-        else:
-            raise CompilerException("Error: gather operator only supports axis 0 and 1")
+        shape = []
+        for i in range(len(val_shape)): shape.append(val_shape[i])
+        for i in range(len(ind_shape)): shape.append(ind_shape[i])
+        return shape
     
     def get_op_type(self) -> str:
         return "Gather"
@@ -81,28 +84,13 @@ class Gather(OpNode):
             define_connected_output = "#define CONNECTED_OUTPUT"
         
         return define_connected_output
-
-    def _node_shape(self, node : Node) -> list[int]:
-        if isinstance(node, InputNode):
-            t : NodeType = node.get_node_type()
-            if isinstance(t, TensorType):
-                shape = t.get_shape()
-            else:
-                raise CompilerException("Error: input node type not supported")
-        elif isinstance(node, OpNode):
-            shape = node.infer_output_shape()
-        elif isinstance(node, InitializerNode):
-            shape = node.get_tensor().shape
-        else:
-            raise CompilerException("Error: invalid MatMul input node")
-        return shape
     
     def _get_values_shape(self) -> list[int]:
         values : Node = self._inputs[0]
-        val_shape : list[int] = self._node_shape(values)
+        val_shape : list[int] = node_shape(values)
         return val_shape
     
     def _get_indices_shape(self) -> list[int]:
         indices : Node = self._inputs[1]
-        ind_shape : list[int] = self._node_shape(indices)
+        ind_shape : list[int] = node_shape(indices)
         return ind_shape

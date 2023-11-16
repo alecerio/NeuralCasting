@@ -4,6 +4,7 @@ import torch.nn as nn
 from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
 from compiler.frontend.parser.parser.parser import parse
 from compiler.frontend.parser.node.node import Node
+from compiler.frontend.parser.node.output_node import OutputNode
 from compiler.frontend.parser.parser.dag import DAG
 from compiler.frontend.exceptions.CompilerException import CompilerException
 from compiler.frontend.common.common import CompilerLogger
@@ -54,6 +55,9 @@ def run(config, **kwargs):
 
     # create dag
     dag : DAG = DAG(nodes)
+
+    # export output shape
+    _export_output_shape(nodes)
     
     # generated code
     [code, names] = dag.traversal_dag_and_generate_code()
@@ -63,3 +67,17 @@ def run(config, **kwargs):
         generate_files(code, names)
 
     return [code, names]
+
+def _export_output_shape(nodes : list[Node]) -> None:
+    output_nodes : list[OutputNode] = []
+    for node in nodes:
+        if isinstance(node, OutputNode):
+            output_nodes.append(node)
+    json_output_shape : str = "{\n"
+    for output_node in output_nodes:
+        json_output_shape += "\"" + output_node.get_name() + "\"" + ": " + str(output_node.infer_output_shape()) + "\n"
+    json_output_shape += "}"
+    temp_path : str = CompilerConfig().temp_path + "out_shape.json"
+    f = open(temp_path, 'w')
+    f.write(json_output_shape)
+    f.close()

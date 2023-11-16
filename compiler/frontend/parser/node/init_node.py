@@ -95,3 +95,7 @@ class InitializerNode(Node):
             code += str(tensor_flat[i]) + ", "
         code += "};\n"
         return code
+    
+    def infer_output_shape(self) -> list[list[int]]:
+        shape = self.get_tensor().shape
+        return shape

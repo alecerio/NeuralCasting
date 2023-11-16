@@ -1,6 +1,7 @@
 from compiler.frontend.parser.node.node import Node
 from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.exceptions.CompilerException import CompilerException
+from compiler.frontend.parser.node_types.tensor_type import TensorType
 
 class InputNode(Node):
     def __init__(self, name : str, type : NodeType):
@@ -82,3 +83,10 @@ class InputNode(Node):
 
     def generate_code(self) -> str:
         return ""
+    
+    def infer_output_shape(self) -> list[list[int]]:
+        if isinstance(self._type, TensorType):
+            shape = self._type.get_shape()
+            return shape
+        else:
+            raise CompilerException("Error: input node type not supported")

@@ -81,3 +81,6 @@ class OutputNode(Node):
 
     def generate_code(self) -> str:
         return ""
+    
+    def infer_output_shape(self) -> list[list[int]]:
+        return self._inputs[0].infer_output_shape()

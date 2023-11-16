@@ -8,6 +8,7 @@ import unittest
 import onnxruntime as ort
 import numpy as np
 from hydra.experimental import compose, initialize
+import json
 
 class TestConstant(unittest.TestCase):
     def test_00(self):
@@ -24,11 +25,28 @@ class TestConstant(unittest.TestCase):
         input_data = np.ones((4, 1), dtype=np.float32)
         outputs = session.run(None, {input_name: input_data})
         output_onnx = outputs[0]
+        output_shape_onnx = output_onnx.shape
         output_onnx = np.squeeze(output_onnx)
         output_onnx = output_onnx.flatten()
 
+        print("Len shape onnx: ", len(output_onnx))
+
         # run compiler
         run(CompilerConfig(), framework='onnx', path=path_onnx)
+
+        # read inferred output shape
+        output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
+        with open(output_shape_path, 'r') as json_file:
+            data = json.load(json_file)
+            output_keys = list(data.keys())
+        output_shape_c = data[output_keys[0]]
+
+        # compare shape
+        print("Output shape onnx: ", output_shape_onnx)
+        print("Output shape C: ", output_shape_c)
+        self.assertEqual(len(output_shape_onnx), len(output_shape_c))
+        for i in range(len(output_shape_onnx)):
+            self.assertEquals(output_shape_onnx[i], output_shape_c[i])
 
         # read main.c code and add include to nn
         f = open(test_path + 'main.c', 'r')

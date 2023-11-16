@@ -8,6 +8,7 @@ from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
 from compiler.frontend.exceptions.CompilerException import CompilerException
 import math
+from compiler.frontend.parser.ops.common.common import node_shape
 
 class Add(OpNode):
     def __init__(self, name : str):
@@ -50,10 +51,10 @@ class Add(OpNode):
     
     def infer_output_shape(self) -> list[list[int]]:
         input1 : Node = self._inputs[0]
-        shape1 : list[int] = self._node_shape(input1)
+        shape1 : list[int] = node_shape(input1)
 
         input2 : Node = self._inputs[1]
-        shape2 : list[int] = self._node_shape(input2)
+        shape2 : list[int] = node_shape(input2)
 
         if shape1 != shape2:
             raise CompilerException("Error: inputs in Add operator must have the same shape")
@@ -72,21 +73,6 @@ class Add(OpNode):
             define_connected_output = "#define CONNECTED_OUTPUT"
         
         return define_connected_output
-
-    def _node_shape(self, node : Node) -> list[int]:
-        if isinstance(node, InputNode):
-            t : NodeType = node.get_node_type()
-            if isinstance(t, TensorType):
-                shape = t.get_shape()
-            else:
-                raise CompilerException("Error: input node type not supported")
-        elif isinstance(node, OpNode):
-            shape = node.infer_output_shape()
-        elif isinstance(node, InitializerNode):
-            shape = node.get_tensor().shape
-        else:
-            raise CompilerException("Error: invalid Add input node")
-        return shape
     
     def _gen_for_loop_begin(self, shape : list[int]) -> str:
         code : str = ""
