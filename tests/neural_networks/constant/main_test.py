@@ -29,8 +29,6 @@ class TestConstant(unittest.TestCase):
         output_onnx = np.squeeze(output_onnx)
         output_onnx = output_onnx.flatten()
 
-        print("Len shape onnx: ", len(output_onnx))
-
         # run compiler
         run(CompilerConfig(), framework='onnx', path=path_onnx)
 
