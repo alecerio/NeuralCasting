@@ -98,4 +98,6 @@ class InitializerNode(Node):
     
     def infer_output_shape(self) -> list[list[int]]:
         shape = self.get_tensor().shape
+        if len(shape) == 1:
+            shape = [1, shape[0]]
         return shape

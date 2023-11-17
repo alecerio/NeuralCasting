@@ -61,7 +61,7 @@ class MatMul(OpNode):
         elif len(shape2) == 1 and shape2[0] == shape1[1]:
             shape2 = [shape2[0], 1]
         
-        if shape1[1] != shape2[0]:
+        if shape1[-1] != shape2[-2]:
             raise CompilerException("Error: in MatMul, the number of columns of the left matrix must be equal to the number of columns of the right matrix")
         
         shape = [shape1[0], shape2[1]]
