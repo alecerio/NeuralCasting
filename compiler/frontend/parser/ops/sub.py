@@ -56,7 +56,7 @@ class Sub(OpNode):
         input2 : Node = self._inputs[1]
         shape2 : list[int] = node_shape(input2)
 
-        if shape1 != shape2:
+        if list(shape1) != list(shape2):
             raise CompilerException("Error: inputs in Sub operator must have the same shape")
         
         return shape1
