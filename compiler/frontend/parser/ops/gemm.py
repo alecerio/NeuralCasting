@@ -88,23 +88,6 @@ class Gemm(OpNode):
             raise CompilerException("Error: invalid Gemm input node")
 
         return shape
-
-    def _gen_weights_code(self, out_size : int, in_size : int) -> str:
-        weights_code = ""
-        
-        for i in range(out_size):
-            for j in range(in_size):
-                weights_code = weights_code + str(self._weights[i][j]) + ", "
-        
-        return weights_code
-    
-    def _gen_bias_code(self, out_size : int) -> str:
-        bias_code = ""
-
-        for o in range(out_size):
-            bias_code = bias_code + str(self._bias[o]) + ", "
-        
-        return bias_code
     
     def _gen_output_init_code(self, out_size : int) -> str:
         output_init_code = ""
