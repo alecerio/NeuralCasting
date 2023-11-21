@@ -93,7 +93,7 @@ class InitializerNode(Node):
         code : str = "static float32_t tensor_" + fix_identifier(self.get_name()) + "[" + str(size) + "] = {"
         for i in range(size):
             code += str(tensor_flat[i]) + ", "
-        code += "};\n"
+        code += "};\n\n"
         return code
     
     def infer_output_shape(self) -> list[list[int]]:
