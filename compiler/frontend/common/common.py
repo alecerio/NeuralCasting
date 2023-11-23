@@ -1,4 +1,6 @@
 import logging
+import os
+import yaml
 
 def is_valid_onnx_data_type(data_type_index : int):
     if data_type_index < 0 or data_type_index > 15:
@@ -103,4 +105,13 @@ class CompilerConfig:
     def __new__(cls, config=None):
         if cls._config is None:
             cls._config = config
+            for key in list(config.keys()):
+                if type(config[key]) == str:
+                    config[key] = CompilerConfig.replace_path_references(config[key], config)
         return cls._config
+    
+    @staticmethod
+    def replace_path_references(path, config):
+        for key in list(config.keys()):
+            path = path.replace("${" + str(key) + "}", str(config[key]))
+        return path
