@@ -72,7 +72,7 @@ def generate_files(code : list[str], names : list[str]):
     if(len(code) != len(names)):
         raise Exception("Error: code content and code names should be the same number")
     
-    output_path : str = CompilerConfig().output_path
+    output_path : str = CompilerConfig()['output_path']
     N : int = len(names)
     for i in range(N):
         path : str = output_path + names[i]
@@ -89,7 +89,7 @@ class CompilerLogger:
             cls._logger = logging.getLogger('log_compiler')
             cls._logger.setLevel(logging.DEBUG)
             log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-            path : str = config.framework.temp_path
+            path : str = config['temp_path']
             filename : str = path + logger_name + ".log"
             log_handler = logging.FileHandler(filename)
             log_handler.setLevel(logging.DEBUG)

@@ -1,4 +1,3 @@
-import hydra
 import torch
 import compiler as cmp
 from compiler.compiler import run
@@ -7,14 +6,15 @@ import subprocess
 import unittest
 import onnxruntime as ort
 import numpy as np
-from hydra.experimental import compose, initialize
+import os
+import yaml
 
 class TestReimplementedGRU(unittest.TestCase):
     def test_00(self):
         # init config file
-        name : str = CompilerConfig().name
-        output_path : str = CompilerConfig().output_path
-        test_path : str = CompilerConfig().test_path
+        name : str = CompilerConfig()['name']
+        output_path : str = CompilerConfig()['output_path']
+        test_path : str = CompilerConfig()['test_path']
 
         # inference onnxruntime
         test_path : str = test_path + 'neural_networks/reimplemented_gru/'
@@ -69,9 +69,9 @@ class TestReimplementedGRU(unittest.TestCase):
     
     def test_01(self):
         # init config file
-        name : str = CompilerConfig().name
-        output_path : str = CompilerConfig().output_path
-        test_path : str = CompilerConfig().test_path
+        name : str = CompilerConfig()['name']
+        output_path : str = CompilerConfig()['output_path']
+        test_path : str = CompilerConfig()['test_path']
 
         # inference onnxruntime
         test_path : str = test_path + 'neural_networks/reimplemented_gru/'
@@ -125,10 +125,11 @@ class TestReimplementedGRU(unittest.TestCase):
             self.assertAlmostEqual(output_onnx[i], output_c[i], delta=1e-6)
 
 def run_tests():
-    initialize(config_path="../../../config/")
-    config = compose(config_name="root.yaml")
+    curr_file = os.path.abspath(__file__)
+    curr_path = os.path.dirname(curr_file)
+    with open(curr_path + '/../../../config/config.yaml', 'r') as yaml_file:
+        config = yaml.safe_load(yaml_file)
     CompilerConfig(config)
-    TestReimplementedGRU.config = config
     unittest.main()
 
 if __name__ == "__main__":

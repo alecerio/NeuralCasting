@@ -114,7 +114,7 @@ class DAG:
         code_generated += "}"
 
         files_content : list[str] = [header_file_code, code_generated]
-        files_name : list[str] = [CompilerConfig().name + ".h", CompilerConfig().name + ".c"]
+        files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
 
         return [files_content, files_name]
 
@@ -236,5 +236,5 @@ class DAG:
         return code_generated
     
     def _gen_inc_in_source(self) -> str:
-        code_gen : str = "#include \"" + CompilerConfig().name + ".h\"\n\n"
+        code_gen : str = "#include \"" + CompilerConfig()['name'] + ".h\"\n\n"
         return code_gen

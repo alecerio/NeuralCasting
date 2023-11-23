@@ -18,7 +18,7 @@ class Node(abc.ABC):
         return code.replace(pattern, expanded)
     
     def _read_template_c(self, file_name : str) -> str:
-        template_file_path : str = CompilerConfig().codegen_c_path + file_name
+        template_file_path : str = CompilerConfig()['codegen_c_path'] + file_name
         f = open(template_file_path)
         code : str = f.read()
         f.close()

@@ -1,0 +1,9 @@
+# settings
+name: dummy
+repo: /home/alessandro/repo2/compiler/
+workdir: /home/alessandro/Desktop/
+test_path: /home/alessandro/repo2/compiler/tests/
+temp_path: /home/alessandro/Desktop/temp_path/
+output_path: /home/alessandro/Desktop/output/
+codegen_c_path: /home/alessandro/repo2/compiler/compiler/frontend/code_generation/c/
+create_output_files: True

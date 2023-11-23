@@ -33,19 +33,18 @@ def run(config, **kwargs):
         model.load_state_dict(params)
 
         # create onnx file
-        temp_path : str = str(CompilerConfig().temp_path)
-        name : str = str(CompilerConfig().name)
+        temp_path : str = str(CompilerConfig()['temp_path'])
+        name : str = str(CompilerConfig()['name'])
         path = temp_path + name + '.onnx'
-        verbose : bool = bool(CompilerConfig().framework.verbose)
-        torch2onnx(model, dummy_input, path, verbose)
+        torch2onnx(model, dummy_input, path, True)
     elif framework == 'onnx':
         path = kwargs['path']
 
         CompilerLogger().info("Copy onnx file to temp path")
 
         model = onnx.load(path)
-        temp_path : str = str(CompilerConfig().temp_path)
-        name : str = str(CompilerConfig().name)
+        temp_path : str = str(CompilerConfig()['temp_path'])
+        name : str = str(CompilerConfig()['name'])
         onnx.save(model, temp_path + name + '.onnx')
     else:
         raise CompilerException("Error: unexpected framework")
@@ -63,7 +62,7 @@ def run(config, **kwargs):
     [code, names] = dag.traversal_dag_and_generate_code()
 
     # generate files
-    if CompilerConfig().create_output_files:
+    if CompilerConfig()['create_output_files']:
         generate_files(code, names)
 
     return [code, names]
@@ -77,7 +76,7 @@ def _export_output_shape(nodes : list[Node]) -> None:
     for output_node in output_nodes:
         json_output_shape += "\"" + output_node.get_name() + "\"" + ": " + str(output_node.infer_output_shape()) + "\n"
     json_output_shape += "}"
-    temp_path : str = CompilerConfig().temp_path + "out_shape.json"
+    temp_path : str = CompilerConfig()['temp_path'] + "out_shape.json"
     f = open(temp_path, 'w')
     f.write(json_output_shape)
     f.close()

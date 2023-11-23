@@ -47,8 +47,8 @@ def parse() -> list[Node]:
 def _create_onnx_graph():
     CompilerLogger().info("Create onnx graph")
 
-    temp_path : str = str(CompilerConfig().temp_path)
-    name : str = str(CompilerConfig().name)
+    temp_path : str = str(CompilerConfig()['temp_path'])
+    name : str = str(CompilerConfig()['name'])
     path = temp_path + "/" + name + ".onnx"
     model = onnx.load(path)
     graph = model.graph
