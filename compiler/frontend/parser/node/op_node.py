@@ -23,7 +23,7 @@ class OpNode(Node, abc.ABC):
 
         input_varnames : str = "input values name: "
         for name in self._input_varnames:
-            input_varnames = input_varnames + name
+            input_varnames = input_varnames + name + ", "
 
         outputs : str = "outputs name: "
         for node in self._outputs:
@@ -161,7 +161,7 @@ class OpNode(Node, abc.ABC):
         return len(self._outputs)
 
     def num_inputs(self) -> int:
-        return len(self._input)
+        return len(self._inputs)
     
     def get_output_nodes_list(self) -> list[Node]:
         return self._outputs
@@ -176,23 +176,10 @@ class OpNode(Node, abc.ABC):
                 return i
             i = i+1
         return -1
-
-    @abc.abstractmethod
-    def generate_includes_code_c(self) -> str:
-        pass
-
-    @abc.abstractmethod
-    def generate_declaration_code_c(self) -> str:
-        pass
-
-    @abc.abstractmethod
-    def generate_code(self) -> str:
-        pass
-
+    
     @abc.abstractmethod
     def get_op_type(self) -> str:
-        pass
-
-    @abc.abstractmethod
+        return ""
+    
     def infer_output_shape(self) -> list[list[int]]:
         pass

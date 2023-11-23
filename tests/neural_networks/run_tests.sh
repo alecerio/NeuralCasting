@@ -55,3 +55,35 @@ echo "                    RUN TESTS FOR FC-SUB                             "
 echo "#####################################################################"
 echo ""
 python $tests_dir/neural_networks/fc_sub/main_test.py
+
+# run test matmul
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR MATMUL                             "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/matmul/main_test.py
+
+# run test constant
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR CONSTANT                           "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/constant/main_test.py
+
+# run test gather
+echo ""
+echo "#####################################################################"
+echo "                    RUN TESTS FOR GATHER                             "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/gather/main_test.py
+
+# run test reimplemented gru
+echo ""
+echo "#####################################################################"
+echo "                RUN TESTS FOR REIMPLEMENETD GRU                      "
+echo "#####################################################################"
+echo ""
+python $tests_dir/neural_networks/reimplemented_gru/main_test.py

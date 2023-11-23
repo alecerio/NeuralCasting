@@ -7,10 +7,9 @@ from compiler.frontend.parser.node_types.node_type import NodeType
 from compiler.frontend.parser.node_types.tensor_type import TensorType
 from compiler.frontend.common.common import fix_identifier
 from compiler.frontend.exceptions.CompilerException import CompilerException
-import math
 from compiler.frontend.parser.ops.common.common import node_shape
 
-class Mul(OpNode):
+class MatMul(OpNode):
     def __init__(self, name : str):
         super().__init__(name)
 
@@ -20,26 +19,24 @@ class Mul(OpNode):
     def generate_code(self) -> str:
         name : str = fix_identifier(self.get_name())
         define_connected_output : str = self._gen_define_connected_output()
+        output_name : str = fix_identifier(self._output_varnames[0])
+        out_shape : list[int] = self.infer_output_shape()
+        n_rows_left : int = out_shape[0]
+        n_cols_right : int = out_shape[1]
         input_name_1 : str = fix_identifier(self._input_varnames[0])
         input_name_2 : str = fix_identifier(self._input_varnames[1])
-        output_name : str = fix_identifier(self._output_varnames[0])
-        in_shape : int = self.infer_output_shape()
-        in_size : int = math.prod(in_shape)
-        for_loop_begin : str = self._gen_for_loop_begin(in_shape)
-        for_loop_end : str = self._gen_for_loop_end(in_shape)
-        index : str = self._gen_for_loop_index(in_shape)
+        n_cols_left : int = self._infer_ncols_left()
 
-        code : str = self._read_template_c("Mul.c")
+        code : str = self._read_template_c("MatMul.c")
 
         code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
-        code = self._expand_pattern(code, "$INPUT1_NAME", input_name_1)
-        code = self._expand_pattern(code, "$INPUT2_NAME", input_name_2)
+        code = self._expand_pattern(code, "$INPUT_NAME_1", input_name_1)
+        code = self._expand_pattern(code, "$INPUT_NAME_2", input_name_2)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
-        code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
-        code = self._expand_pattern(code, "$FOR_LOOPS_BEGIN", for_loop_begin)
-        code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
-        code = self._expand_pattern(code, "$INDEX", index)
+        code = self._expand_pattern(code, "$N_ROWS_LEFT", str(n_rows_left))
+        code = self._expand_pattern(code, "$N_COLS_RIGHT", str(n_cols_right))
+        code = self._expand_pattern(code, "$N_COLS_LEFT", str(n_cols_left))
 
         return code
     
@@ -56,13 +53,23 @@ class Mul(OpNode):
         input2 : Node = self._inputs[1]
         shape2 : list[int] = node_shape(input2)
 
-        if list(shape1) != list(shape2):
-            raise CompilerException("Error: inputs in Mul operator must have the same shape")
+        if len(shape1) == 1 and len(shape2) == 1 and shape1[0] == shape2[0]:
+            shape1 = [1, shape1[0]]
+            shape2 = [shape2[0], 1]
+        elif len(shape1) == 1 and shape1[0] == shape2[0]:
+            shape1 = [1, shape1[0]]
+        elif len(shape2) == 1 and shape2[0] == shape1[1]:
+            shape2 = [shape2[0], 1]
         
-        return shape1
+        if shape1[-1] != shape2[-2]:
+            raise CompilerException("Error: in MatMul, the number of columns of the left matrix must be equal to the number of columns of the right matrix")
+        
+        shape = [shape1[0], shape2[1]]
+        
+        return shape
     
     def get_op_type(self) -> str:
-        return "Mul"
+        return "MatMul"
     
     def _gen_define_connected_output(self, ) -> str:
         connected_output : bool = isinstance(self._outputs[0], OutputNode)
@@ -73,33 +80,8 @@ class Mul(OpNode):
             define_connected_output = "#define CONNECTED_OUTPUT"
         
         return define_connected_output
-
-    def _gen_for_loop_begin(self, shape : list[int]) -> str:
-        code : str = ""
-        n_dims = len(shape)
-        for dim in range(n_dims):
-            size : int = shape[dim]
-            index : str = "i" + str(dim)
-            code += "for(" + \
-                    "int " + index + "=0; " + index + "<" + str(size) + "; " + index + "++) {\n"
-        return code
     
-    def _gen_for_loop_end(self, shape : list[int]) -> str:
-        code : str = ""
-        n_dims = len(shape)
-        for _ in range(n_dims):
-            code += "}\n"
-        return code
-    
-    def _gen_for_loop_index(self, shape : list[int]) -> str:
-        code : str = ""
-        n_dims : int = len(shape)
-        for i in range(n_dims):
-            index : str = "i" + str(i)
-            size : int = 1
-            for j in range(i+1, n_dims):
-                size *= shape[j]
-            code += index + "*" + str(size)
-            if i < n_dims-1:
-                code += " + "
-        return code
+    def _infer_ncols_left(self) -> int:
+        input_left : Node = self._inputs[0]
+        shape_left : list[int] = node_shape(input_left)
+        return shape_left[1]

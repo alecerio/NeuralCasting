@@ -1,40 +1,37 @@
 import hydra
-from FcAdd import FcAdd
 import torch
 import compiler as cmp
 from compiler.compiler import run
 from compiler.frontend.common.common import CompilerConfig
 import subprocess
 import unittest
+import onnxruntime as ort
+import numpy as np
 from hydra.experimental import compose, initialize
 import json
 
-class TestFcAdd(unittest.TestCase):
+class TestMatMul(unittest.TestCase):
     def test_00(self):
         # init config file
         name : str = CompilerConfig().name
         output_path : str = CompilerConfig().output_path
         test_path : str = CompilerConfig().test_path
-        
-        # create pytorch model
-        model = FcAdd(2, 2)
-        dummy_input = torch.randn(1, 2)
 
-        # load params
-        test_path : str = test_path + 'neural_networks/fc_add/'
-        params_path = test_path + 'params.pth'
-        #torch.save(model.state_dict(), params_path)
-        params = torch.load(params_path)
-        model.load_state_dict(params)
-
-        # inference pytorch
-        input0 = torch.ones(1, 2)
-        output_python = model(input0)
-        output_shape_python = output_python.shape
-        output_python = torch.squeeze(output_python)
+        # inference onnxruntime
+        test_path : str = test_path + 'neural_networks/matmul/'
+        path_onnx = test_path + 'matmul.onnx'
+        session = ort.InferenceSession(path_onnx)
+        input_name_1 = session.get_inputs()[0].name
+        input_name_2 = session.get_inputs()[1].name
+        input_data =  np.array([[0, 1],[2, 3]], dtype=np.float32)
+        outputs = session.run(None, {input_name_1: input_data, input_name_2: input_data})
+        output_onnx = outputs[0]
+        output_shape_onnx = output_onnx.shape
+        output_onnx = np.squeeze(output_onnx)
+        output_onnx = output_onnx.flatten()
 
         # run compiler
-        run(CompilerConfig(), framework='pytorch', model=model, dummy_input=dummy_input, params=params)
+        run(CompilerConfig(), framework='onnx', path=path_onnx)
 
         # read inferred output shape
         output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
@@ -44,11 +41,11 @@ class TestFcAdd(unittest.TestCase):
         output_shape_c = data[output_keys[0]]
 
         # compare shape
-        print("Output shape python: ", output_shape_python)
+        print("Output shape onnx: ", output_shape_onnx)
         print("Output shape C: ", output_shape_c)
-        self.assertEqual(len(output_shape_python), len(output_shape_c))
-        for i in range(len(output_shape_python)):
-            self.assertEquals(output_shape_python[i], output_shape_c[i])
+        self.assertEqual(len(output_shape_onnx), len(output_shape_c))
+        for i in range(len(output_shape_onnx)):
+            self.assertEquals(output_shape_onnx[i], output_shape_c[i])
 
         # read main.c code and add include to nn
         f = open(test_path + 'main.c', 'r')
@@ -76,20 +73,20 @@ class TestFcAdd(unittest.TestCase):
         for i in range(len(output_values_str)):
             output_c.append(float(output_values_str[i]))
 
-        print(output_python)
+        print(output_onnx)
         print(output_c)
         # compare results
-        self.assertEqual(len(output_python), len(output_c))
+        self.assertEqual(len(output_onnx), len(output_c))
 
-        N : int = len(output_python)
+        N : int = len(output_onnx)
         for i in range(N):
-            self.assertAlmostEqual(output_python[i], output_c[i], delta=1e-6)
+            self.assertAlmostEqual(output_onnx[i], output_c[i], delta=1e-6)
 
 def run_tests():
     initialize(config_path="../../../config/")
     config = compose(config_name="root.yaml")
     CompilerConfig(config)
-    TestFcAdd.config = config
+    TestMatMul.config = config
     unittest.main()
 
 if __name__ == "__main__":

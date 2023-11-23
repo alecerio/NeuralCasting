@@ -72,3 +72,15 @@ class OutputNode(Node):
             if node.get_name() == name:
                 return i
         return -1
+    
+    def generate_includes_code_c(self) -> str:
+        return ""
+
+    def generate_declaration_code_c(self) -> str:
+        return ""
+
+    def generate_code(self) -> str:
+        return ""
+    
+    def infer_output_shape(self) -> list[list[int]]:
+        return self._inputs[0].infer_output_shape()
