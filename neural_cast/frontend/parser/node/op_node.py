@@ -1,8 +1,8 @@
 import abc
-from compiler.frontend.parser.node.node import Node
-from compiler.frontend.parser.node.output_node import OutputNode
-from compiler.frontend.parser.node.input_node import InputNode
-from compiler.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.parser.node.node import Node
+from neural_cast.frontend.parser.node.output_node import OutputNode
+from neural_cast.frontend.parser.node.input_node import InputNode
+from neural_cast.frontend.exceptions.CompilerException import CompilerException
 
 class OpNode(Node, abc.ABC):
     def __init__(self, name : str):

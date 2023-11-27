@@ -1,15 +1,15 @@
 import hydra
 import numpy as np
 import torch.nn as nn
-from compiler.frontend.torch2onnx.torch2onnx import torch2onnx
-from compiler.frontend.parser.parser.parser import parse
-from compiler.frontend.parser.node.node import Node
-from compiler.frontend.parser.node.output_node import OutputNode
-from compiler.frontend.parser.parser.dag import DAG
-from compiler.frontend.exceptions.CompilerException import CompilerException
-from compiler.frontend.common.common import CompilerLogger
-from compiler.frontend.common.common import CompilerConfig
-from compiler.frontend.common.common import generate_files
+from neural_cast.frontend.torch2onnx.torch2onnx import torch2onnx
+from neural_cast.frontend.parser.parser.parser import parse
+from neural_cast.frontend.parser.node.node import Node
+from neural_cast.frontend.parser.node.output_node import OutputNode
+from neural_cast.frontend.parser.parser.dag import DAG
+from neural_cast.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.common.common import CompilerLogger
+from neural_cast.frontend.common.common import CompilerConfig
+from neural_cast.frontend.common.common import generate_files
 import onnx
 
 def run(config, **kwargs):

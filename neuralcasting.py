@@ -1,6 +1,6 @@
 import os
 import yaml
-from compiler.compiler import run
+from neural_cast.compiler import run
 from examples.neural_networks.pytorch.dummy_nn import DummyNN
 from examples.neural_networks.pytorch.dummy_nn import DummyNN2
 from examples.neural_networks.pytorch.dummy_nn import DummyNN3

@@ -1,40 +1,31 @@
-from compiler.frontend.parser.node.node import Node
-from compiler.frontend.parser.node.input_node import InputNode
-from compiler.frontend.exceptions.CompilerException import CompilerException
-from compiler.frontend.common.common import fix_identifier
-import math
+from neural_cast.frontend.parser.node.node import Node
+from neural_cast.frontend.parser.node_types.node_type import NodeType
+from neural_cast.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 
-class InitializerNode(Node):
-    def __init__(self, name : str, tensor, data_type):
+class InputNode(Node):
+    def __init__(self, name : str, type : NodeType):
         super().__init__(name=name)
-        self._tensor = tensor
-        self._data_type = data_type
+        self._type = type
         self._outputs : list[Node] = []
     
     def __str__(self):
         super_str : str = super().__str__()
-        tensor_str = "tensor:\n" + str(self._tensor)
-        data_type_str = "data type: " + str(self._data_type)
+        input_node_type : str = "input node type:\n" + str(self._type)
         outputs_name : str = "output nodes: "
         for output in self._outputs:
             outputs_name = outputs_name + output.get_name() + ", " 
         return  super_str + "\n" + \
-                tensor_str + "\n" + \
-                data_type_str + "\n" + \
+                input_node_type + "\n" + \
                 outputs_name
+                
+
+    def get_node_type(self) ->  NodeType:
+        return self._type
     
-    def set_tensor(self, tensor):
-        self._tensor = tensor
-
-    def get_tensor(self):
-        return self._tensor
+    def set_node_type(self, type : NodeType):
+        self._type = type
     
-    def set_data_type(self, data_type):
-        self._data_type = data_type
-
-    def get_data_type(self):
-        return self._data_type
-
     def append_output_node(self, node : Node):
         if isinstance(node, InputNode):
             raise CompilerException("Error: an input node can't be an output node")
@@ -74,6 +65,9 @@ class InitializerNode(Node):
     def get_output_nodes_list(self) -> list[Node]:
         return self._outputs
 
+    def generate_code(self) -> str:
+        return ""
+
     def _get_output_node_index_by_name(self, name : str) -> int:
         for i in range(len(self._outputs)):
             node : Node = self._outputs[i]
@@ -81,23 +75,18 @@ class InitializerNode(Node):
                 return i
         return -1
     
-    def generate_code(self) -> str:
-        return ""
-
     def generate_includes_code_c(self) -> str:
         return ""
 
     def generate_declaration_code_c(self) -> str:
-        tensor_flat = self._tensor.flatten()
-        size : int = len(tensor_flat)
-        code : str = "static float32_t tensor_" + fix_identifier(self.get_name()) + "[" + str(size) + "] = {"
-        for i in range(size):
-            code += str(tensor_flat[i]) + ", "
-        code += "};\n\n"
-        return code
+        return ""
+
+    def generate_code(self) -> str:
+        return ""
     
     def infer_output_shape(self) -> list[list[int]]:
-        shape = self.get_tensor().shape
-        if len(shape) == 1:
-            shape = [1, shape[0]]
-        return shape
+        if isinstance(self._type, TensorType):
+            shape = self._type.get_shape()
+            return shape
+        else:
+            raise CompilerException("Error: input node type not supported")

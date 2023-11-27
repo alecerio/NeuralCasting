@@ -1,5 +1,5 @@
 import abc
-from compiler.frontend.common.common import CompilerConfig
+from neural_cast.frontend.common.common import CompilerConfig
 
 class Node(abc.ABC):
     def __init__(self, name : str):

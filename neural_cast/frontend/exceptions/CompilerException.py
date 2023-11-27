@@ -1,4 +1,4 @@
-from compiler.frontend.common.common import CompilerLogger
+from neural_cast.frontend.common.common import CompilerLogger
 
 class CompilerException(Exception):
     def __init__(self, message : str):

@@ -1,6 +1,6 @@
-from compiler.frontend.parser.node.node import Node
-from compiler.frontend.parser.node_types.node_type import NodeType
-from compiler.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.parser.node.node import Node
+from neural_cast.frontend.parser.node_types.node_type import NodeType
+from neural_cast.frontend.exceptions.CompilerException import CompilerException
 
 class OutputNode(Node):
     def __init__(self, name : str, type : NodeType):

@@ -1,13 +1,13 @@
-from compiler.frontend.parser.node.op_node import OpNode
-from compiler.frontend.parser.node.node import Node
-from compiler.frontend.parser.node.input_node import InputNode
-from compiler.frontend.parser.node.init_node import InitializerNode
-from compiler.frontend.parser.node.output_node import OutputNode
-from compiler.frontend.parser.node_types.node_type import NodeType
-from compiler.frontend.parser.node_types.tensor_type import TensorType
-from compiler.frontend.common.common import fix_identifier
-from compiler.frontend.exceptions.CompilerException import CompilerException
-from compiler.frontend.common.common import onnx_type_to_c_dictionary
+from neural_cast.frontend.parser.node.op_node import OpNode
+from neural_cast.frontend.parser.node.node import Node
+from neural_cast.frontend.parser.node.input_node import InputNode
+from neural_cast.frontend.parser.node.init_node import InitializerNode
+from neural_cast.frontend.parser.node.output_node import OutputNode
+from neural_cast.frontend.parser.node_types.node_type import NodeType
+from neural_cast.frontend.parser.node_types.tensor_type import TensorType
+from neural_cast.frontend.common.common import fix_identifier
+from neural_cast.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 import math
 
 class Constant(OpNode):

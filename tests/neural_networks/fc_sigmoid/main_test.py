@@ -1,8 +1,8 @@
 from FcSigmoid import FcSigmoid
 import torch
-import compiler as cmp
-from compiler.compiler import run
-from compiler.frontend.common.common import CompilerConfig
+import neural_cast as cmp
+from neural_cast.compiler import run
+from neural_cast.frontend.common.common import CompilerConfig
 import subprocess
 import unittest
 import json

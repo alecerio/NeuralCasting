@@ -1,5 +1,5 @@
 import subprocess
-from compiler.frontend.common.common import CompilerConfig
+from neural_cast.frontend.common.common import CompilerConfig
 import os
 import yaml
 

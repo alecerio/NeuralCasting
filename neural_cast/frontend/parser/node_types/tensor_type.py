@@ -1,4 +1,4 @@
-from compiler.frontend.parser.node_types.node_type import NodeType
+from neural_cast.frontend.parser.node_types.node_type import NodeType
 
 class TensorType(NodeType):
     def __init__(self, shape: list[int], elem_type : int):
