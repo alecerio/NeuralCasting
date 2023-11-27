@@ -1,0 +1,11 @@
+# settings
+name: dummy
+repo: /home/alessandro/repo2/compiler/
+workdir: /home/alessandro/Desktop/
+create_output_files: True
+
+# paths
+test_path: ${repo}tests/
+temp_path: ${workdir}temp_path/
+output_path: ${workdir}output/
+codegen_c_path: ${repo}neural_cast/frontend/code_generation/c/

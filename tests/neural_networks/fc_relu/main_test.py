@@ -1,22 +1,23 @@
-import hydra
 from FcRelu import FcRelu
 import torch
-import compiler as cmp
-from compiler.compiler import run
-from compiler.frontend.common.common import CompilerConfig
+import neural_cast as cmp
+from neural_cast.compiler import run
+from neural_cast.frontend.common.common import CompilerConfig
 import subprocess
 import unittest
 import onnxruntime as ort
 import numpy as np
-from hydra.experimental import compose, initialize
 import json
+import os
+import yaml
+
 
 class TestFcRelu(unittest.TestCase):
     def test_00(self):
         # init config file
-        name : str = CompilerConfig().name
-        output_path : str = CompilerConfig().output_path
-        test_path : str = CompilerConfig().test_path
+        name : str = CompilerConfig()['name']
+        output_path : str = CompilerConfig()['output_path']
+        test_path : str = CompilerConfig()['test_path']
         
         # create pytorch model
         model = FcRelu(2, 3)
@@ -39,7 +40,7 @@ class TestFcRelu(unittest.TestCase):
         run(CompilerConfig(), framework='pytorch', model=model, dummy_input=dummy_input, params=params)
 
         # read inferred output shape
-        output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
+        output_shape_path : str = CompilerConfig()['temp_path'] + "out_shape.json"
         with open(output_shape_path, 'r') as json_file:
             data = json.load(json_file)
             output_keys = list(data.keys())
@@ -89,9 +90,9 @@ class TestFcRelu(unittest.TestCase):
     
     def test_01(self):
         # init config file
-        name : str = CompilerConfig().name
-        output_path : str = CompilerConfig().output_path
-        test_path : str = CompilerConfig().test_path
+        name : str = CompilerConfig()['name']
+        output_path : str = CompilerConfig()['output_path']
+        test_path : str = CompilerConfig()['test_path']
 
         # inference onnxruntime
         test_path : str = test_path + 'neural_networks/fc_relu/'
@@ -108,7 +109,7 @@ class TestFcRelu(unittest.TestCase):
         run(CompilerConfig(), framework='onnx', path=path_onnx)
 
         # read inferred output shape
-        output_shape_path : str = CompilerConfig().temp_path + "out_shape.json"
+        output_shape_path : str = CompilerConfig()['temp_path'] + "out_shape.json"
         with open(output_shape_path, 'r') as json_file:
             data = json.load(json_file)
             output_keys = list(data.keys())
@@ -157,10 +158,11 @@ class TestFcRelu(unittest.TestCase):
             self.assertAlmostEqual(output_onnx[i], output_c[i], delta=1e-6)
 
 def run_tests():
-    initialize(config_path="../../../config/")
-    config = compose(config_name="root.yaml")
+    curr_file = os.path.abspath(__file__)
+    curr_path = os.path.dirname(curr_file)
+    with open(curr_path + '/../../../config/config.yaml', 'r') as yaml_file:
+        config = yaml.safe_load(yaml_file)
     CompilerConfig(config)
-    TestFcRelu.config = config
     unittest.main()
 
 if __name__ == "__main__":

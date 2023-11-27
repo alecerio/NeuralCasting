@@ -1,4 +1,0 @@
-framework_name: pytorch
-temp_path: ${temp_path}
-name: ${name}
-verbose: true
