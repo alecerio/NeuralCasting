@@ -1,4 +1,3 @@
-import hydra
 import numpy as np
 import torch.nn as nn
 from neural_cast.frontend.torch2onnx.torch2onnx import torch2onnx
