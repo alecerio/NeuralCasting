@@ -51,13 +51,60 @@ gcc --version
 
 ## Usage
 
-You can build you neural network calling the python script `neuralcasting.py`.
+Currently, onnx and pytorch models are supported as input and C code as output. The entry point of the compiler is the function `run` in `neural_cast/compiler.py`.
+You must pass as first parameter the configuration of the compiler (e.g. the one you can find in `config/config.yaml`), while the following parameters depend on the selected framework.
 
-WORK IN PROGRESS ...
+### PyTorch
 
-### Examples
+If `framework='pytorch'`, then you have to specify the following parameters:
+- `model`: an instance of the pytoch model.
+- `dummy_input`: the dummy input for the model (check that the shape is compatible with the model).
+- `params`: the weights of the model.
 
-WORK IN PROGRESS ...
+Example:
+
+```python
+import os
+import yaml
+import torch
+from neural_cast.compiler import run
+
+# load configuration
+curr_file = os.path.abspath(__file__)
+curr_path = os.path.dirname(curr_file)   
+with open(curr_path + '/../../config/config.yaml', 'r') as yaml_file:
+    config = yaml.safe_load(yaml_file)
+
+# run compiler
+run(config, framework='onnx', path=curr_path + '/model.onnx')
+
+# check generated code in the output folder defined in config.yaml
+```
+
+### ONNX
+
+If `framework='onnx'`, then you have to specify the following parameters:
+- `path`: the path and the name of the onnx file (including the .onnx extension).
+
+Example:
+
+```python
+import os
+import yaml
+import torch
+from neural_cast.compiler import run
+
+# load configuration
+curr_file = os.path.abspath(__file__)
+curr_path = os.path.dirname(curr_file)   
+with open(curr_path + '/../../config/config.yaml', 'r') as yaml_file:
+    config = yaml.safe_load(yaml_file)
+
+# run compiler
+run(config, framework='onnx', path=curr_path + '/model.onnx')
+
+# check generated code in the output folder defined in config.yaml
+```
 
 ## Tests
 
@@ -108,7 +155,7 @@ Nevertheless, the project aims to provide a general infrastructure and to cover 
 
 ## Authors and Contacts
 
-*NeuralCasting* is a project developed by [Alessandro Cerioli](https://dk.linkedin.com/in/alessandro-cerioli-26237231) during his Industrial PhD at [Jabra](https://www.jabra.dk/) and DTU ([Technical University of Denmark](https://www.dtu.dk/english/)) and is part of the European project [Convolve](https://convolve.eu/). For more information regarding the project or actively to contribute to the development of the repository, use the following contacts:
+*NeuralCasting* is a project developed by [Alessandro Cerioli](https://dk.linkedin.com/in/alessandro-cerioli-26237231) during his Industrial PhD at [Jabra](https://www.jabra.dk/) and DTU ([Technical University of Denmark](https://www.dtu.dk/english/)) and is part of the European project [Convolve](https://convolve.eu/). For more information regarding the project or to actively contribute to the development of the repository, use the following contacts:
 
 - **Jabra email**: alcerioli@jabra.com
 - **DTU email**: alceri@dtu.dk
