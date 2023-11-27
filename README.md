@@ -12,10 +12,10 @@ For the setup of *Neural Casting*, use the following procedure:
 1. Install the conda environment:
 
 ```shell
-conda env create -f env.yaml
+conda env create -f env.yml
 ```
 
-You can find `env.yaml` in the main page of the repository.
+You can find `env.yml` in the main page of the repository.
 
 2. Activate the conda environment:
 
