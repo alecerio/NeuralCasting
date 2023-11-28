@@ -2,6 +2,7 @@ from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.parser.node.input_node import InputNode
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import fix_identifier
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 import math
 
 class InitializerNode(Node):
@@ -90,12 +91,18 @@ class InitializerNode(Node):
     def generate_declaration_code_c(self) -> str:
         tensor_flat = self._tensor.flatten()
         size : int = len(tensor_flat)
-        code : str = "static float32_t tensor_" + fix_identifier(self.get_name()) + "[" + str(size) + "] = {"
+        elem_type : int = self.get_data_type()
+        elem_type_str : str = onnx_type_to_c_dictionary(elem_type)
+        code : str = "static " + elem_type_str + " tensor_" + fix_identifier(self.get_name()) + "[" + str(size) + "] = {"
         for i in range(size):
             code += str(tensor_flat[i]) + ", "
         code += "};\n\n"
         return code
     
+    def infer_output_type(self) -> int:
+        elem_type : int = self.get_data_type()
+        return elem_type
+
     def infer_output_shape(self) -> list[list[int]]:
         shape = self.get_tensor().shape
         if len(shape) == 1:
