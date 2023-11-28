@@ -90,3 +90,10 @@ class InputNode(Node):
             return shape
         else:
             raise CompilerException("Error: input node type not supported")
+    
+    def infer_output_type(self) -> int:
+        if isinstance(self._type, TensorType):
+            elem_type : int = self._type.get_elem_type()
+            return elem_type
+        else:
+            raise CompilerException("Error: input node type not supported")
