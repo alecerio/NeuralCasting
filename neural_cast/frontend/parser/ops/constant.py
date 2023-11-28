@@ -51,6 +51,9 @@ class Constant(OpNode):
     def infer_output_shape(self) -> list[list[int]]:
         return self._tensor.shape
     
+    def infer_output_type(self) -> int:
+        return self.data_type
+    
     def get_op_type(self) -> str:
         return "Constant"
     
