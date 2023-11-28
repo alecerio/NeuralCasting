@@ -9,6 +9,8 @@ from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import fix_identifier
 import math
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 
 class Sub(OpNode):
     def __init__(self, name : str):
@@ -53,6 +55,9 @@ class Sub(OpNode):
         else:
             raise CompilerException("Error: incompatible input broadcasting in Sub operator")
 
+        output_type : int = self.infer_output_type()
+        output_type_str : str = onnx_type_to_c_dictionary(output_type)
+
         code : str = self._read_template_c("Sub.c")
 
         code = self._expand_pattern(code, "$NAME", name)
@@ -66,6 +71,7 @@ class Sub(OpNode):
         code = self._expand_pattern(code, "$INDEX_TOT", index_tot)
         code = self._expand_pattern(code, "$INDEX_1", index_1)
         code = self._expand_pattern(code, "$INDEX_2", index_2)
+        code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
 
         return code
     
@@ -106,6 +112,11 @@ class Sub(OpNode):
 
         
         return shape
+    
+    def infer_output_type(self) -> int:
+        input1 : Node = self._inputs[0]
+        input2 : Node = self._inputs[1]
+        return node_type_binary_operation(input1, input2, "element-wise subtraction")
     
     def get_op_type(self) -> str:
         return "Sub"
