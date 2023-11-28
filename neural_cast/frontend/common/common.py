@@ -2,6 +2,10 @@ import logging
 import os
 import yaml
 
+signed_integer_types = [3, 5, 6, 7]
+unsigned_integer_types = [2, 4, 12, 13]
+floating_point_types = [10, 1, 11]
+
 def is_valid_onnx_data_type(data_type_index : int):
     if data_type_index < 0 or data_type_index > 15:
         return False
@@ -42,7 +46,14 @@ def onnx_type_to_c_dictionary(data_type_index : int) -> str:
         return "double complex"
     else:
         raise Exception("Error: unknown onnx data type")
-    
+
+def cast_hierarchy(elemtype1 : int, elemtype2 : int) -> int:
+    hierarchy_top_to_bottom : list[int] = [15, 14, 11, 1, 10, 13, 7, 12, 6, 4, 5, 2, 3, 9, 8, 0]
+    for curr_type in hierarchy_top_to_bottom:
+        if curr_type == elemtype1 or curr_type == elemtype2:
+            return curr_type
+    raise Exception("Error: invalid element types")
+
 def onnx_tensor_elem_type_to_c_dictionary(tensor_elem_type : int) -> str:
     if tensor_elem_type == 0:
         return "void*"

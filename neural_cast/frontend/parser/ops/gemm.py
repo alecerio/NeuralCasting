@@ -72,6 +72,9 @@ class Gemm(OpNode):
         shape = self.get_weights_shape()
         return [1, shape[0]]
 
+    def infer_output_type(self) -> int:
+        return 1
+
     def get_weights_shape(self) -> list[list[int]]:
         input_w : Node = self._inputs[1]
         if isinstance(input_w, InputNode):

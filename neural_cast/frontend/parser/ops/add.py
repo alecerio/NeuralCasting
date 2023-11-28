@@ -9,6 +9,10 @@ from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 import math
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
+from neural_cast.frontend.common.common import signed_integer_types
+from neural_cast.frontend.common.common import unsigned_integer_types
+from neural_cast.frontend.common.common import floating_point_types
 
 class Add(OpNode):
     def __init__(self, name : str):
@@ -28,6 +32,8 @@ class Add(OpNode):
         for_loop_begin : str = self._gen_for_loop_begin(in_shape)
         for_loop_end : str = self._gen_for_loop_end(in_shape)
         index : str = self._gen_for_loop_index(in_shape)
+        output_type : int = self.infer_output_type()
+        output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
         code : str = self._read_template_c("Add.c")
 
@@ -40,6 +46,7 @@ class Add(OpNode):
         code = self._expand_pattern(code, "$FOR_LOOPS_BEGIN", for_loop_begin)
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
         code = self._expand_pattern(code, "$INDEX", index)
+        code = self._expand_pattern(code, "$TYPE", output_type_str)
 
         return code
     
@@ -63,6 +70,31 @@ class Add(OpNode):
     
     def get_op_type(self) -> str:
         return "Add"
+    
+    def infer_output_type(self) -> int:
+        input1 : Node = self._inputs[0]
+        input1_type : int = input1.infer_output_type()
+
+        input2 : Node = self._inputs[1]
+        input2_type : int = input2.infer_output_type()
+
+        ss : bool = input1_type in signed_integer_types and input2_type in signed_integer_types
+        su : bool = input1_type in signed_integer_types and input2_type in unsigned_integer_types
+        us : bool = input2_type in signed_integer_types and input1_type in unsigned_integer_types
+        uu : bool = input2_type in unsigned_integer_types and input1_type in unsigned_integer_types
+        fi : bool = input1_type in floating_point_types and input2_type in (signed_integer_types + unsigned_integer_types)
+        i_f : bool = input2_type in floating_point_types and input1_type in (signed_integer_types + unsigned_integer_types)
+        ff : bool = input1_type in floating_point_types and input2_type in floating_point_types
+
+        if ss:
+            return 6
+        elif su or us or uu:
+            return 12
+        elif fi or i_f or ff:
+            return 1
+        else:
+            CompilerException("Error: unsupported type for addition")
+        
     
     def _gen_define_connected_output(self, ) -> str:
         connected_output : bool = isinstance(self._outputs[0], OutputNode)
