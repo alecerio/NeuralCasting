@@ -8,6 +8,8 @@ from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 
 class MatMul(OpNode):
     def __init__(self, name : str):
@@ -26,6 +28,8 @@ class MatMul(OpNode):
         input_name_1 : str = fix_identifier(self._input_varnames[0])
         input_name_2 : str = fix_identifier(self._input_varnames[1])
         n_cols_left : int = self._infer_ncols_left()
+        output_type : int = self.infer_output_type()
+        output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
         code : str = self._read_template_c("MatMul.c")
 
@@ -37,6 +41,7 @@ class MatMul(OpNode):
         code = self._expand_pattern(code, "$N_ROWS_LEFT", str(n_rows_left))
         code = self._expand_pattern(code, "$N_COLS_RIGHT", str(n_cols_right))
         code = self._expand_pattern(code, "$N_COLS_LEFT", str(n_cols_left))
+        code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
 
         return code
     
@@ -68,6 +73,11 @@ class MatMul(OpNode):
         
         return shape
     
+    def infer_output_type(self) -> int:
+        input1 : Node = self._inputs[0]
+        input2 : Node = self._inputs[1]
+        return node_type_binary_operation(input1, input2, "matmul")
+
     def get_op_type(self) -> str:
         return "MatMul"
     
