@@ -46,8 +46,12 @@ gcc --version
 5. In *config/config.yaml*, update the settings:
 
 - *name*: the name of the project you want to build (for example, if name is *dummy* and you compile to C code, the generated files will be *dummy.c* and *dummy.h*).
-- *repo*: the path where you cloned the repository.
-- *workdir*: the work directory where you want to generate temporary and output files when you build the neural network.
+- *repo*: the path where you cloned the repository (for example */home/repo/NeuralCasting/*).
+- *workdir*: the work directory where you want to generate temporary and output files when you build the neural network (for example */home/my_workdir/*).
+
+Inside the *workdir* directory, create two folders:
+- temp_path
+- output
 
 ## Usage
 
