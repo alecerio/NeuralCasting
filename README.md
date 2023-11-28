@@ -9,7 +9,13 @@ The core of *Neural Casting* is the use of the *Direct Acyclic Graph* (DAG) prov
 
 For the setup of *Neural Casting*, use the following procedure:
 
-1. Install the conda environment:
+1. Clone the repository:
+```shell
+git clone git@github.com:alecerio/NeuralCasting.git
+cd NeuralCasting
+```
+
+2. Install the conda environment:
 
 ```shell
 conda env create -f env.yml
@@ -17,25 +23,19 @@ conda env create -f env.yml
 
 You can find `env.yml` in the main page of the repository.
 
-2. Activate the conda environment:
+3. Activate the conda environment:
 
 ```shell
 conda activate neural_casting
 ```
 
-3. To install the compiler package in `neural_casting`, open the terminal and go the repository directory:
-
-```shell
-cd /path/to/repository/
-```
-
-Consequently, run the setup file:
+4. To install the compiler package in `neural_casting`, run the setup file:
 
 ```shell
 python setup.py install
 ```
 
-4. Install *gcc* in your system. For example, here is reported the installation for Ubuntu 22.04.
+5. Install *gcc* in your system. For example, here is reported the installation for Ubuntu 22.04.
 
 ```shell
 sudo apt update
@@ -159,3 +159,7 @@ Nevertheless, the project aims to provide a general infrastructure and to cover 
 
 - **Jabra email**: alcerioli@jabra.com
 - **DTU email**: alceri@dtu.dk
+
+## License
+
+This project is developed according to *apache 2* license (see *LICENSE*).
