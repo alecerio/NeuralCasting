@@ -3,7 +3,7 @@
 $DEFINE_CONNECTED_OUTPUT
 
 #ifdef CONNECTED_OUTPUT
-float tensor_$OUTPUT_NAME[$OUTPUT_SIZE];
+$OUTPUT_TYPE tensor_$OUTPUT_NAME[$OUTPUT_SIZE];
 #undef CONNECTED_OUTPUT
 #endif
 
@@ -11,10 +11,10 @@ float tensor_$OUTPUT_NAME[$OUTPUT_SIZE];
 
 #if AXIS == 0
 
-int out_index_$NAME = 0;
-for(int i=0; i<$IND_SIZE; i++) {
-    int row = tensor_$INDICES[i];
-    for(int col=0; col<$VAL_SIZE_COLS; col++) {
+int32_t out_index_$NAME = 0;
+for(int32_t i=0; i<$IND_SIZE; i++) {
+    $INDEX_TYPE row = tensor_$INDICES[i];
+    for(int32_t col=0; col<$VAL_SIZE_COLS; col++) {
         tensor_$OUTPUT_NAME[out_index_$NAME] = tensor_$VALUES[row*$VAL_SIZE_COLS+col];
         out_index_$NAME++;
     }
@@ -22,18 +22,18 @@ for(int i=0; i<$IND_SIZE; i++) {
 
 #elif AXIS == 1
 
-float temp_$NAME[$VAL_SIZE_ROWS][$IND_SIZE];
+$VALUE_TYPE temp_$NAME[$VAL_SIZE_ROWS][$IND_SIZE];
 
-for(int i=0; i<$IND_SIZE; i++) {
-    int r = tensor_$INDICES[i];
-    for(int j=0; j<$VAL_SIZE_ROWS; j++) {
+for(int32_t i=0; i<$IND_SIZE; i++) {
+    $INDEX_TYPE r = tensor_$INDICES[i];
+    for(int32_t j=0; j<$VAL_SIZE_ROWS; j++) {
         temp_$NAME[j][i] = tensor_$VALUES[j*$VAL_SIZE_COLS+r];
     }
 }
 
-int out_index_$NAME = 0;
-for(int i=0; i<$VAL_SIZE_ROWS; i++) {
-    for(int j=0; j<$IND_SIZE; j++) {
+int32_t out_index_$NAME = 0;
+for(int32_t i=0; i<$VAL_SIZE_ROWS; i++) {
+    for(int32_t j=0; j<$IND_SIZE; j++) {
         tensor_$OUTPUT_NAME[out_index_$NAME] = temp_$NAME[i][j];
         out_index_$NAME++;
     }

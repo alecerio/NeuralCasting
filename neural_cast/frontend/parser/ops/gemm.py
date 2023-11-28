@@ -17,6 +17,7 @@ from neural_cast.frontend.common.common import is_valid_onnx_data_type
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
 
 class Gemm(OpNode):
     def __init__(self, name : str):
@@ -52,6 +53,10 @@ class Gemm(OpNode):
 
         # generate code blocks
         output_init_code = self._gen_output_init_code(out_size)
+
+        # output type
+        output_type : int = self.infer_output_type()
+        output_type_str : str = onnx_type_to_c_dictionary(output_type)
         
         # read template c code
         code : str = self._read_template_c("Gemm.c")
@@ -65,12 +70,18 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$INPUT_NAME_B", input_name_b)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$OUTPUT_INIT", output_init_code)
+        code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
 
         return code
     
     def infer_output_shape(self) -> list[list[int]]:
         shape = self.get_weights_shape()
         return [1, shape[0]]
+
+    def infer_output_type(self) -> int:
+        input1 : Node = self._inputs[0]
+        input2 : Node = self._inputs[1]
+        return node_type_binary_operation(input1, input2, "Gemm")
 
     def get_weights_shape(self) -> list[list[int]]:
         input_w : Node = self._inputs[1]

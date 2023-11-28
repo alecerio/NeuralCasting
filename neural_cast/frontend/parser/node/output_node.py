@@ -1,6 +1,7 @@
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.parser.node_types.node_type import NodeType
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
+from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 
 class OutputNode(Node):
     def __init__(self, name : str, type : NodeType):
@@ -84,3 +85,10 @@ class OutputNode(Node):
     
     def infer_output_shape(self) -> list[list[int]]:
         return self._inputs[0].infer_output_shape()
+    
+    def infer_output_type(self) -> int:
+        if isinstance(self._type, TensorType):
+            elem_type : int = self._type.get_elem_type()
+            return elem_type
+        else:
+            raise CompilerException("Error: input node type not supported")
