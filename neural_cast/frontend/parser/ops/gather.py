@@ -10,6 +10,7 @@ from neural_cast.frontend.exceptions.CompilerException import CompilerException
 import math
 import numpy as np
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 
 class Gather(OpNode):
     def __init__(self, name : str, axis : int):
@@ -43,6 +44,15 @@ class Gather(OpNode):
         values_name : str = fix_identifier(self._inputs[0].get_name())
         values_row : int = self._get_values_shape()[0]
 
+        values_datatype : int = self._get_values_type()
+        values_datatype_str : str = onnx_type_to_c_dictionary(values_datatype)
+
+        indices_datatype : int = self._get_indices_type()
+        indices_datatype_str : str = onnx_type_to_c_dictionary(indices_datatype)
+
+        output_datatype : int = self.infer_output_type()
+        output_datatype_str : str = onnx_type_to_c_dictionary(output_datatype)
+
         code : str = self._read_template_c("Gather.c")
 
         code = self._expand_pattern(code, "$NAME", name)
@@ -55,6 +65,9 @@ class Gather(OpNode):
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$VALUES", values_name)
         code = self._expand_pattern(code, "$VAL_SIZE_ROWS", str(values_row))
+        code = self._expand_pattern(code, "$VALUE_TYPE", str(values_datatype_str))
+        code = self._expand_pattern(code, "$INDEX_TYPE", str(indices_datatype_str))
+        code = self._expand_pattern(code, "$OUTPUT_TYPE", str(output_datatype_str))
 
         return code
     
@@ -78,6 +91,9 @@ class Gather(OpNode):
             for i in range(len(ind_shape)): shape.append(ind_shape[i])
         return shape
     
+    def infer_output_type(self) -> int:
+        return self._get_values_type()
+
     def get_op_type(self) -> str:
         return "Gather"
     
@@ -100,3 +116,13 @@ class Gather(OpNode):
         indices : Node = self._inputs[1]
         ind_shape : list[int] = node_shape(indices)
         return ind_shape
+    
+    def _get_values_type(self) -> int:
+        values : Node = self._inputs[0]
+        values_datatype : int = values.infer_output_type()
+        return values_datatype
+    
+    def _get_indices_type(self) -> int:
+        indices : Node = self._inputs[1]
+        indices_datatype : int = indices.infer_output_type()
+        return indices_datatype
