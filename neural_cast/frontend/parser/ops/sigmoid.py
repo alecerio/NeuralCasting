@@ -9,6 +9,7 @@ from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 import math
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 
 class Sigmoid(OpNode):
     def __init__(self, name : str):
@@ -27,6 +28,8 @@ class Sigmoid(OpNode):
         for_loop_begin : str = self._gen_for_loop_begin(in_shape)
         for_loop_end : str = self._gen_for_loop_end(in_shape)
         index : str = self._gen_for_loop_index(in_shape)
+        output_type : int = self.infer_output_type()
+        output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
         code : str = self._read_template_c("Sigmoid.c")
 
@@ -38,6 +41,7 @@ class Sigmoid(OpNode):
         code = self._expand_pattern(code, "$FOR_LOOPS_BEGIN", for_loop_begin)
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
         code = self._expand_pattern(code, "$INDEX", index)
+        code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
 
         return code
     
@@ -48,6 +52,10 @@ class Sigmoid(OpNode):
         input : Node = self._inputs[0]
         shape : list[int] = node_shape(input)
         return shape
+    
+    def infer_output_type(self) -> int:
+        input1 : Node = self._inputs[0]
+        return input1.infer_output_type()
     
     def get_op_type(self) -> str:
         return "Sigmoid"
