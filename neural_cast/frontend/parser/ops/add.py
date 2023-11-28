@@ -10,9 +10,7 @@ from neural_cast.frontend.exceptions.CompilerException import CompilerException
 import math
 from neural_cast.frontend.parser.ops.common.common import node_shape
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
-from neural_cast.frontend.common.common import signed_integer_types
-from neural_cast.frontend.common.common import unsigned_integer_types
-from neural_cast.frontend.common.common import floating_point_types
+from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
 
 class Add(OpNode):
     def __init__(self, name : str):
@@ -73,28 +71,8 @@ class Add(OpNode):
     
     def infer_output_type(self) -> int:
         input1 : Node = self._inputs[0]
-        input1_type : int = input1.infer_output_type()
-
         input2 : Node = self._inputs[1]
-        input2_type : int = input2.infer_output_type()
-
-        ss : bool = input1_type in signed_integer_types and input2_type in signed_integer_types
-        su : bool = input1_type in signed_integer_types and input2_type in unsigned_integer_types
-        us : bool = input2_type in signed_integer_types and input1_type in unsigned_integer_types
-        uu : bool = input2_type in unsigned_integer_types and input1_type in unsigned_integer_types
-        fi : bool = input1_type in floating_point_types and input2_type in (signed_integer_types + unsigned_integer_types)
-        i_f : bool = input2_type in floating_point_types and input1_type in (signed_integer_types + unsigned_integer_types)
-        ff : bool = input1_type in floating_point_types and input2_type in floating_point_types
-
-        if ss:
-            return 6
-        elif su or us or uu:
-            return 12
-        elif fi or i_f or ff:
-            return 1
-        else:
-            CompilerException("Error: unsupported type for addition")
-        
+        return node_type_binary_operation(input1, input2, "element-wise addition")
     
     def _gen_define_connected_output(self, ) -> str:
         connected_output : bool = isinstance(self._outputs[0], OutputNode)
