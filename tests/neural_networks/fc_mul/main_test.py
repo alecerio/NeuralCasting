@@ -33,20 +33,6 @@ class TestFcMul(unittest.TestCase):
         output_shape_python = output_python.shape
         output_python = torch.squeeze(output_python)
 
-        # read inferred output shape
-        output_shape_path : str = CompilerConfig()['temp_path'] + "out_shape.json"
-        with open(output_shape_path, 'r') as json_file:
-            data = json.load(json_file)
-            output_keys = list(data.keys())
-        output_shape_c = data[output_keys[0]]
-
-        # compare shape
-        print("Output shape python: ", output_shape_python)
-        print("Output shape C: ", output_shape_c)
-        self.assertEqual(len(output_shape_python), len(output_shape_c))
-        for i in range(len(output_shape_python)):
-            self.assertEquals(output_shape_python[i], output_shape_c[i])
-
         # run compiler
         run(CompilerConfig(), framework='pytorch', model=model, dummy_input=dummy_input, params=params)
 
@@ -66,6 +52,20 @@ class TestFcMul(unittest.TestCase):
             subprocess.run(["bash", test_path + "build.sh", name, output_path], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error: {e}")
+
+        # read inferred output shape
+        output_shape_path : str = CompilerConfig()['temp_path'] + "out_shape.json"
+        with open(output_shape_path, 'r') as json_file:
+            data = json.load(json_file)
+            output_keys = list(data.keys())
+        output_shape_c = data[output_keys[0]]
+
+        # compare shape
+        print("Output shape python: ", output_shape_python)
+        print("Output shape C: ", output_shape_c)
+        self.assertEqual(len(output_shape_python), len(output_shape_c))
+        for i in range(len(output_shape_python)):
+            self.assertEquals(output_shape_python[i], output_shape_c[i])
 
         # read c output
         f = open(output_path + "test_output.txt")
