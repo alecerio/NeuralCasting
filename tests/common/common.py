@@ -25,9 +25,9 @@ def inference_onnx_runtime(path_onnx, input_data):
         outputs_shape_onnx.append(output_shape_onnx)
     return [outputs_onnx, outputs_shape_onnx]
 
-def create_main_c(test_path, output_path, name):
+def create_main_c(test_path, output_path, name, main_name='main.c'):
     # read main.c code and add include to nn
-    f = open(test_path + 'main.c', 'r')
+    f = open(test_path + main_name, 'r')
     main_code : str = "#include \"" + name + ".h\"\n"
     main_code += f.read()
     f.close()
