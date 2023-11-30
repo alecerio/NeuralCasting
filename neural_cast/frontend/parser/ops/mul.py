@@ -7,7 +7,7 @@ from neural_cast.frontend.parser.ops.common.common import node_type_binary_opera
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
-from neural_cast.frontend.parser.ops.common.common import gen_for_loop_index
+from neural_cast.frontend.parser.ops.common.common import gen_element_wise_broadcasting_indices
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 import math
 
@@ -28,7 +28,11 @@ class Mul(OpNode):
         out_size : int = math.prod(out_shape)
         for_loop_begin : str = gen_for_loop_begin(out_shape)
         for_loop_end : str = gen_for_loop_end(out_shape)
-        index : str = gen_for_loop_index(out_shape)
+
+        input1 : Node = self._inputs[0]
+        input2 : Node = self._inputs[1]
+        [index_tot, index_1, index_2] = gen_element_wise_broadcasting_indices(input1, input2, out_shape, "Mul")
+
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
@@ -42,7 +46,9 @@ class Mul(OpNode):
         code = self._expand_pattern(code, "$INPUT_SIZE", str(out_size))
         code = self._expand_pattern(code, "$FOR_LOOPS_BEGIN", for_loop_begin)
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
-        code = self._expand_pattern(code, "$INDEX", index)
+        code = self._expand_pattern(code, "$INDEX_TOT", index_tot)
+        code = self._expand_pattern(code, "$INDEX_1", index_1)
+        code = self._expand_pattern(code, "$INDEX_2", index_2)
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
 
         return code
