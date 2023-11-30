@@ -1,5 +1,3 @@
-import torch
-import neural_cast as cmp
 from neural_cast.compiler import run
 from neural_cast.frontend.common.common import CompilerConfig
 import subprocess
