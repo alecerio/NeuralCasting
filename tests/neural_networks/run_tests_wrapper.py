@@ -4,6 +4,7 @@ import yaml
 from tests.neural_networks.constant.main_test import TestConstant
 from tests.neural_networks.fc_add.main_test import TestFcAdd
 from tests.neural_networks.fc_mul.main_test import TestFcMul
+from tests.neural_networks.fc_relu.main_test import TestFcRelu
 import unittest
 
 def run_neural_network_tests():
@@ -17,5 +18,6 @@ def run_neural_network_tests():
     test_suite.addTest(unittest.makeSuite(TestConstant))
     test_suite.addTest(unittest.makeSuite(TestFcAdd))
     test_suite.addTest(unittest.makeSuite(TestFcMul))
+    test_suite.addTest(unittest.makeSuite(TestFcRelu))
     test_runner = unittest.TextTestRunner(verbosity=2)
     result = test_runner.run(test_suite)
