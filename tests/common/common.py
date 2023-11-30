@@ -1,6 +1,7 @@
 import onnxruntime as ort
 import numpy as np
 import json
+import torch
 
 def inference_onnx_runtime(path_onnx, input_data):
     session = ort.InferenceSession(path_onnx)
@@ -54,7 +55,30 @@ def read_output_c(output_path):
         output_c.append(float(output_values_str[i]))
     return output_c
 
-def print_test_header(test_name : str, n_spaces : int = 0):
-    print("\n####################################################################################")
+def print_test_header(test_name : str, n_spaces : int = 0, n_newlines : int = 2):
+    print("\n" * n_newlines)
+    print("####################################################################################")
     print("\t"*n_spaces + test_name)
-    print("####################################################################################\n")
+    print("####################################################################################")
+    print("\n" * n_newlines)
+
+def inference_pytorch(model, input_data):
+    output_pytorch = model(input_data)
+    output_shape_pytorch = output_pytorch.shape
+    output_pytorch = torch.squeeze(output_pytorch)
+    return [output_pytorch, output_shape_pytorch]
+
+def compare_shape(test, shape1, shape2, label1, label2):
+    print("Output shape ", label1, ": ", shape1)
+    print("Output shape ", label2, ": ", shape2)
+    test.assertEqual(len(shape1), len(shape2))
+    for i in range(len(shape1)):
+        test.assertEquals(shape1[i], shape2[i])
+
+def compare_results(test, output1, output2, label1, label2, delta):
+    print("Output ", label1, ": ", output1)
+    print("Output ", label2, ": ", output2)
+    test.assertEqual(len(output1), len(output2))
+    N : int = len(output1)
+    for i in range(N):
+        test.assertAlmostEqual(output1[i], output2[i], delta=delta)
