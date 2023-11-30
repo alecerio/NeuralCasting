@@ -1,16 +1,11 @@
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
-from neural_cast.frontend.parser.node.output_node import OutputNode
-from neural_cast.frontend.parser.node.input_node import InputNode
-from neural_cast.frontend.parser.node.init_node import InitializerNode
-from neural_cast.frontend.parser.node_types.node_type import NodeType
-from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
-import math
-import numpy as np
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
+import math
 
 class Gather(OpNode):
     def __init__(self, name : str, axis : int):
@@ -30,7 +25,7 @@ class Gather(OpNode):
 
     def generate_code(self) -> str:
         name : str = fix_identifier(self.get_name())
-        define_connected_output : str = self._gen_define_connected_output()
+        define_connected_output : str = gen_define_connected_output(self, 0)
         output_shape : list[int] = self.infer_output_shape()
         output_size : int = math.prod(output_shape)
         indices_shape : list[int] = self._get_indices_shape()
@@ -96,16 +91,6 @@ class Gather(OpNode):
 
     def get_op_type(self) -> str:
         return "Gather"
-    
-    def _gen_define_connected_output(self, ) -> str:
-        connected_output : bool = isinstance(self._outputs[0], OutputNode)
-        
-        if connected_output:
-            define_connected_output = ""
-        else:
-            define_connected_output = "#define CONNECTED_OUTPUT"
-        
-        return define_connected_output
     
     def _get_values_shape(self) -> list[int]:
         values : Node = self._inputs[0]
