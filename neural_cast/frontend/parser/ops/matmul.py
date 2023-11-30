@@ -1,14 +1,10 @@
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
-from neural_cast.frontend.parser.node.output_node import OutputNode
-from neural_cast.frontend.parser.node.input_node import InputNode
-from neural_cast.frontend.parser.node.init_node import InitializerNode
-from neural_cast.frontend.parser.node_types.node_type import NodeType
-from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.parser.ops.common.common import node_shape
 from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
+from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 
 class MatMul(OpNode):
@@ -20,7 +16,7 @@ class MatMul(OpNode):
 
     def generate_code(self) -> str:
         name : str = fix_identifier(self.get_name())
-        define_connected_output : str = self._gen_define_connected_output()
+        define_connected_output : str = gen_define_connected_output(self, 0)
         output_name : str = fix_identifier(self._output_varnames[0])
         out_shape : list[int] = self.infer_output_shape()
         n_rows_left : int = out_shape[0]
@@ -80,16 +76,6 @@ class MatMul(OpNode):
 
     def get_op_type(self) -> str:
         return "MatMul"
-    
-    def _gen_define_connected_output(self, ) -> str:
-        connected_output : bool = isinstance(self._outputs[0], OutputNode)
-        
-        if connected_output:
-            define_connected_output = ""
-        else:
-            define_connected_output = "#define CONNECTED_OUTPUT"
-        
-        return define_connected_output
     
     def _infer_ncols_left(self) -> int:
         input_left : Node = self._inputs[0]
