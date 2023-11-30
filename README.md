@@ -140,10 +140,10 @@ Ensure the compiler package is up to date:
 python setup.py install
 ```
 
-Run the tests wrapper:
+Run the tests:
 
 ```shell
-python tests/neural_networks/run_tests_wrapper.py
+python run_tests.py
 ``` 
 
 ## Open Works
