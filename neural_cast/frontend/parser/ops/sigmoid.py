@@ -9,6 +9,10 @@ from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 import math
 from neural_cast.frontend.parser.ops.common.common import node_shape
+from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
+from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
+from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
+from neural_cast.frontend.parser.ops.common.common import gen_for_loop_index
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 
 class Sigmoid(OpNode):
@@ -20,14 +24,14 @@ class Sigmoid(OpNode):
 
     def generate_code(self) -> str:
         name : str = fix_identifier(self.get_name())
-        define_connected_output : str = self._gen_define_connected_output()
+        define_connected_output : str = gen_define_connected_output(self, 0)
         input_name : str = fix_identifier(self._input_varnames[0])
         output_name : str = fix_identifier(self._output_varnames[0])
         in_shape : int = self.infer_output_shape()
         in_size : int = math.prod(in_shape)
-        for_loop_begin : str = self._gen_for_loop_begin(in_shape)
-        for_loop_end : str = self._gen_for_loop_end(in_shape)
-        index : str = self._gen_for_loop_index(in_shape)
+        for_loop_begin : str = gen_for_loop_begin(in_shape)
+        for_loop_end : str = gen_for_loop_end(in_shape)
+        index : str = gen_for_loop_index(in_shape)
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
@@ -60,48 +64,8 @@ class Sigmoid(OpNode):
     def get_op_type(self) -> str:
         return "Sigmoid"
     
-    def _gen_define_connected_output(self, ) -> str:
-        connected_output : bool = isinstance(self._outputs[0], OutputNode)
-        
-        if connected_output:
-            define_connected_output = ""
-        else:
-            define_connected_output = "#define CONNECTED_OUTPUT"
-        
-        return define_connected_output
-    
     def generate_includes_code_c(self) -> str:
         optype : str = self.get_op_type()
         code : str = self._read_template_c("Sigmoid_inc.c")
         code = self._expand_pattern(code, "$TYPE", optype)
-        return code
-    
-    def _gen_for_loop_begin(self, shape : list[int]) -> str:
-        code : str = ""
-        n_dims = len(shape)
-        for dim in range(n_dims):
-            size : int = shape[dim]
-            index : str = "i" + str(dim)
-            code += "for(" + \
-                    "int " + index + "=0; " + index + "<" + str(size) + "; " + index + "++) {\n"
-        return code
-    
-    def _gen_for_loop_end(self, shape : list[int]) -> str:
-        code : str = ""
-        n_dims = len(shape)
-        for _ in range(n_dims):
-            code += "}\n"
-        return code
-    
-    def _gen_for_loop_index(self, shape : list[int]) -> str:
-        code : str = ""
-        n_dims : int = len(shape)
-        for i in range(n_dims):
-            index : str = "i" + str(i)
-            size : int = 1
-            for j in range(i+1, n_dims):
-                size *= shape[j]
-            code += index + "*" + str(size)
-            if i < n_dims-1:
-                code += " + "
         return code
