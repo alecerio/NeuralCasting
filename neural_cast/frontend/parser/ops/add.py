@@ -9,7 +9,7 @@ from neural_cast.frontend.parser.ops.common.common import node_type_binary_opera
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
-from neural_cast.frontend.parser.ops.common.common import gen_for_loop_index
+from neural_cast.frontend.parser.ops.common.common import gen_element_wise_broadcasting_indices
 
 class Add(OpNode):
     def __init__(self, name : str):
@@ -24,11 +24,15 @@ class Add(OpNode):
         input_name_1 : str = fix_identifier(self._input_varnames[0])
         input_name_2 : str = fix_identifier(self._input_varnames[1])
         output_name : str = fix_identifier(self._output_varnames[0])
-        in_shape : int = self.infer_output_shape()
-        in_size : int = math.prod(in_shape)
-        for_loop_begin : str = gen_for_loop_begin(in_shape)
-        for_loop_end : str = gen_for_loop_end(in_shape)
-        index : str = gen_for_loop_index(in_shape)
+        out_shape : int = self.infer_output_shape()
+        out_size : int = math.prod(out_shape)
+        for_loop_begin : str = gen_for_loop_begin(out_shape)
+        for_loop_end : str = gen_for_loop_end(out_shape)
+
+        input1 : Node = self._inputs[0]
+        input2 : Node = self._inputs[1]
+        [index_tot, index_1, index_2] = gen_element_wise_broadcasting_indices(input1, input2, out_shape, "Add")
+        
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
@@ -39,10 +43,12 @@ class Add(OpNode):
         code = self._expand_pattern(code, "$INPUT1_NAME", input_name_1)
         code = self._expand_pattern(code, "$INPUT2_NAME", input_name_2)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
-        code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
+        code = self._expand_pattern(code, "$INPUT_SIZE", str(out_size))
         code = self._expand_pattern(code, "$FOR_LOOPS_BEGIN", for_loop_begin)
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
-        code = self._expand_pattern(code, "$INDEX", index)
+        code = self._expand_pattern(code, "$INDEX_TOT", index_tot)
+        code = self._expand_pattern(code, "$INDEX_1", index_1)
+        code = self._expand_pattern(code, "$INDEX_2", index_2)
         code = self._expand_pattern(code, "$TYPE", output_type_str)
 
         return code
