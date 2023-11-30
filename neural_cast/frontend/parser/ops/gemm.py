@@ -5,19 +5,17 @@ Description:
     Useful for dense and fully connected layers.
 """
 
-import numpy as np
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.parser.node.input_node import InputNode
 from neural_cast.frontend.parser.node.init_node import InitializerNode
 from neural_cast.frontend.parser.node_types.node_type import NodeType
 from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.parser.node.op_node import OpNode
-from neural_cast.frontend.parser.node.output_node import OutputNode
-from neural_cast.frontend.common.common import is_valid_onnx_data_type
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
+from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
 
 class Gemm(OpNode):
     def __init__(self, name : str):
@@ -49,10 +47,7 @@ class Gemm(OpNode):
         [out_size, in_size] = self.get_weights_shape()
 
         # define connected output
-        define_connected_output : str = self._gen_define_connected_output()
-
-        # generate code blocks
-        output_init_code = self._gen_output_init_code(out_size)
+        define_connected_output : str = gen_define_connected_output(self, 0)
 
         # output type
         output_type : int = self.infer_output_type()
@@ -69,7 +64,6 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$INPUT_NAME_W", input_name_w)
         code = self._expand_pattern(code, "$INPUT_NAME_B", input_name_b)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
-        code = self._expand_pattern(code, "$OUTPUT_INIT", output_init_code)
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
 
         return code
@@ -99,24 +93,6 @@ class Gemm(OpNode):
             raise CompilerException("Error: invalid Gemm input node")
 
         return shape
-    
-    def _gen_output_init_code(self, out_size : int) -> str:
-        output_init_code = ""
-
-        for _ in range(out_size):
-            output_init_code = output_init_code + "0.0f, "
-        
-        return output_init_code
-    
-    def _gen_define_connected_output(self, ) -> str:
-        connected_output : bool = isinstance(self._outputs[0], OutputNode)
-        
-        if connected_output:
-            define_connected_output = ""
-        else:
-            define_connected_output = "#define CONNECTED_OUTPUT"
-        
-        return define_connected_output
     
     def get_op_type(self) -> str:
         return "Gemm"
