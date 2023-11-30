@@ -1,13 +1,7 @@
 from neural_cast.frontend.parser.node.op_node import OpNode
-from neural_cast.frontend.parser.node.node import Node
-from neural_cast.frontend.parser.node.input_node import InputNode
-from neural_cast.frontend.parser.node.init_node import InitializerNode
-from neural_cast.frontend.parser.node.output_node import OutputNode
-from neural_cast.frontend.parser.node_types.node_type import NodeType
-from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.common.common import fix_identifier
-from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
+from neural_cast.frontend.parser.ops.common.common import gen_const_values_code
 import math
 
 class Constant(OpNode):
@@ -36,7 +30,7 @@ class Constant(OpNode):
         output_name : str = fix_identifier(self._output_varnames[0])
         out_shape : list[int] = self.infer_output_shape()
         out_size : int = math.prod(out_shape)
-        const_values : str = self._gen_const_values_code()
+        const_values : str = gen_const_values_code(self._tensor)
 
         code : str = self._read_template_c("Constant_decl.c")
 
@@ -56,11 +50,3 @@ class Constant(OpNode):
     
     def get_op_type(self) -> str:
         return "Constant"
-    
-    def _gen_const_values_code(self) -> str:
-        flat_tensor = self._tensor.flatten()
-        code : str = ""
-        for val in flat_tensor:
-            code += str(val) + ", "
-        return code
-            

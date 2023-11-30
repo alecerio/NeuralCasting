@@ -169,3 +169,10 @@ def gen_element_wise_broadcasting_indices(input1 : Node, input2 : Node, output_s
         raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator")
     
     return [index_tot, index_1, index_2]
+
+def gen_const_values_code(tensor) -> str:
+    flat_tensor = tensor.flatten()
+    code : str = ""
+    for val in flat_tensor:
+        code += str(val) + ", "
+    return code
