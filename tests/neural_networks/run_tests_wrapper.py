@@ -7,6 +7,7 @@ from tests.neural_networks.fc_add.main_test import TestFcAdd
 from tests.neural_networks.fc_mul.main_test import TestFcMul
 from tests.neural_networks.fc_relu.main_test import TestFcRelu
 from tests.neural_networks.fc_relu_fc_relu.main_test import TestFcReluFcRelu
+from tests.neural_networks.fc_sigmoid.main_test import TestFcSigmoid
 
 def run_neural_network_tests():
     curr_file = os.path.abspath(__file__)
@@ -21,5 +22,6 @@ def run_neural_network_tests():
     test_suite.addTest(unittest.makeSuite(TestFcMul))
     test_suite.addTest(unittest.makeSuite(TestFcRelu))
     test_suite.addTest(unittest.makeSuite(TestFcReluFcRelu))
+    test_suite.addTest(unittest.makeSuite(TestFcSigmoid))
     test_runner = unittest.TextTestRunner(verbosity=2)
     result = test_runner.run(test_suite)
