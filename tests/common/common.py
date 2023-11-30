@@ -68,16 +68,18 @@ def inference_pytorch(model, input_data):
     output_pytorch = torch.squeeze(output_pytorch)
     return [output_pytorch, output_shape_pytorch]
 
-def compare_shape(test, shape1, shape2, label1, label2):
-    print("Output shape ", label1, ": ", shape1)
-    print("Output shape ", label2, ": ", shape2)
+def compare_shape(test, shape1, shape2, label1, label2, verbose=True):
+    if verbose:
+        print("Output shape ", label1, ": ", shape1)
+        print("Output shape ", label2, ": ", shape2)
     test.assertEqual(len(shape1), len(shape2))
     for i in range(len(shape1)):
         test.assertEquals(shape1[i], shape2[i])
 
-def compare_results(test, output1, output2, label1, label2, delta):
-    print("Output ", label1, ": ", output1)
-    print("Output ", label2, ": ", output2)
+def compare_results(test, output1, output2, label1, label2, delta, verbose=True):
+    if verbose:
+        print("Output ", label1, ": ", output1)
+        print("Output ", label2, ": ", output2)
     test.assertEqual(len(output1), len(output2))
     N : int = len(output1)
     for i in range(N):
