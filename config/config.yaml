@@ -1,4 +1,5 @@
 # settings
+output_code: C
 name: dummy
 repo: /home/alessandro/repo2/compiler/
 workdir: /home/alessandro/Desktop/

@@ -55,32 +55,35 @@ class DAG:
     def traversal_dag_and_generate_code(self) -> [list[str], list[str]]:
         CompilerLogger().info("Start code generation")
 
+        output_code : str = CompilerConfig()['output_code']
+
         generated : list[Node] = []
         active : list[Node] = []
 
-        header_file_code : str = ""
-        code_generated : str = ""
+        if output_code == 'C':
+            header_file_code : str = ""
+            code_generated : str = ""
 
-        # generate include code
-        header_file_code += self._gen_include_code()
+            # generate include code
+            header_file_code += self._gen_include_code()
         
-        # generate file header
-        code_generated += self._gen_header_code()
+            # generate file header
+            code_generated += self._gen_header_code()
 
-        # generate include in source file
-        code_generated += self._gen_inc_in_source()
+            # generate include in source file
+            code_generated += self._gen_inc_in_source()
 
-        # generate declarations
-        CompilerLogger().info("Generate declaration C code")
-        for node in self._nodes:
-            if isinstance(node, OpNode) or isinstance(node, InitializerNode):
-                CompilerLogger().info("Generate declaration code C for: " + node.get_name())
-                code_generated += node.generate_declaration_code_c()
+            # generate declarations
+            CompilerLogger().info("Generate declaration C code")
+            for node in self._nodes:
+                if isinstance(node, OpNode) or isinstance(node, InitializerNode):
+                    CompilerLogger().info("Generate declaration code C for: " + node.get_name())
+                    code_generated += node.generate_declaration_code_c()
 
-        # generate function header code
-        function_header : str = self._gen_function_header_code()
-        code_generated += function_header
-        header_file_code += function_header[:-3] + ";\n"
+            # generate function header code
+            function_header : str = self._gen_function_header_code()
+            code_generated += function_header
+            header_file_code += function_header[:-3] + ";\n"
 
         # set input nodes active
         CompilerLogger().info("Set input nodes ready to generate code")
@@ -107,14 +110,17 @@ class DAG:
                     # if the node is ready, turn it to active and generate the code
                     if ready:
                         CompilerLogger().info("Generate code for " + node.get_name())
-                        code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
-                        code_generated = code_generated + code
+                        if output_code == 'C':
+                            code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
+                            code_generated = code_generated + code
                         gen_occured = True
 
-        code_generated += "}"
+        if output_code == 'C':
+            code_generated += "}"
 
-        files_content : list[str] = [header_file_code, code_generated]
-        files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
+        if output_code == 'C':
+            files_content : list[str] = [header_file_code, code_generated]
+            files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
 
         return [files_content, files_name]
 
