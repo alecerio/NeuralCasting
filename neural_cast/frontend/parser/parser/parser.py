@@ -40,7 +40,19 @@ def parse() -> list[Node]:
     _create_output_nodes(graph, nodes)
 
     # create op nodes
-    _create_op_nodes(graph, nodes)
+    [in_dict, out_dict] = _create_op_nodes(graph, nodes)
+
+    # update op nodes references
+    _update_opnodes_references(nodes, in_dict, out_dict)
+
+    # update init nodes references
+    _update_init_nodes_references(nodes)
+
+    # update input nodes references
+    _update_input_nodes_references(nodes)
+
+    # update output nodes references
+    _update_output_nodes_references(nodes)
 
     return nodes
 
@@ -110,7 +122,7 @@ def _create_output_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]
         else:
             raise CompilerException("Error: unexpected type name of the output node")
 
-def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
+def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) -> [dict, dict]:
     CompilerLogger().info("Create op nodes")
     in_dict = {}
     out_dict = {}
@@ -147,8 +159,10 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
+    
+    return [in_dict, out_dict]
 
-    # update op nodes references
+def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : dict) -> None:
     CompilerLogger().info("Create input / output nodes references for op nodes")
     for node in nodes:
         if isinstance(node, OpNode):
@@ -178,7 +192,7 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
             else:
                 raise CompilerException("Error: unexpected op node")
 
-    # update init nodes references
+def _update_init_nodes_references(nodes : list[Node]) -> None:
     CompilerLogger().info("Create references for init nodes")
     for init_node in nodes:
         if isinstance(init_node, InitializerNode):
@@ -188,7 +202,7 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                     if init_node.get_name() in op_node.get_input_names():
                         init_node.append_output_node(op_node)
 
-    # update input nodes references
+def _update_input_nodes_references(nodes : list[Node]) -> None:
     CompilerLogger().info("Create references for input nodes")
     for input_node in nodes:
         if isinstance(input_node, InputNode):
@@ -197,8 +211,9 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]):
                 if isinstance(op_node, OpNode):
                     if input_node.get_name() in op_node.get_input_names():
                         input_node.append_output_node(op_node)
-    
-    # update output nodes references
+
+
+def _update_output_nodes_references(nodes : list[Node]):
     CompilerLogger().info("Create references for output nodes")
     for output_node in nodes:
         if isinstance(output_node, OutputNode):
