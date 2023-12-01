@@ -6,7 +6,7 @@ from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.common.common import CompilerLogger
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
-from neural_cast.frontend.parser.parser.codegen_c import gen_include_code_c, gen_header_code_c, gen_includes_in_source_c, gen_declarations_c, gen_function_header_code_c
+from neural_cast.frontend.parser.parser.codegen_c import pre_codegen_c, post_codegen_c
 
 class DAG:
     def __init__(self, nodes : list[Node]):
@@ -58,25 +58,7 @@ class DAG:
         active : list[Node] = []
 
         if output_code == 'C':
-            header_file_code : str = ""
-            code_generated : str = ""
-
-            # generate include code
-            header_file_code += gen_include_code_c(self._nodes)
-        
-            # generate file header
-            code_generated += gen_header_code_c()
-
-            # generate include in source file
-            code_generated += gen_includes_in_source_c()
-
-            # generate declarations
-            code_generated += gen_declarations_c(self._nodes)
-
-            # generate function header code
-            function_header : str = gen_function_header_code_c(self._nodes)
-            code_generated += function_header
-            header_file_code += function_header[:-3] + ";\n"
+            [header_file_code_c, source_file_code_c] = pre_codegen_c(self._nodes)
 
         # set input nodes active
         CompilerLogger().info("Set input nodes ready to generate code")
@@ -103,16 +85,16 @@ class DAG:
                     # if the node is ready, turn it to active and generate the code
                     if ready:
                         CompilerLogger().info("Generate code for " + node.get_name())
-                        if output_code == 'C':
-                            code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
-                            code_generated = code_generated + code
+                        code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node, output_code)
+                        if  output_code == 'C':
+                            source_file_code_c += code
                         gen_occured = True
 
         if output_code == 'C':
-            code_generated += "}"
+            source_file_code_c += post_codegen_c()
 
         if output_code == 'C':
-            files_content : list[str] = [header_file_code, code_generated]
+            files_content : list[str] = [header_file_code_c, source_file_code_c]
             files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
 
         return [files_content, files_name]
@@ -133,13 +115,14 @@ class DAG:
                 break
         return ready
     
-    def _turn_to_active_and_generated_code(self, inputs : list[Node], active : list[Node], generated : list[Node], node : Node) -> str:
+    def _turn_to_active_and_generated_code(self, inputs : list[Node], active : list[Node], generated : list[Node], node : Node, output_code : str) -> str:
         code_generated : str = ""
 
         for input in inputs:
             if input in active:
                 # generate input node code
-                code : str = input.generate_code()
+                if output_code == 'C':
+                    code : str = input.generate_code()
                 code_generated = code_generated + code + "\n"
 
                 # remove input node from active

@@ -9,7 +9,33 @@ from neural_cast.frontend.parser.node_types.node_type import NodeType
 from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.common.common import fix_identifier, onnx_tensor_elem_type_to_c_dictionary
 
-def gen_include_code_c(nodes :list[Node]) -> str:
+def pre_codegen_c(nodes : list[Node]) -> [str, str]:
+    header_file_code : str = ""
+    code_generated : str = ""
+
+    # generate include code
+    header_file_code += _gen_include_code_c(nodes)
+        
+    # generate file header
+    code_generated += _gen_header_code_c()
+
+    # generate include in source file
+    code_generated += _gen_includes_in_source_c()
+
+    # generate declarations
+    code_generated += _gen_declarations_c(nodes)
+
+    # generate function header code
+    function_header : str = _gen_function_header_code_c(nodes)
+    code_generated += function_header
+    header_file_code += function_header[:-3] + ";\n"
+
+    return [header_file_code, code_generated]
+
+def post_codegen_c() -> str:
+    return "}"
+
+def _gen_include_code_c(nodes :list[Node]) -> str:
     CompilerLogger().info("Generate include code")
 
     code_generated : str = ""
@@ -35,7 +61,7 @@ def gen_include_code_c(nodes :list[Node]) -> str:
 
     return code_generated
 
-def gen_header_code_c() -> str:
+def _gen_header_code_c() -> str:
     CompilerLogger().info("Generate file header code")
     import datetime
     current_datetime = datetime.datetime.now()
@@ -45,11 +71,11 @@ def gen_header_code_c() -> str:
     message  += "// *****************************************************************************\n\n"
     return message
 
-def gen_includes_in_source_c() -> str:
+def _gen_includes_in_source_c() -> str:
     code_gen : str = "#include \"" + CompilerConfig()['name'] + ".h\"\n\n"
     return code_gen
 
-def gen_declarations_c(nodes : list[Node]) -> str:
+def _gen_declarations_c(nodes : list[Node]) -> str:
     CompilerLogger().info("Generate declaration C code")
     code_generated : str = ""
     for node in nodes:
@@ -58,7 +84,7 @@ def gen_declarations_c(nodes : list[Node]) -> str:
             code_generated += node.generate_declaration_code_c()
     return code_generated
 
-def gen_function_header_code_c(nodes : list[Node]) -> str:
+def _gen_function_header_code_c(nodes : list[Node]) -> str:
     CompilerLogger().info("Generate function header")
 
     header_code : str = "void run_inference("
