@@ -3,13 +3,10 @@ from neural_cast.frontend.parser.node.input_node import InputNode
 from neural_cast.frontend.parser.node.init_node import InitializerNode
 from neural_cast.frontend.parser.node.output_node import OutputNode
 from neural_cast.frontend.parser.node.op_node import OpNode
-from neural_cast.frontend.parser.node_types.node_type import NodeType
-from neural_cast.frontend.parser.node_types.tensor_type import TensorType
-from neural_cast.frontend.common.common import onnx_tensor_elem_type_to_c_dictionary
-from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.common.common import CompilerLogger
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
+from neural_cast.frontend.parser.parser.codegen_c import pre_codegen_c, post_codegen_c
 
 class DAG:
     def __init__(self, nodes : list[Node]):
@@ -55,32 +52,13 @@ class DAG:
     def traversal_dag_and_generate_code(self) -> [list[str], list[str]]:
         CompilerLogger().info("Start code generation")
 
+        output_code : str = CompilerConfig()['output_code']
+
         generated : list[Node] = []
         active : list[Node] = []
 
-        header_file_code : str = ""
-        code_generated : str = ""
-
-        # generate include code
-        header_file_code += self._gen_include_code()
-        
-        # generate file header
-        code_generated += self._gen_header_code()
-
-        # generate include in source file
-        code_generated += self._gen_inc_in_source()
-
-        # generate declarations
-        CompilerLogger().info("Generate declaration C code")
-        for node in self._nodes:
-            if isinstance(node, OpNode) or isinstance(node, InitializerNode):
-                CompilerLogger().info("Generate declaration code C for: " + node.get_name())
-                code_generated += node.generate_declaration_code_c()
-
-        # generate function header code
-        function_header : str = self._gen_function_header_code()
-        code_generated += function_header
-        header_file_code += function_header[:-3] + ";\n"
+        if output_code == 'C':
+            [header_file_code_c, source_file_code_c] = pre_codegen_c(self._nodes)
 
         # set input nodes active
         CompilerLogger().info("Set input nodes ready to generate code")
@@ -107,14 +85,17 @@ class DAG:
                     # if the node is ready, turn it to active and generate the code
                     if ready:
                         CompilerLogger().info("Generate code for " + node.get_name())
-                        code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node)
-                        code_generated = code_generated + code
+                        code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node, output_code)
+                        if  output_code == 'C':
+                            source_file_code_c += code
                         gen_occured = True
 
-        code_generated += "}"
+        if output_code == 'C':
+            source_file_code_c += post_codegen_c()
 
-        files_content : list[str] = [header_file_code, code_generated]
-        files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
+        if output_code == 'C':
+            files_content : list[str] = [header_file_code_c, source_file_code_c]
+            files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
 
         return [files_content, files_name]
 
@@ -134,13 +115,14 @@ class DAG:
                 break
         return ready
     
-    def _turn_to_active_and_generated_code(self, inputs : list[Node], active : list[Node], generated : list[Node], node : Node) -> str:
+    def _turn_to_active_and_generated_code(self, inputs : list[Node], active : list[Node], generated : list[Node], node : Node, output_code : str) -> str:
         code_generated : str = ""
 
         for input in inputs:
             if input in active:
                 # generate input node code
-                code : str = input.generate_code()
+                if output_code == 'C':
+                    code : str = input.generate_code()
                 code_generated = code_generated + code + "\n"
 
                 # remove input node from active
@@ -154,51 +136,6 @@ class DAG:
         active.append(node)
         return code_generated
 
-    def _gen_header_code(self) -> str:
-        CompilerLogger().info("Generate file header code")
-        import datetime
-        current_datetime = datetime.datetime.now()
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-        message : str = "// *****************************************************************************\n"
-        message += "// \tTHIS CODE WAS AUTOMATICALLY GENERATED ON " + formatted_datetime + "\n"
-        message  += "// *****************************************************************************\n\n"
-        return message
-
-    def _gen_function_header_code(self) -> str:
-        CompilerLogger().info("Generate function header")
-
-        header_code : str = "void run_inference("
-        params_list : list[str] = []
-        
-        for node in self._nodes:
-            if isinstance(node, InputNode):
-                node_type : NodeType = node.get_node_type()
-                if isinstance(node_type, TensorType):
-                    name : str = "tensor_" + fix_identifier(node.get_name())
-                    param :str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
-                    params_list.append(param)
-                else:
-                    raise CompilerException("Error: input tensor not supported")
-        
-        for node in self._nodes:
-            if isinstance(node, OutputNode):
-                node_type : NodeType = node.get_node_type()
-                if isinstance(node_type, TensorType):
-                    name : str = "tensor_" + fix_identifier(node.get_name())
-                    param : str = onnx_tensor_elem_type_to_c_dictionary(node_type.get_elem_type()) + " " + name
-                    params_list.append(param)
-                else:
-                    raise CompilerException("Error: input tensor not supported")
-
-        n_params : int = len(params_list)
-
-        for i in range(n_params):
-            header_code += params_list[i]
-            if i < n_params-1: header_code += ", "
-        header_code += ") {\n"
-        
-        return header_code
-
     def _is_name_in_list(self, name : str) -> bool:
         return name in self.get_list_names()
 
@@ -208,33 +145,3 @@ class DAG:
             if node.get_name() == name:
                 return i
         return -1
-    
-    def _gen_include_code(self) -> str:
-        CompilerLogger().info("Generate include code")
-
-        code_generated : str = ""
-        list_includes : list[str] = []
-        for node in self._nodes:
-            if isinstance(node, OpNode):
-                CompilerLogger().info("Generate include code for: " + node.get_name())
-                inc_code : str = node.generate_includes_code_c()
-                inc_lines : list[str] = inc_code.split('\n')
-                filtered_inc_lines : list[str] = [line for line in inc_lines if line.startswith('#include')]
-                for line in filtered_inc_lines:
-                    list_includes.append(line) 
-        list_includes = list(set(list_includes))
-        stdint_inc : str = "#include <stdint.h>"
-        list_includes.append(stdint_inc)
-
-        code_generated += "// INCLUDE\n\n"
-        for inc in list_includes:
-            code_generated += inc + "\n"
-        code_generated += "\n\n"
-
-        code_generated += "typedef float float32_t;\n\n"
-
-        return code_generated
-    
-    def _gen_inc_in_source(self) -> str:
-        code_gen : str = "#include \"" + CompilerConfig()['name'] + ".h\"\n\n"
-        return code_gen
