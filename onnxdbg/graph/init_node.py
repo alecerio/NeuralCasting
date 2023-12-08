@@ -1,4 +1,4 @@
-import GraphNode
+from graph_node import GraphNode 
 import onnx
 
 class InitNode(GraphNode):
