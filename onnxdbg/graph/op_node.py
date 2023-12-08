@@ -8,6 +8,7 @@ class OpNode(GraphNode):
         self._input_names : list[str] = []
         self._outputs : list[GraphNode] = []
         self._output_names : list[str] = []
+        self._attributes : dict = {}
         self._node : onnx.onnx_ml_pb2.NodeProto = node
     
     def __str__(self):
@@ -61,6 +62,9 @@ class OpNode(GraphNode):
             return False
         self._inputs.pop(index)
         self._input_names.pop(index)
+    
+    def clear_inputs(self) -> None:
+        self._inputs.clear()
         
     def n_outputs(self) -> int:
         return len(self._outputs)
@@ -89,6 +93,36 @@ class OpNode(GraphNode):
             return False
         self._outputs.pop(index)
         self._output_names.pop(index)
+    
+    def clear_outputs(self) -> None:
+        self._outputs.clear()
+
+    def n_attributes(self) -> int:
+        return len(self._attributes)
+
+    def add_attribute(self, key : str, value) -> bool:
+        if self._is_attribute_in_list(key):
+            return False
+        self._attributes[key] = value
+        return True
+
+    def remove_attribute(self, key : str) -> bool:
+        if not self._is_attribute_in_list(key):
+            return False
+        self._attributes.pop(key)
+        return True
+
+    def get_attributes_keys(self) -> list[str]:
+        return list(self._attributes.keys())
+
+    def get_attribute_value(self, key : str):
+        if not self._is_attribute_in_list(key):
+            return None
+        else:
+            return self._attributes[key]
+
+    def clear_attributes(self):
+        self._attributes.clear()
 
     def _is_correct_input_index(self, index : int) -> bool:
         if index < 0 or index >= self.n_inputs():
@@ -126,3 +160,9 @@ class OpNode(GraphNode):
                 return True
         return False
     
+    def _is_attribute_in_list(self, key : str):
+        keys : list[str] = self.get_attributes_keys()
+        for k in keys:
+            if k == key:
+                return True
+        return False
