@@ -58,6 +58,9 @@ class OutputNode(GraphNode):
 
     def n_inputs(self) -> int:
         return len(self._inputs)
+    
+    def clear_inputs(self) -> None:
+        self._inputs.clear()
 
     def _is_node_in_list(self, node : GraphNode) -> bool:
         name : str = node.get_name()
