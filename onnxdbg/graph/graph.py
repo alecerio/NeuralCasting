@@ -1,3 +1,5 @@
+import onnx
+from onnx import helper
 from onnxdbg.graph.graph_node import GraphNode
 from onnxdbg.graph.op_node import OpNode
 from onnxdbg.graph.input_node import InputNode
@@ -54,6 +56,28 @@ class Graph():
         for node in self._nodes:
             names.append(node.get_name())
         return names
+    
+    def export_onnx_file(self, model_name : str, path : str) -> None:
+        init_nodes = []
+        input_nodes = []
+        op_nodes = []
+        output_nodes = []
+        for node in self._nodes:
+            if isinstance(node, OpNode):
+                n = node.get_node()
+                op_nodes.append(n)
+            elif isinstance(node, InputNode):
+                n = node.get_input()
+                input_nodes.append(n)
+            elif isinstance(node, OutputNode):
+                n = node.get_output()
+                output_nodes.append(n)
+            elif isinstance(node, InitNode):
+                n = node.get_initializer()
+                init_nodes.append(n)
+        graph = helper.make_graph(op_nodes, model_name, input_nodes, output_nodes, init_nodes)
+        model = helper.make_model(graph)
+        onnx.save(model, path)
 
     def _init_references(self) -> None:
         for node in self._nodes:
