@@ -1,4 +1,4 @@
-from graph_node import GraphNode
+from .graph_node import GraphNode
 import onnx
 
 class OutputNode(GraphNode):

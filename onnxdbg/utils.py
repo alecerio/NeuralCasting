@@ -12,26 +12,22 @@ def create_graph(onnx_path : str) -> Graph:
 
     # create op nodes
     for _, node in enumerate(model.graph.node):
-        print("create op node: " + node.name)
         opnode : OpNode = OpNode(node.name, node)
         nodes.append(opnode)
     
     # create initializer nodes
     for init in model.graph.initializer:
-        print("create initializer node: " + init.name)
         init_node : InitNode = InitNode(init.name, init)
         nodes.append(init_node)
 
     # create input nodes
     for input in model.graph.input:
-        print("create input node: " + input.name)
         input_node : InputNode = InputNode(input.name, input)
         nodes.append(input_node)
 
     # create output nodes
     for output in model.graph.output:
-        print("create output node: " + output.name)
-        output_node : OutputNode = OutputNode(output.node, output)
+        output_node : OutputNode = OutputNode(output.name, output)
         nodes.append(output_node)
     
     graph : Graph = Graph(nodes)
