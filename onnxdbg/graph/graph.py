@@ -79,7 +79,7 @@ class Graph():
         model = helper.make_model(graph)
         onnx.save(model, path)
     
-    def create_subgraph(self, output_node_name : str) -> Graph:
+    def create_subgraph(self, output_node_name : str):
         index : int = self._get_index_by_name(output_node_name)
         if index < 0:
             return None
