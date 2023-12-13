@@ -79,15 +79,34 @@ class Graph():
         model = helper.make_model(graph)
         onnx.save(model, path)
     
-    def create_subgraph(self, output_node_name : str):
+    def create_subgraph_data(self, output_node_name : str):
         index : int = self._get_index_by_name(output_node_name)
         if index < 0:
             return None
         output_node : GraphNode = self._nodes[index]
-        subgraph_nodes : list[GraphNode] = []
+        initializers = []
+        inputs = []
+        outputs = []
+        opnodes = []
+        self._fill_subgraph_data(output_node, initializers, inputs, outputs, opnodes)
+        return [initializers, inputs, opnodes, outputs]
+        
     
-    def _fill_subgraph(self, node : GraphNode):
-        pass
+    def _fill_subgraph_data(self, node : GraphNode, initializers : list, inputs : list, outputs : list, opnodes : list):
+        if isinstance(node, OutputNode):
+            outputs.append(node.get_output())
+        elif isinstance(node, InputNode):
+            inputs.append(node.get_input())
+        elif isinstance(node, InitNode):
+            initializers.append(node.get_initializer())
+        elif isinstance(node, OpNode):
+            opnodes.append(node.get_node())
+        
+        if isinstance(node, OpNode):
+            n_inputs : int = node.n_inputs()
+            for i in range(n_inputs):
+                input_node : GraphNode = node.get_input(i)
+                self._fill_subgraph_data(input_node, initializers,inputs, outputs, opnodes)
 
     def _init_references(self) -> None:
         for node in self._nodes:
