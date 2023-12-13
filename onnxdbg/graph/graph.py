@@ -78,11 +78,27 @@ class Graph():
         graph = helper.make_graph(op_nodes, model_name, input_nodes, output_nodes, init_nodes)
         model = helper.make_model(graph)
         onnx.save(model, path)
+    
+    def create_subgraph(self, output_node_name : str) -> Graph:
+        index : int = self._get_index_by_name(output_node_name)
+        if index < 0:
+            return None
+        output_node : GraphNode = self._nodes[index]
+        subgraph_nodes : list[GraphNode] = []
+    
+    def _fill_subgraph(self, node : GraphNode):
+        pass
 
     def _init_references(self) -> None:
         for node in self._nodes:
             if isinstance(node, OpNode):
                 self._update_node_references(node)
+            elif isinstance(node, InputNode):
+                self._update_input_references(node)
+            elif isinstance(node, InitNode):
+                self._update_init_references(node)
+            elif isinstance(node, OutputNode):
+                self._update_output_references(node)
     
     def _update_node_references(self, node : OpNode) -> None:
         node.clear_inputs()
@@ -112,6 +128,33 @@ class Graph():
                 if output_name in outputs:
                     node.add_output(other_node, output_name)
     
+    def _update_input_references(self, node : InputNode) -> None:
+        node.clear_outputs()
+        name : str = node.get_name()
+        for other_node in self._nodes:
+            if isinstance(other_node, OpNode):
+                inputs = other_node.get_node().input
+                if name in inputs:
+                    node.add_output(other_node)
+    
+    def _update_init_references(self, node : InitNode) -> None:
+        node.clear_outputs()
+        name : str = node.get_name()
+        for other_node in self._nodes:
+            if isinstance(other_node, OpNode):
+                inputs = other_node.get_node().input
+                if name in inputs:
+                    node.add_output(other_node)
+    
+    def _update_output_references(self, node : OutputNode) -> None:
+        node.clear_inputs()
+        name : str = node.get_name()
+        for other_node in self._nodes:
+            if isinstance(other_node, OpNode):
+                outputs = other_node.get_node().output
+                if name in outputs:
+                    node.add_input(other_node)
+
     def _get_index_by_name(self, name : str) -> int:
         for i, node_name in enumerate(self.get_nodes_name()):
             if name == node_name:
