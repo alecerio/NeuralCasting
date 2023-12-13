@@ -35,6 +35,9 @@ class OpNode(GraphNode):
 
         return result
     
+    def get_node(self) -> onnx.onnx_ml_pb2.NodeProto:
+        return self._node
+    
     def n_inputs(self) -> int:
         return len(self._inputs)
     

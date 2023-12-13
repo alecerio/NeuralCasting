@@ -4,8 +4,9 @@ from onnxdbg.graph.graph_node import GraphNode
 from onnxdbg.graph.init_node import InitNode
 from onnxdbg.graph.input_node import InputNode
 from onnxdbg.graph.output_node import OutputNode
+from onnxdbg.graph.graph import Graph
 
-def create_graph(onnx_path : str):
+def create_graph(onnx_path : str) -> Graph:
     model = onnx.load(onnx_path)
     nodes : list[GraphNode] = []
 
@@ -33,30 +34,6 @@ def create_graph(onnx_path : str):
         output_node : OutputNode = OutputNode(output.node, output)
         nodes.append(output_node)
     
-    for node in nodes:
-        if isinstance(node, OpNode):
-            inputs = node.get_node().input
-            outputs = node.get_node().output
-            for other_node in nodes:
-                if isinstance(other_node, OpNode):
-                    other_inputs = other_node.get_node().input
-                    other_outputs = other_node.get_node().output
-                    for input in inputs:
-                        if input in other_outputs:
-                            node.add_input(other_node, str(input))
-                    for output in outputs:
-                        if output in other_inputs:
-                            node.add_output(other_node, str(output))
-                elif isinstance(other_node, InputNode):
-                    input_name : str = other_node.get_name()
-                    if input_name in inputs:
-                        node.add_input(other_node, input_name)
-                elif isinstance(other_node, InitNode):
-                    init_name : str = other_node.get_name()
-                    if init_name in inputs:
-                        node.add_input(other_node, init_name)
-                elif isinstance(other_node, OutputNode):
-                    output_name : str = other_node.get_name()
-                    if output_name in outputs:
-                        node.add_output(other_node, output_name)
-                
+    graph : Graph = Graph(nodes)
+
+    return graph
