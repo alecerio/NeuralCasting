@@ -17,27 +17,26 @@ class TestSubgraphOnnx(unittest.TestCase):
         path_onnx = test_path + 'gru_reimplemented_1.onnx'
         path_onnx_dest = temp_path + 'gru_reimplemented_1.onnx'
 
-        # inference onnxruntime
-        x_data =  np.ones((1, 3), dtype=np.float32)
-        hidden_data =  np.zeros((1, 4), dtype=np.float32)
-        input_data = [x_data, hidden_data]
-        [outputs_onnx, outputs_shape_onnx] = inference_onnx_runtime(path_onnx, input_data)
-        output_onnx = outputs_onnx[0]
-        output_shape_onnx = outputs_shape_onnx[0]
+        # expected results
+        expected_shape = [1, 4]
+        expected_output = [-0.90645695, -0.7594772, 0.23172721, -0.7083346]
 
         # re-create onnx with onnxdbg
         onnxdbg("subgr", src=path_onnx, dst=path_onnx_dest, mdl='sub_model', out='/Tanh')
 
-        # inference onnxruntime copy
+        # inference onnxruntime subgraph
+        x_data =  np.ones((1, 3), dtype=np.float32)
+        hidden_data =  np.zeros((1, 4), dtype=np.float32)
+        input_data = [x_data, hidden_data]
         [outputs_onnx_copy, outputs_shape_onnx_copy] = inference_onnx_runtime(path_onnx_dest, input_data)
-        output_onnx_copy = outputs_onnx_copy[0]
-        output_shape_onnx_copy = outputs_shape_onnx_copy[0]
+        output_onnx_subgraph = outputs_onnx_copy[0]
+        output_shape_onnx_subgraph = outputs_shape_onnx_copy[0]
 
         # compare shape
-        compare_shape(self, output_shape_onnx, output_shape_onnx_copy, "ONNX", "ONNX SUB")
+        compare_shape(self, expected_shape, output_shape_onnx_subgraph, "ONNX", "ONNX SUB")
 
         # compare results
-        compare_results(self, output_onnx, output_onnx_copy, "ONNX", "ONNX SUB", 1e-6)
+        compare_results(self, expected_output, output_onnx_subgraph, "ONNX", "ONNX SUB", 1e-6)
 
 def run_tests():
     curr_file = os.path.abspath(__file__)
