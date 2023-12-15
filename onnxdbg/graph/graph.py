@@ -111,7 +111,7 @@ class Graph():
         elif isinstance(node, OpNode):
             opnodes.append(node.get_node())
         
-        if isinstance(node, OpNode):
+        if isinstance(node, OpNode) or isinstance(node, OutputNode):
             n_inputs : int = node.n_inputs()
             for i in range(n_inputs):
                 input_node : GraphNode = node.get_input(i)
@@ -127,17 +127,12 @@ class Graph():
                     input_names.append(input.name)
                 in_input : bool = node_name in input_names
 
-                output_names : list[str] = []
-                for output in outputs:
-                    output_names.append(output.name)
-                in_output : bool = node_name in output_names
-
                 op_names : list[str] = []
                 for op in opnodes:
                     op_names.append(op.name)
                 in_op : bool = node_name in op_names
 
-                if (not in_init) and (not in_input) and (not in_op) and (not in_output):
+                if (not in_init) and (not in_input) and (not in_op):
                     self._fill_subgraph_data(input_node, initializers, inputs, outputs, opnodes)
 
     def _init_references(self) -> None:

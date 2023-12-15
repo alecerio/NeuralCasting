@@ -1,4 +1,6 @@
 import onnx
+import onnxruntime as ort
+import numpy as np
 from onnxdbg.graph.op_node import OpNode
 from onnxdbg.graph.graph_node import GraphNode
 from onnxdbg.graph.init_node import InitNode
@@ -33,3 +35,25 @@ def create_graph(onnx_path : str) -> Graph:
     graph : Graph = Graph(nodes)
 
     return graph
+
+def inference_onnx_runtime(path_onnx, input_data):
+    session = ort.InferenceSession(path_onnx)
+    
+    name_dict = {}
+    for i in range(len(input_data)):
+        input_name = session.get_inputs()[i].name
+        name_dict[input_name] = input_data[i]
+    
+    outputs = session.run(None, name_dict)
+
+    n_outputs = len(outputs)
+    outputs_onnx = []
+    outputs_shape_onnx = []
+    for i in range(n_outputs):
+        output_onnx = outputs[i]
+        output_shape_onnx = output_onnx.shape
+        output_onnx = np.squeeze(output_onnx)
+        output_onnx = output_onnx.flatten()
+        outputs_onnx.append(output_onnx)
+        outputs_shape_onnx.append(output_shape_onnx)
+    return [outputs_onnx, outputs_shape_onnx]
