@@ -20,10 +20,15 @@ def onnxdbg_copy(**kwargs):
     graph.export_onnx_file(mdl, dst)
 
 def onnxdbg_subgr(**kwargs):
-    src : str = str(kwargs['src'])
-    dst : str = str(kwargs['dst'])
-    mdl : str = str(kwargs['mdl'])
-    out : str = str(kwargs['out'])
+    args : list[str] = ['src', 'dst', 'mdl', 'out']
+
+    if not _check_valid_arguments(args, **kwargs):
+        return
+
+    src : str = str(kwargs[args[0]])
+    dst : str = str(kwargs[args[1]])
+    mdl : str = str(kwargs[args[2]])
+    out : str = str(kwargs[args[3]])
     graph : Graph = create_graph(src)
     [initializers, inputs, opnodes, outputs] = graph.create_subgraph_data(out)
     graph = helper.make_graph(opnodes, mdl, inputs, outputs, initializers)
@@ -31,10 +36,15 @@ def onnxdbg_subgr(**kwargs):
     onnx.save(model, dst)
 
 def onnxdbg_inferdbg(**kwargs):
-    srcp : str = str(kwargs['srcp'])
-    dstp : str = str(kwargs['dstp'])
-    mdl : str = str(kwargs['mdl'])
-    input_data = kwargs['input']
+    args : list[str] = ['srcp', 'dstp', 'mdl', 'input']
+
+    if not _check_valid_arguments(args, **kwargs):
+        return
+
+    srcp : str = str(kwargs[args[0]])
+    dstp : str = str(kwargs[args[1]])
+    mdl : str = str(kwargs[args[2]])
+    input_data = kwargs[args[3]]
     
     src : str = srcp + mdl + '.onnx'
     input_names : list[str] = input_data.keys()
