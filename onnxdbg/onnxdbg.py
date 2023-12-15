@@ -1,4 +1,4 @@
-from .commands import onnxdbg_copy, onnxdbg_subgr, onnxdbg_inferdbg
+from .commands import onnxdbg_copy, onnxdbg_subgr, onnxdbg_inferdbg, onnxdbg_help
 
 def onnxdbg(command : str, **kwargs) -> None:
     if command == "copy":
@@ -7,5 +7,7 @@ def onnxdbg(command : str, **kwargs) -> None:
         onnxdbg_subgr(**kwargs)
     elif command == "inferdbg":
         onnxdbg_inferdbg(**kwargs)
+    elif command == "help":
+        onnxdbg_help(**kwargs)
     else:
         print("Command '" + command + "' not existing")
