@@ -1,5 +1,6 @@
 import onnx
 from onnx import helper
+from onnx import onnx_ml_pb2
 from onnxdbg.graph.graph_node import GraphNode
 from onnxdbg.graph.op_node import OpNode
 from onnxdbg.graph.input_node import InputNode
@@ -89,6 +90,14 @@ class Graph():
         outputs = []
         opnodes = []
         self._fill_subgraph_data(output_node, initializers, inputs, outputs, opnodes)
+
+        if len(outputs) == 0 and isinstance(output_node, OpNode):
+            output_names : list[str] = output_node.get_node().output
+            for output_name in output_names:
+                value_info = onnx_ml_pb2.ValueInfoProto()
+                value_info.name = output_name
+                outputs.append(value_info)
+
         return [initializers, inputs, opnodes, outputs]
         
     
@@ -106,7 +115,30 @@ class Graph():
             n_inputs : int = node.n_inputs()
             for i in range(n_inputs):
                 input_node : GraphNode = node.get_input(i)
-                self._fill_subgraph_data(input_node, initializers,inputs, outputs, opnodes)
+                node_name : str = input_node.get_name()
+
+                init_names : list[str] = []
+                for init in initializers:
+                    init_names.append(init.name)
+                in_init : bool = node_name in init_names
+
+                input_names : list[str] = []
+                for input in inputs:
+                    input_names.append(input.name)
+                in_input : bool = node_name in input_names
+
+                output_names : list[str] = []
+                for output in outputs:
+                    output_names.append(output.name)
+                in_output : bool = node_name in output_names
+
+                op_names : list[str] = []
+                for op in opnodes:
+                    op_names.append(op.name)
+                in_op : bool = node_name in op_names
+
+                if (not in_init) and (not in_input) and (not in_op) and (not in_output):
+                    self._fill_subgraph_data(input_node, initializers, inputs, outputs, opnodes)
 
     def _init_references(self) -> None:
         for node in self._nodes:
