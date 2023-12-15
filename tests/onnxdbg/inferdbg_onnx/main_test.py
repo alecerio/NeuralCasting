@@ -1,6 +1,6 @@
 import unittest
 from neural_cast.frontend.common.common import CompilerConfig
-from tests.common.common import print_test_header, inference_onnx_runtime, compare_shape, compare_results
+from tests.common.common import print_test_header, compare_results
 import os
 import yaml
 import onnx
@@ -15,8 +15,7 @@ class TestInferDbgOnnx(unittest.TestCase):
         # init config file
         onnx_name : str = 'gru_reimplemented_1'
         test_path : str = CompilerConfig()['test_path'] + 'onnxdbg/inferdbg_onnx/'
-        output_path : str = test_path + '/output/'
-        temp_path : str = CompilerConfig()['temp_path']
+        output_path : str = test_path + 'output/'
 
         # input data
         model = onnx.load(test_path + onnx_name + '.onnx')
@@ -51,6 +50,17 @@ class TestInferDbgOnnx(unittest.TestCase):
         expected_output_shape_31 = expected_output_shape_31[0]
         actual_output_shape_31 = list(actual_output_shape_31[0])
         compare_results(self, expected_output_shape_31, actual_output_shape_31, "EXPECTED OUTPUT SHAPE", "ACTUAL OUTPUT SHAPE", 1e-6)
+
+        # clean output folder
+        for filename in os.listdir(output_path):
+            if filename == 'readme.md':
+                continue
+            file_path = os.path.join(output_path, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print(f"Error deleting {file_path}: {str(e)}")
 
 def run_tests():
     curr_file = os.path.abspath(__file__)
