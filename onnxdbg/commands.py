@@ -8,9 +8,14 @@ from onnxdbg.graph.op_node import OpNode
 from onnxdbg.utils import create_graph, inference_onnx_runtime
 
 def onnxdbg_copy(**kwargs):
-    src : str = str(kwargs['src'])
-    dst : str = str(kwargs['dst'])
-    mdl : str = str(kwargs['mdl'])
+    args : list[str] = ['src', 'dst', 'mdl']
+
+    if not _check_valid_arguments(args, **kwargs):
+        return
+
+    src : str = str(kwargs[args[0]])
+    dst : str = str(kwargs[args[1]])
+    mdl : str = str(kwargs[args[2]])
     graph : Graph = create_graph(src)
     graph.export_onnx_file(mdl, dst)
 
@@ -32,7 +37,6 @@ def onnxdbg_inferdbg(**kwargs):
     input_data = kwargs['input']
     
     src : str = srcp + mdl + '.onnx'
-    dst : str = dstp + mdl + '.onnx'
     input_names : list[str] = input_data.keys()
 
     graph : Graph = create_graph(src)
@@ -71,3 +75,11 @@ def onnxdbg_inferdbg(**kwargs):
     pickle_output_shape_file = dstp + 'output_shape.pkl'
     with open(pickle_output_shape_file, "wb") as pkl_file:
         pickle.dump(dict_output_shape, pkl_file)
+
+def _check_valid_arguments(args : list[str], **kwargs) -> bool:
+    keys = kwargs.keys()
+    for key in keys:
+        if not (key in args):
+            print("Argument '" + key + "' unexpected") 
+            return False
+    return True
