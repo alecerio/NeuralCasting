@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="neuralcasting_logo.png" width="300" alt="Logo">
+</p>
+
 # NeuralCasting
 
 ## Description
