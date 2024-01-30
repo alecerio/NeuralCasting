@@ -10,6 +10,7 @@ from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
 from neural_cast.frontend.parser.ops.common.common import gen_element_wise_broadcasting_indices
+from neural_cast.frontend.parser.ops.common.common import infer_output_shape_for_element_wise_binary_operators
 
 class Add(OpNode):
     def __init__(self, name : str):
@@ -61,15 +62,8 @@ class Add(OpNode):
     
     def infer_output_shape(self) -> list[list[int]]:
         input1 : Node = self._inputs[0]
-        shape1 : list[int] = node_shape(input1)
-
         input2 : Node = self._inputs[1]
-        shape2 : list[int] = node_shape(input2)
-
-        if list(shape1) != list(shape2):
-            raise CompilerException("Error: inputs in Add operator must have the same shape")
-        
-        return shape1
+        return infer_output_shape_for_element_wise_binary_operators(input1, input2, "Sub")
     
     def get_op_type(self) -> str:
         return "Add"

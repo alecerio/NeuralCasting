@@ -7,6 +7,7 @@ from neural_cast.frontend.parser.ops.common.common import node_type_binary_opera
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
+from neural_cast.frontend.parser.ops.common.common import infer_output_shape_for_element_wise_binary_operators
 from neural_cast.frontend.parser.ops.common.common import gen_element_wise_broadcasting_indices
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 import math
@@ -61,15 +62,8 @@ class Mul(OpNode):
     
     def infer_output_shape(self) -> list[list[int]]:
         input1 : Node = self._inputs[0]
-        shape1 : list[int] = node_shape(input1)
-
         input2 : Node = self._inputs[1]
-        shape2 : list[int] = node_shape(input2)
-
-        if list(shape1) != list(shape2):
-            raise CompilerException("Error: inputs in Mul operator must have the same shape")
-        
-        return shape1
+        return infer_output_shape_for_element_wise_binary_operators(input1, input2, "Mul")
     
     def infer_output_type(self) -> int:
         input1 : Node = self._inputs[0]

@@ -117,6 +117,45 @@ def infer_output_shape_for_element_wise_binary_operators(input1 : Node, input2 :
 
     list_shape1 : list[int] = list(shape1)
     list_shape2 : list[int] = list(shape2)
+
+    print(" ---------------------- ")
+    
+    i1 : int = _first_non_one_index(list_shape1)
+    i2 : int = _first_non_one_index(list_shape2)
+    
+    r1 : int = 0
+    if i1 != -1:
+        r1 = len(list_shape1) - i1
+    
+    r2 : int = 0
+    if i2 != -1:
+        r2 = len(list_shape2) - i2
+    
+    N1 : int = len(list_shape1)
+    N2 : int = len(list_shape2)
+    if r1 > r2:
+        digits =  N1 - r1
+    elif r2 > r1:
+        digits = N2 - r2
+    else:
+        if N1 > N2:
+            digits =  N1 - r1
+        else:
+            digits =  N2 - r2
+
+
+    print(op_name_for_error_message)
+
+    print(list_shape1)
+    print(list_shape2)
+
+    list_shape1 = list_shape1[i1:]
+    list_shape2 = list_shape2[i2:]
+    
+    print(list_shape1)
+    print(list_shape2)
+    print(digits)
+
     dims_shape1 : int = len(list_shape1)
     dims_shape2 : int = len(list_shape2)
 
@@ -136,7 +175,9 @@ def infer_output_shape_for_element_wise_binary_operators(input1 : Node, input2 :
             raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator. Shape 1 does not fit in shape 2 for broadcasting.")
     else:
         raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator.  Equal number of dimensions, but different shape.")
-        
+    
+    shape = [1]*digits + shape
+    print(shape)
     return shape
 
 def gen_element_wise_broadcasting_indices(input1 : Node, input2 : Node, output_shape : list[int], op_name_for_error_message = None) -> list[int]:
@@ -146,6 +187,45 @@ def gen_element_wise_broadcasting_indices(input1 : Node, input2 : Node, output_s
     index_tot : str = gen_for_loop_index(output_shape)
     in_shape_1 = list(input1.infer_output_shape())
     in_shape_2 = list(input2.infer_output_shape())
+
+    print(" ---------------------- ")
+    
+    i1 : int = _first_non_one_index(in_shape_1)
+    i2 : int = _first_non_one_index(in_shape_2)
+    
+    r1 : int = 0
+    if i1 != -1:
+        r1 = len(in_shape_1) - i1
+    
+    r2 : int = 0
+    if i2 != -1:
+        r2 = len(in_shape_2) - i2
+    
+    N1 : int = len(in_shape_1)
+    N2 : int = len(in_shape_2)
+    if r1 > r2:
+        digits =  N1 - r1
+    elif r2 > r1:
+        digits = N2 - r2
+    else:
+        if N1 > N2:
+            digits =  N1 - r1
+        else:
+            digits =  N2 - r2
+
+
+    print(op_name_for_error_message)
+
+    print(in_shape_1)
+    print(in_shape_2)
+
+    in_shape_1 = in_shape_1[i1:]
+    in_shape_2 = in_shape_2[i2:]
+    
+    print(in_shape_1)
+    print(in_shape_2)
+    print(digits)
+
     in_dims_1 = len(in_shape_1)
     in_dims_2 = len(in_shape_2)
     if in_dims_1 == in_dims_2 and in_shape_1 == in_shape_2:
@@ -176,3 +256,9 @@ def gen_const_values_code(tensor) -> str:
     for val in flat_tensor:
         code += str(val) + ", "
     return code
+
+def _first_non_one_index(shape_list : list[int]) -> int:
+    for i, num in enumerate(shape_list):
+        if num != 1:
+            return i
+    return -1
