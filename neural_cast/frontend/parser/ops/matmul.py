@@ -19,8 +19,8 @@ class MatMul(OpNode):
         define_connected_output : str = gen_define_connected_output(self, 0)
         output_name : str = fix_identifier(self._output_varnames[0])
         out_shape : list[int] = self.infer_output_shape()
-        n_rows_left : int = out_shape[0]
-        n_cols_right : int = out_shape[1]
+        n_rows_left : int = out_shape[-2]
+        n_cols_right : int = out_shape[-1]
         input_name_1 : str = fix_identifier(self._input_varnames[0])
         input_name_2 : str = fix_identifier(self._input_varnames[1])
         n_cols_left : int = self._infer_ncols_left()
@@ -54,6 +54,12 @@ class MatMul(OpNode):
         input2 : Node = self._inputs[1]
         shape2 : list[int] = node_shape(input2)
 
+        i1 : int = self._first_instance_non_one(shape1)
+        i2 : int = self._first_instance_non_one(shape2)
+        imax : int = max(i1, i2)
+        shape1 = shape1[i1:]
+        shape2 = shape2[i2:]
+
         if len(shape1) == 1 and len(shape2) == 1 and shape1[0] == shape2[0]:
             shape1 = [1, shape1[0]]
             shape2 = [shape2[0], 1]
@@ -65,8 +71,7 @@ class MatMul(OpNode):
         if shape1[-1] != shape2[-2]:
             raise CompilerException("Error: in MatMul, the number of columns of the left matrix must be equal to the number of columns of the right matrix")
         
-        shape = [shape1[0], shape2[1]]
-        
+        shape = [1] * imax + [shape1[-2], shape2[-1]]
         return shape
     
     def infer_output_type(self) -> int:
@@ -80,4 +85,10 @@ class MatMul(OpNode):
     def _infer_ncols_left(self) -> int:
         input_left : Node = self._inputs[0]
         shape_left : list[int] = node_shape(input_left)
-        return shape_left[1]
+        return shape_left[-1]
+    
+    def _first_instance_non_one(self, shape : list[int]) -> int:
+        for i in range(len(shape)):
+            if shape[i] != 1:
+                return i
+        return -1

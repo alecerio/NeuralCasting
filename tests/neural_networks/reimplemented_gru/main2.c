@@ -9,18 +9,18 @@ int main() {
         input[i] = 1.0f;
 
     float hidden[INPUT_SIZE * HIDDEN_SIZE];
-    for(int i=0; i<HIDDEN_SIZE; i++)
+    for(int i=0; i<INPUT_SIZE * HIDDEN_SIZE; i++)
         hidden[i] = 0.0f;
 
-    float output[HIDDEN_SIZE];
+    float output[INPUT_SIZE*HIDDEN_SIZE];
 
     run_inference(input, hidden, output);
 
     FILE* file;
     file = fopen("test_output.txt", "w");
-    for(int i=0; i<HIDDEN_SIZE; i++) {
+    for(int i=0; i<INPUT_SIZE * HIDDEN_SIZE; i++) {
         fprintf(file, "%f", output[i]);
-        if(i < HIDDEN_SIZE-1)
+        if(i < INPUT_SIZE * HIDDEN_SIZE-1)
             fprintf(file, " ");
     }
     fclose(file);

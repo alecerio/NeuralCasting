@@ -98,7 +98,7 @@ def gen_for_loop_index(shape : list[int]) -> str:
             break
     if first == n_dims:
         return "0"
-    for i in range(first, n_dims):
+    for i in range(first+1, n_dims):
         index : str = "i" + str(i)
         size : int = 1
         for j in range(i+1, n_dims):
