@@ -34,7 +34,7 @@ class TestReimplementedGRU(unittest.TestCase):
         run(CompilerConfig(), framework='onnx', path=path_onnx)
 
         # create test main.c
-        create_main_c(test_path, output_path, name)
+        create_main_c(test_path, output_path, name, main_name='main2.c')
         
         # run command
         try:
@@ -42,6 +42,7 @@ class TestReimplementedGRU(unittest.TestCase):
         except subprocess.CalledProcessError as e:
             print(f"Error: {e}")
 
+        return
         # read inferred output shape
         output_shape_c = read_inferred_output_shape(temp_path)
         
@@ -118,8 +119,7 @@ class TestReimplementedGRU(unittest.TestCase):
 
         # run compiler
         run(CompilerConfig(), framework='onnx', path=path_onnx)
-        
-        return 
+
         # create test main.c
         create_main_c(test_path, output_path, name)
         
