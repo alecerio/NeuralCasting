@@ -24,7 +24,7 @@ printf("----------------- DEBUG OUTPUT $NAME -----------------\n");
 
 for(int i=0; i<$N_ROWS_LEFT; i++) {
     for(int j=0; j<$N_COLS_RIGHT; j++) {
-        printf("%f, ", tensor_$OUTPUT_NAME[i*c+j]);
+        printf("%f, ", tensor_$OUTPUT_NAME[i*$N_COLS_RIGHT+j]);
     }
     printf("\n");
 }
