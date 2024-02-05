@@ -119,6 +119,15 @@ def infer_output_shape_for_element_wise_binary_operators(input1 : Node, input2 :
     list_shape2 : list[int] = list(shape2)
     dims_shape1 : int = len(list_shape1)
     dims_shape2 : int = len(list_shape2)
+    
+    old_list_shape1 = list_shape1
+    old_list_shape2 = list_shape2
+    i1 : int = _first_instance_non_one(list_shape1)
+    i2 : int = _first_instance_non_one(list_shape2)
+    list_shape1 = list_shape1[i1:]
+    dims_shape1 = len(list_shape1)
+    list_shape2 = list_shape2[i2:]
+    dims_shape2 = len(list_shape2)
 
     if dims_shape1 == dims_shape2 and list_shape1 == list_shape2:
         shape = list_shape1
@@ -136,7 +145,12 @@ def infer_output_shape_for_element_wise_binary_operators(input1 : Node, input2 :
             raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator. Shape 1 does not fit in shape 2 for broadcasting.")
     else:
         raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator.  Equal number of dimensions, but different shape.")
-        
+
+    if len(old_list_shape1) > len(old_list_shape2):
+        shape = old_list_shape1
+    else:
+        shape = old_list_shape2
+
     return shape
 
 def gen_element_wise_broadcasting_indices(input1 : Node, input2 : Node, output_shape : list[int], op_name_for_error_message = None) -> list[int]:
@@ -151,14 +165,14 @@ def gen_element_wise_broadcasting_indices(input1 : Node, input2 : Node, output_s
     if in_dims_1 == in_dims_2 and in_shape_1 == in_shape_2:
         index_1 : str = index_tot
         index_2 : str = index_tot
-    elif in_dims_1 > in_dims_2 and compatible_for_broadcasting(in_shape_1, in_shape_2):
+    elif in_dims_1 > in_dims_2:
         index_1 : str = index_tot
         if in_shape_2 == []:
             in_shape_2 = [0] * in_dims_1
         else:
             in_shape_2 = [0] * (in_dims_1 - in_dims_2) + in_shape_2
         index_2 : str = gen_for_loop_index(in_shape_2)
-    elif in_dims_2 > in_dims_1 and compatible_for_broadcasting(in_shape_2, in_shape_1):
+    elif in_dims_2 > in_dims_1:
         index_2 : str = index_tot
         if in_shape_1 == []:
             in_shape_1 = [0] * in_dims_2
@@ -176,3 +190,9 @@ def gen_const_values_code(tensor) -> str:
     for val in flat_tensor:
         code += str(val) + ", "
     return code
+
+def _first_instance_non_one(shape : list[int]) -> int:
+    for i in range(len(shape)):
+        if shape[i] != 1:
+            return i
+    return -1
