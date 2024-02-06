@@ -8,12 +8,14 @@
 #include <string>
 #include <vector>
 #include <time.h>
+#include <cstdlib>
 
-int main() {
-    const char* model_path = "gru_reimplemented_4.onnx"; 
-    const int SIZE_INPUT = 3;
-    const int SIZE_HIDDEN = 4;
-    const int NUM_EXPERIMENTS = 10000;
+int main(int argc, char* argv[]) {
+
+    const char* model_path = argv[1]; 
+    const int SIZE_INPUT = std::atoi(argv[2]);
+    const int SIZE_HIDDEN = std::atoi(argv[3]);
+    const int NUM_EXPERIMENTS = std::atoi(argv[4]);
 
     const int INPUT_SHAPE_SIZE = 2;
     const int HIDDEN_SHAPE_SIZE = 3;
