@@ -9,6 +9,7 @@
 #include <vector>
 #include <time.h>
 #include <cstdlib>
+#include <cmath>
 
 int main(int argc, char* argv[]) {
 
@@ -59,6 +60,7 @@ int main(int argc, char* argv[]) {
     double total_time = 0.0;
     double min_time = 10000.0;
     double max_time = -100.0;
+    float* times = new float[NUM_EXPERIMENTS];
     for(int i=0; i<NUM_EXPERIMENTS; i++) {
         // run inference
         clock_t start = clock();
@@ -76,19 +78,26 @@ int main(int argc, char* argv[]) {
         // update max time
         if(time > max_time)
             max_time = time;
+        
+        // updated times
+        times[i] = time;
     }
 
     // compute average time
     double avg_time = total_time / (double)NUM_EXPERIMENTS;
     
-    // print average time
-    printf("%.20f,", avg_time);
+    // compute standard deviation
+    double stddev_time = 0.0;
+    for(int i=0; i<NUM_EXPERIMENTS; i++) {
+        stddev_time += (times[i] - avg_time) * (times[i] - avg_time);
+    }
+    stddev_time /= (NUM_EXPERIMENTS-1);
+    stddev_time = std::sqrt(stddev_time);
 
-    // print min time
-    printf("%.20f,", min_time);
+    // print results
+    printf("%d,%d,%.20f,%.20f,%.20f,%.20f\n", SIZE_INPUT, SIZE_HIDDEN, avg_time, min_time, max_time, stddev_time);
 
-    // print max time
-    printf("%.20f", max_time);
+    delete[] times;
 
     return 0;
 }
