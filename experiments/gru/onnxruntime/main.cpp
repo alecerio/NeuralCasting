@@ -1,29 +1,13 @@
-//#include <onnxruntime/core/providers/providers.h>
-//#include <onnxruntime/core/providers/cuda/cuda_provider_factory.h>
-//#include <onnxruntime/core/providers/cpu/cpu_execution_provider.h>
-//#include <onnxruntime/core/providers/cpu/cpu_provider_factory.h>
-
-//#include <onnxruntime/core/providers/providers.h>
-//#include <onnxruntime/core/providers/cpu/cpu_provider_factory.h>
-//#include <onnxruntime/core/providers/providers.h>
-
 #include "cpu_provider_factory.h"
 #include "cuda_provider_factory.h"
 #include "onnxruntime_c_api.h"
 #include "onnxruntime_cxx_api.h"
-//#include "onnxruntime_cxx_inline.h"
 #include "onnxruntime_session_options_config_keys.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <time.h>
-
-#define BATCH (1)
-#define WSIZE (32)
-#define HSIZE (32)
-#define NCH (3)
-#define SHAPE_SIZE (4)
 
 int main() {
     const char* model_path = "gru_reimplemented_4.onnx"; 
@@ -66,22 +50,43 @@ int main() {
     hidden_shape[0] = 1; hidden_shape[1] = SIZE_INPUT; hidden_shape[2] = SIZE_HIDDEN;
     Ort::Value hidden_tensor = Ort::Value::CreateTensor<float>(memory_info, hidden_data, hidden_tensor_size, hidden_shape, HIDDEN_SHAPE_SIZE);
     
-    // Run inference
+    // run inference
     const char* input_names[] = {"onnx::Gemm_0", "onnx::MatMul_1"};
     const char* output_names[] = {"37"};
 
     double total_time = 0.0;
+    double min_time = 10000.0;
+    double max_time = -100.0;
     for(int i=0; i<NUM_EXPERIMENTS; i++) {
+        // run inference
         clock_t start = clock();
         std::vector<Ort::Value> output_tensor = session.Run(Ort::RunOptions(nullptr), input_names, &input_tensor, 2, output_names, 1);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
+        
+        // update total time
         total_time += time;
+
+        // update min time
+        if(time < min_time)
+            min_time = time;
+        
+        // update max time
+        if(time > max_time)
+            max_time = time;
     }
+
+    // compute average time
     double avg_time = total_time / (double)NUM_EXPERIMENTS;
     
     // print average time
-    printf("%.20f", avg_time);
+    printf("%.20f,", avg_time);
+
+    // print min time
+    printf("%.20f,", min_time);
+
+    // print max time
+    printf("%.20f", max_time);
 
     return 0;
 }
