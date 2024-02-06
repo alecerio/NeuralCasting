@@ -1,7 +1,7 @@
 # settings
 output_code: C
 name: dummy
-repo: /home/alessandro/repo2/compiler/
+repo: /home/alessandro/Desktop/ncasting3/NeuralCasting/
 workdir: /home/alessandro/Desktop/
 create_output_files: True
 
