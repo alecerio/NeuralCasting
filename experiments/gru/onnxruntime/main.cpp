@@ -26,46 +26,62 @@
 #define SHAPE_SIZE (4)
 
 int main() {
-    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ONNXRuntime");
-    
-    const char* model_path = "model.onnx";  // Replace with the path to your ONNX model file
+    const char* model_path = "gru_reimplemented_4.onnx"; 
+    const int SIZE_INPUT = 3;
+    const int SIZE_HIDDEN = 4;
+    const int NUM_EXPERIMENTS = 10000;
 
-    printf("BBB\n");
+    const int INPUT_SHAPE_SIZE = 2;
+    const int HIDDEN_SHAPE_SIZE = 3;
+
+    // create onnxruntime env
+    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ONNXRuntime");
+
+    // create ort session
     Ort::SessionOptions session_options;
     Ort::Session session(env, model_path, session_options);
 
-    printf("AAA\n");
-    // Prepare input data (adjust dimensions and values based on your model's input requirements)
-    const int input_tensor_size = WSIZE * HSIZE * NCH * BATCH;  // Example size for an image classification model
+    // prepare input data
+    const int input_tensor_size = SIZE_INPUT;
     float input_data[input_tensor_size];
-
-    for(int i=0; i<BATCH*WSIZE*HSIZE*NCH; i++)
+    for(int i=0; i<input_tensor_size; i++)
         input_data[i] = 0.0f;
+    
+    // prepare hidden state
+    const int hidden_tensor_size = SIZE_INPUT * SIZE_HIDDEN;
+    float hidden_data[hidden_tensor_size];
+    for(int i=0; i<hidden_tensor_size; i++)
+        hidden_data[i] = 1.0f;
     
     // Define OrtMemoryInfo for CPU memory
     Ort::MemoryInfo memory_info("Cpu", OrtDeviceAllocator, 0, OrtMemTypeDefault);
 
     // Create Ort::Value with the input tensor
-    int64_t* shape = (int64_t*) malloc(sizeof(int64_t)*SHAPE_SIZE);
-    shape[0] = BATCH; shape[1] = NCH; shape[2] = WSIZE; shape[3] = HSIZE;
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, input_data, input_tensor_size, shape, SHAPE_SIZE);
+    int64_t* input_shape = (int64_t*) malloc(sizeof(int64_t)*INPUT_SHAPE_SIZE);
+    input_shape[0] = 1; input_shape[1] = SIZE_INPUT;
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, input_data, input_tensor_size, input_shape, INPUT_SHAPE_SIZE);
 
+    // Create Ort::Value with the hidden tensor
+    int64_t* hidden_shape = (int64_t*) malloc(sizeof(int64_t)*HIDDEN_SHAPE_SIZE);
+    hidden_shape[0] = 1; hidden_shape[1] = SIZE_INPUT; hidden_shape[2] = SIZE_HIDDEN;
+    Ort::Value hidden_tensor = Ort::Value::CreateTensor<float>(memory_info, hidden_data, hidden_tensor_size, hidden_shape, HIDDEN_SHAPE_SIZE);
+    
     // Run inference
-    const char* input_names[] = {"input.1"};  // Replace with the actual input name from your model
-    const char* output_names[] = {"119"};  // Replace with the actual output name from your model
+    const char* input_names[] = {"onnx::Gemm_0", "onnx::MatMul_1"};
+    const char* output_names[] = {"37"};
 
-    clock_t start = clock();
-    std::vector<Ort::Value> output_tensor = session.Run(Ort::RunOptions(nullptr), input_names, &input_tensor, 1, output_names, 1);
-    clock_t end = clock();
-    double time = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("time: %.20f\n", time);
-
-    // Process the output data (adjust based on your model's output requirements)
-    float* output_data = output_tensor.at(0).GetTensorMutableData<float>();
-
-    for(int i=0; i<10; i++) {
-        printf("%f ", output_data[i]);
+    double total_time = 0.0;
+    for(int i=0; i<NUM_EXPERIMENTS; i++) {
+        clock_t start = clock();
+        std::vector<Ort::Value> output_tensor = session.Run(Ort::RunOptions(nullptr), input_names, &input_tensor, 2, output_names, 1);
+        clock_t end = clock();
+        double time = (double)(end - start) / CLOCKS_PER_SEC;
+        total_time += time;
     }
-    printf("\n");
+    double avg_time = total_time / (double)NUM_EXPERIMENTS;
+    
+    // print average time
+    printf("%.20f", avg_time);
+
     return 0;
 }
