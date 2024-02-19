@@ -59,6 +59,8 @@ class DAG:
 
         if output_code == 'C':
             [header_file_code_c, source_file_code_c] = pre_codegen_c(self._nodes)
+        if output_code == 'mlir_onnx':
+            print("generate precode for mlir")
 
         # set input nodes active
         CompilerLogger().info("Set input nodes ready to generate code")
@@ -88,14 +90,22 @@ class DAG:
                         code : str = self._turn_to_active_and_generated_code(inputs, active, generated, node, output_code)
                         if  output_code == 'C':
                             source_file_code_c += code
+                        elif output_code == 'mlir_onnx':
+                            print("concatenate codegen for onnx unit")
                         gen_occured = True
 
         if output_code == 'C':
             source_file_code_c += post_codegen_c()
+        elif output_code == 'mlir_onnx':
+            print("codegen for onnx unit")
 
         if output_code == 'C':
             files_content : list[str] = [header_file_code_c, source_file_code_c]
             files_name : list[str] = [CompilerConfig()['name'] + ".h", CompilerConfig()['name'] + ".c"]
+        elif output_code == 'mlir_onnx':
+            files_content : list[str] = [""]
+            files_name : list[str] = [CompilerConfig()['name'] + ".onnx"]
+            print("create files info for onnx")
 
         return [files_content, files_name]
 
@@ -123,6 +133,9 @@ class DAG:
                 # generate input node code
                 if output_code == 'C':
                     code : str = input.generate_code()
+                elif output_code == 'mlir_onnx':
+                    code : str = ""
+                    print("generate code for onnx unit")
                 code_generated = code_generated + code + "\n"
 
                 # remove input node from active

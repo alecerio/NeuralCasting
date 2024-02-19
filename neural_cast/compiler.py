@@ -47,7 +47,7 @@ def run(config, **kwargs):
         onnx.save(model, temp_path + name + '.onnx')
     else:
         raise CompilerException("Error: unexpected framework")
-    
+
     # parse onnx
     nodes : list[Node] = parse()
 

@@ -1,0 +1,12 @@
+# settings
+output_code: mlir_onnx
+name: dummy
+repo: /home/alessandro/Desktop/ncasting3/NeuralCasting/
+workdir: /home/alessandro/Desktop/
+create_output_files: True
+
+# paths
+test_path: ${repo}tests/
+temp_path: ${workdir}temp_path/
+output_path: ${workdir}output/
+codegen_c_path: ${repo}neural_cast/frontend/code_generation/c/
