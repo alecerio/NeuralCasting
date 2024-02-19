@@ -17,6 +17,7 @@ from neural_cast.frontend.parser.ops.sub import Sub
 from neural_cast.frontend.parser.ops.matmul import MatMul
 from neural_cast.frontend.parser.ops.constant import Constant
 from neural_cast.frontend.parser.ops.gather import Gather
+from neural_cast.frontend.parser.ops.transpose import Transpose
 from neural_cast.frontend.common.common import CompilerLogger
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
@@ -156,6 +157,9 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
         elif optype == 'Gather':
             axis : int = int(op.attribute[0].i)
             opnode : Gather = Gather(name, axis)
+        elif optype == 'Transpose':
+            perm = onnx.helper.get_attribute_value(op.attribute[0])
+            opnode : Transpose = Transpose(name, perm)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -189,6 +193,8 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_constant_node(node, nodes, out_names, in_dict)
             elif isinstance(node, Gather):
                 _fill_gather_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Transpose):
+                _fill_transpose_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -273,7 +279,7 @@ def _fill_mul_node(node : Mul, nodes : list[Node], in_names : list[str], out_nam
     node.append_input(in_node_2, in_names[1])
     node.append_output(out_node, out_names[0])
 
-def _fill_sub_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_sub_node(node : Sub, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update Sub node")
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
@@ -282,7 +288,7 @@ def _fill_sub_node(node : Mul, nodes : list[Node], in_names : list[str], out_nam
     node.append_input(in_node_2, in_names[1])
     node.append_output(out_node, out_names[0])
 
-def _fill_matmul_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_matmul_node(node : MatMul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update MatMul node")
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
@@ -291,18 +297,25 @@ def _fill_matmul_node(node : Mul, nodes : list[Node], in_names : list[str], out_
     node.append_input(in_node_2, in_names[1])
     node.append_output(out_node, out_names[0])
 
-def _fill_constant_node(node : Mul, nodes : list[Node], out_names : list[str], in_dict : dict):
+def _fill_constant_node(node : Constant, nodes : list[Node], out_names : list[str], in_dict : dict):
     CompilerLogger().info("Update Constant node")
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_output(out_node, out_names[0])
 
-def _fill_gather_node(node : Mul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_gather_node(node : Gather, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update Gather node")
     in_node_1 = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_2 = _get_input_node_reference(nodes, in_names[1], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node_1, in_names[0])
     node.append_input(in_node_2, in_names[1])
+    node.append_output(out_node, out_names[0])
+
+def _fill_transpose_node(node : Transpose, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Transpose node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:

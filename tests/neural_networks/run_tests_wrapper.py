@@ -13,6 +13,7 @@ from tests.neural_networks.fc_tanh.main_test import TestFcTanh
 from tests.neural_networks.gather.main_test import TestGather
 from tests.neural_networks.matmul.main_test import TestMatMul
 from tests.neural_networks.reimplemented_gru.main_test import TestReimplementedGRU
+from tests.neural_networks.transpose.main_test import TestTranspose
 
 def run_neural_network_tests():
     curr_file = os.path.abspath(__file__)
@@ -33,5 +34,6 @@ def run_neural_network_tests():
     test_suite.addTest(unittest.makeSuite(TestGather))
     test_suite.addTest(unittest.makeSuite(TestMatMul))
     test_suite.addTest(unittest.makeSuite(TestReimplementedGRU))
+    test_suite.addTest(unittest.makeSuite(TestTranspose))
     test_runner = unittest.TextTestRunner(verbosity=2)
     result = test_runner.run(test_suite)
