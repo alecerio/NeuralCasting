@@ -44,10 +44,6 @@ class Transpose(OpNode):
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
 
-        
-
-        print(code)
-
         return code
     
     def generate_includes_code_c(self) -> str:

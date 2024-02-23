@@ -14,6 +14,8 @@ from tests.neural_networks.gather.main_test import TestGather
 from tests.neural_networks.matmul.main_test import TestMatMul
 from tests.neural_networks.reimplemented_gru.main_test import TestReimplementedGRU
 from tests.neural_networks.transpose.main_test import TestTranspose
+from tests.neural_networks.squeeze.main_test import TestSqueeze
+from tests.neural_networks.gru.main_test import TestGRU
 
 def run_neural_network_tests():
     curr_file = os.path.abspath(__file__)
@@ -35,5 +37,7 @@ def run_neural_network_tests():
     test_suite.addTest(unittest.makeSuite(TestMatMul))
     test_suite.addTest(unittest.makeSuite(TestReimplementedGRU))
     test_suite.addTest(unittest.makeSuite(TestTranspose))
+    test_suite.addTest(unittest.makeSuite(TestSqueeze))
+    test_suite.addTest(unittest.makeSuite(TestGRU))
     test_runner = unittest.TextTestRunner(verbosity=2)
     result = test_runner.run(test_suite)

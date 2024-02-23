@@ -18,9 +18,11 @@ from neural_cast.frontend.parser.ops.matmul import MatMul
 from neural_cast.frontend.parser.ops.constant import Constant
 from neural_cast.frontend.parser.ops.gather import Gather
 from neural_cast.frontend.parser.ops.transpose import Transpose
+from neural_cast.frontend.parser.ops.squeeze import Squeeze
 from neural_cast.frontend.common.common import CompilerLogger
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
+from neural_cast.frontend.parser.ops.gru import GRU
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -110,7 +112,7 @@ def _create_output_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]
         name = output.name
         type_info : str = str(output.type)
         type_name : str = type_info.split("{")[0].strip()
-        if type_name == 'tensor_type':
+        if type_name == 'tensor_type' or type_name == '':
             shape = output.type.tensor_type.shape.dim
             shape_values = [0] * len(shape)
             for i in range(len(shape)):
@@ -160,6 +162,10 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
         elif optype == 'Transpose':
             perm = onnx.helper.get_attribute_value(op.attribute[0])
             opnode : Transpose = Transpose(name, perm)
+        elif optype == 'Squeeze':
+            opnode : Squeeze = Squeeze(name)
+        elif optype == 'GRU':
+            opnode : GRU = GRU(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -195,6 +201,10 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_gather_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Transpose):
                 _fill_transpose_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Squeeze):
+                _fill_squeeze_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, GRU):
+                _fill_gru_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -317,6 +327,33 @@ def _fill_transpose_node(node : Transpose, nodes : list[Node], in_names : list[s
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
+
+def _fill_squeeze_node(node : Squeeze, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Squeeze node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    axes_node = _get_input_node_reference(nodes, in_names[1], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_input(axes_node, in_names[1])
+    node.append_output(out_node, out_names[0])
+
+def _fill_gru_node(node : GRU, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update GRU node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_W = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_R = _get_input_node_reference(nodes, in_names[2], out_dict)
+    in_node_B = _get_input_node_reference(nodes, in_names[3], out_dict)
+    in_node_initH = _get_input_node_reference(nodes, in_names[5], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    out_hidden = _get_output_node_reference(nodes, out_names[1], in_dict)
+
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_W, in_names[1])
+    node.append_input(in_node_R, in_names[2])
+    node.append_input(in_node_B, in_names[3])
+    node.append_input(in_node_initH, in_names[5])
+    node.append_output(out_node, out_names[0])
+    node.append_output(out_hidden, out_names[1])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
     for node in nodes:

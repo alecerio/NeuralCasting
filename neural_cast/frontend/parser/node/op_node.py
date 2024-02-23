@@ -24,7 +24,7 @@ class OpNode(Node, abc.ABC):
         input_varnames : str = "input values name: "
         for name in self._input_varnames:
             input_varnames = input_varnames + name + ", "
-
+        
         outputs : str = "outputs name: "
         for node in self._outputs:
             outputs = outputs + node.get_name() + ", "

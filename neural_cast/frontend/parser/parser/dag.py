@@ -100,7 +100,6 @@ class DAG:
         return [files_content, files_name]
 
     def _get_input_nodes_from_opnode_or_output_node(self, node : Node) -> list[Node]:
-        print(node.get_name())
         if isinstance(node, OpNode):
             inputs : list[Node] = node.get_input_nodes_list()
         elif isinstance(node, OutputNode):
