@@ -29,6 +29,7 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
         code_generated += _gen_declarations_c(nodes)
     elif alloc_type == 'heap':
         header_file_code += _gen_declarations_matrices(nodes)
+        header_file_code += _gen_declaration_freenn()
     else:
         CompilerException("Error: unknown memory type allocation")
     # generate function header code
@@ -130,5 +131,11 @@ def _gen_declarations_matrices(nodes : list[Node]) -> str:
     for node in nodes:
         mat_type : str = onnx_tensor_elem_type_to_c_dictionary(node.infer_output_type())
         code += mat_type + " " + fix_identifier(node.get_name()) + ";\n"
+    code += "\n"
+    return code
+
+def _gen_declaration_freenn() -> str:
+    code : str = "// freenn\n"
+    code += "void freenn();\n"
     code += "\n"
     return code
