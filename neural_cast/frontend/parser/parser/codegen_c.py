@@ -126,7 +126,7 @@ def _gen_function_header_code_c(nodes : list[Node]) -> str:
     return header_code
 
 def _gen_declarations_matrices(nodes : list[Node]) -> str:
-    code : str = "// matrices delaration"
+    code : str = "// matrices delaration\n"
     for node in nodes:
         mat_type : str = onnx_tensor_elem_type_to_c_dictionary(node.infer_output_type())
         code += mat_type + " " + fix_identifier(node.get_name()) + ";\n"
