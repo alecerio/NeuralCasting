@@ -10,6 +10,8 @@ from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.common.common import fix_identifier, onnx_tensor_elem_type_to_c_dictionary
 
 def pre_codegen_c(nodes : list[Node]) -> [str, str]:
+    alloc_type : str = CompilerConfig()['alloc']
+
     header_file_code : str = ""
     code_generated : str = ""
 
@@ -23,8 +25,12 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     code_generated += _gen_includes_in_source_c()
 
     # generate declarations
-    code_generated += _gen_declarations_c(nodes)
-
+    if alloc_type == 'data':
+        code_generated += _gen_declarations_c(nodes)
+    elif alloc_type == 'heap':
+        header_file_code += _gen_declarations_matrices(nodes)
+    else:
+        CompilerException("Error: unknown memory type allocation")
     # generate function header code
     function_header : str = _gen_function_header_code_c(nodes)
     code_generated += function_header
@@ -118,3 +124,11 @@ def _gen_function_header_code_c(nodes : list[Node]) -> str:
     header_code += ") {\n"
         
     return header_code
+
+def _gen_declarations_matrices(nodes : list[Node]) -> str:
+    code : str = "// matrices delaration"
+    for node in nodes:
+        mat_type : str = onnx_tensor_elem_type_to_c_dictionary(node.infer_output_type())
+        code += mat_type + " " + fix_identifier(node.get_name()) + ";\n"
+    code += "\n"
+    return code
