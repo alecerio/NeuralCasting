@@ -11,6 +11,42 @@ def is_valid_onnx_data_type(data_type_index : int):
         return False
     return True
 
+def onnx_type_to_python_struct_type(data_type_index : int) -> str:
+    if data_type_index == 0: 
+        return None
+    elif data_type_index == 1: 
+        return "f"
+    elif data_type_index == 2: 
+        return "B"
+    elif data_type_index == 3: 
+        return "b"
+    elif data_type_index == 4: 
+        return "H"
+    elif data_type_index == 5: 
+        return "h"
+    elif data_type_index == 6: 
+        return "i"
+    elif data_type_index == 7: 
+        return "l"
+    elif data_type_index == 8: 
+        return "c"
+    elif data_type_index == 9: 
+        return "B"
+    elif data_type_index == 10: 
+        return None
+    elif data_type_index == 11: 
+        return "d"
+    elif data_type_index == 12: 
+        return "I"
+    elif data_type_index == 13: 
+        return "L"
+    elif data_type_index == 14: 
+        return None
+    elif data_type_index == 15: 
+        return None
+    else:
+        raise Exception("Error: unknown onnx data type")
+
 def onnx_type_to_c_dictionary(data_type_index : int) -> str:
     if data_type_index == 0: 
         return "void*"

@@ -7,28 +7,44 @@ from neural_cast.frontend.parser.node.input_node import InputNode
 from neural_cast.frontend.parser.node.output_node import OutputNode
 from neural_cast.frontend.parser.node_types.node_type import NodeType
 from neural_cast.frontend.parser.node_types.tensor_type import TensorType
-from neural_cast.frontend.common.common import fix_identifier, onnx_tensor_elem_type_to_c_dictionary
+from neural_cast.frontend.common.common import fix_identifier, onnx_tensor_elem_type_to_c_dictionary, onnx_type_to_python_struct_type
+import struct
 
 def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     alloc_type : str = CompilerConfig()['alloc']
+
+    _gen_binary_matrices(nodes)
 
     header_file_code : str = ""
     code_generated : str = ""
 
     # generate include code
     header_file_code += _gen_include_code_c(nodes)
-        
+    
+    #add readmat macro
+    if alloc_type == 'heap':
+        header_file_code += _gen_readmat_macro()
+
     # generate file header
     code_generated += _gen_header_code_c()
 
     # generate include in source file
     code_generated += _gen_includes_in_source_c()
 
+    # allocnn definition
+    if alloc_type == 'heap':
+        code_generated += _gen_allocnn_definition(nodes)
+
+    # freenn definition
+    if alloc_type == 'heap':
+        code_generated += _gen_freenn_definition(nodes)
+
     # generate declarations
     if alloc_type == 'data':
         code_generated += _gen_declarations_c(nodes)
     elif alloc_type == 'heap':
         header_file_code += _gen_declarations_matrices(nodes)
+        header_file_code += _gen_declaration_allocnn()
         header_file_code += _gen_declaration_freenn()
     else:
         CompilerException("Error: unknown memory type allocation")
@@ -36,6 +52,8 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     function_header : str = _gen_function_header_code_c(nodes)
     code_generated += function_header
     header_file_code += function_header[:-3] + ";\n"
+
+    
 
     return [header_file_code, code_generated]
 
@@ -56,8 +74,15 @@ def _gen_include_code_c(nodes :list[Node]) -> str:
             for line in filtered_inc_lines:
                 list_includes.append(line) 
     list_includes = list(set(list_includes))
+
     stdint_inc : str = "#include <stdint.h>"
     list_includes.append(stdint_inc)
+
+    stdlib_inc : str = "#include <stdlib.h>"
+    list_includes.append(stdlib_inc)
+
+    stdio_inc : str = "#include <stdio.h>"
+    list_includes.append(stdio_inc)
 
     code_generated += "// INCLUDE\n\n"
     for inc in list_includes:
@@ -130,7 +155,14 @@ def _gen_declarations_matrices(nodes : list[Node]) -> str:
     code : str = "// matrices delaration\n"
     for node in nodes:
         mat_type : str = onnx_tensor_elem_type_to_c_dictionary(node.infer_output_type())
-        code += mat_type + " " + fix_identifier(node.get_name()) + ";\n"
+        if isinstance(node, InitializerNode):
+            code += mat_type + " tensor_" + fix_identifier(node.get_name()) + ";\n"
+    code += "\n"
+    return code
+
+def _gen_declaration_allocnn() -> str:
+    code : str = "// allocnn\n"
+    code += "void allocnn();\n"
     code += "\n"
     return code
 
@@ -139,3 +171,51 @@ def _gen_declaration_freenn() -> str:
     code += "void freenn();\n"
     code += "\n"
     return code
+
+def _gen_readmat_macro() -> str:
+    codegen_c_path : str = CompilerConfig()['codegen_c_path']
+    f = open(codegen_c_path + '/READMAT.c')
+    macro : str = f.read()
+    macro = macro + '\n\n'
+    f.close()
+    return macro
+
+def _gen_allocnn_definition(nodes : list[Node]) -> str:
+    code : str = ''
+    code += 'void allocnn() {\n'
+    code += 'FILE *fp;\n'
+    for node in nodes:
+        if isinstance(node, InitializerNode):
+            tensor_type : str = onnx_tensor_elem_type_to_c_dictionary(node.get_data_type())[:-1]
+            tensor_shape : int = node.get_tensor().shape
+            tensor_size : int = 1
+            for dim in tensor_shape:
+                tensor_size = tensor_size * dim
+            name : str = fix_identifier(node.get_name())
+            tensor_name : str = 'tensor_' + name
+            code += 'READMAT(' + tensor_name + ', ' + str(tensor_size) + ', \"' + name + '.bin\", ' + tensor_type + ')\n'
+    code += '}\n\n'
+    return code
+
+def _gen_freenn_definition(nodes: list[Node]) -> str:
+    code : str = ''
+    code += 'void freenn() {\n'
+    for node in nodes:
+        if isinstance(node, InitializerNode):
+            name : str = fix_identifier(node.get_name())
+            tensor_name : str = 'tensor_' + name
+            code += 'free(' + tensor_name + ');\n'
+    code += '}\n\n'
+    return code
+
+def _gen_binary_matrices(nodes : list[Node]):
+    output_path : str = CompilerConfig()['output_path']
+    for node in nodes:
+        if isinstance(node, InitializerNode):
+            filename : str = fix_identifier(node.get_name())
+            with open(output_path + '/' + filename + '.bin', 'wb') as f:
+                tensor = node.get_tensor()
+                tensor = tensor.flatten()
+                tensor_type = onnx_type_to_python_struct_type(node.get_data_type())
+                for val in tensor:
+                    f.write(struct.pack(tensor_type, val))
