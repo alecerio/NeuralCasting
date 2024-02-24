@@ -31,6 +31,10 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     # generate include in source file
     code_generated += _gen_includes_in_source_c()
 
+    # declaration matrices (heap)
+    if alloc_type == 'heap':
+        code_generated += _gen_declarations_matrices(nodes)
+
     # allocnn definition
     if alloc_type == 'heap':
         code_generated += _gen_allocnn_definition(nodes)
@@ -43,7 +47,6 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     if alloc_type == 'data':
         code_generated += _gen_declarations_c(nodes)
     elif alloc_type == 'heap':
-        header_file_code += _gen_declarations_matrices(nodes)
         header_file_code += _gen_declaration_allocnn()
         header_file_code += _gen_declaration_freenn()
     else:

@@ -25,7 +25,7 @@ create_output_files: True
 # define matrices memory allocation:
 # - data to store in data segment
 # - heap to store in the heap
-alloc: heap
+alloc: data
 
 # ###########################################################################
 # PATH

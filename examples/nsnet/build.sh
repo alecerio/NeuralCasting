@@ -1,0 +1,1 @@
+gcc -o nsnet main.c nsnet.c -lm
