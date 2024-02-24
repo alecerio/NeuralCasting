@@ -29,7 +29,7 @@ class TestInferDbgOnnx(unittest.TestCase):
 
         # run command inferdbg
         onnxdbg("inferdbg", srcp=test_path, dstp=output_path, mdl=onnx_name, input=input_data)
-
+        
         with open(output_path + 'output.pkl', 'rb') as pickle_file:
             data = pickle.load(pickle_file)
         expected_output_31 = [np.array([-0.5007976 , -0.41972914,  0.13484477, -0.40547925], dtype=np.float32)]

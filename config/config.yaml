@@ -1,12 +1,44 @@
-# settings
+# ###########################################################################
+# SETTINGS
+# ###########################################################################
+
+# output code generated:
+# - C
 output_code: C
+
+# name of the generated C code
 name: dummy
+
+# local repository directory
 repo: /home/alessandro/Desktop/ncasting3/NeuralCasting/
+
+# workspace directory
 workdir: /home/alessandro/Desktop/
+
+# flag to generate output files
 create_output_files: True
 
-# paths
+# ###########################################################################
+# C CODE SETTINGS
+# ###########################################################################
+
+# define matrices memory allocation:
+# - data to store in data segment
+# - heap to store in the heap
+alloc: data
+
+# ###########################################################################
+# PATH
+# ###########################################################################
+
+# path for tests
 test_path: ${repo}tests/
+
+# path for temporary files
 temp_path: ${workdir}temp_path/
+
+# path for output files
 output_path: ${workdir}output/
+
+# path to C code template
 codegen_c_path: ${repo}neural_cast/frontend/code_generation/c/

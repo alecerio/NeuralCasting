@@ -56,7 +56,10 @@ class MatMul(OpNode):
 
         i1 : int = self._first_instance_non_one(shape1)
         i2 : int = self._first_instance_non_one(shape2)
-        imax : int = max(i1, i2)
+        #imax : int = max(i1, i2)
+        len1 : int = len(shape1)
+        len2 : int = len(shape2)
+        len_max : int = max(len1, len2)
         shape1 = shape1[i1:]
         shape2 = shape2[i2:]
 
@@ -71,7 +74,8 @@ class MatMul(OpNode):
         if shape1[-1] != shape2[-2]:
             raise CompilerException("Error: in MatMul, the number of columns of the left matrix must be equal to the number of columns of the right matrix")
         
-        shape = [1] * imax + [shape1[-2], shape2[-1]]
+        shape = [1] * (len_max-2) + [shape1[-2], shape2[-1]]
+
         return shape
     
     def infer_output_type(self) -> int:
