@@ -28,6 +28,19 @@ create_output_files: True
 alloc: heap
 
 # ###########################################################################
+# C PARALLELISM
+# ###########################################################################
+
+# define paralellism system:
+# - none: no parallelism
+# - omp: openmp parallelism
+parallel: omp
+
+# OMP
+# num of threads used in case of parallelism with OpenMP
+num_threads: 4
+
+# ###########################################################################
 # PATH
 # ###########################################################################
 

@@ -12,6 +12,7 @@ import struct
 
 def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     alloc_type : str = CompilerConfig()['alloc']
+    parallel : str = CompilerConfig()['parallel']
 
     _gen_binary_matrices(nodes)
 
@@ -19,7 +20,10 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     code_generated : str = ""
 
     # generate include code
-    header_file_code += _gen_include_code_c(nodes)
+    header_file_code += _gen_include_code_c(nodes, parallel)
+
+    # generate define code
+    header_file_code += _gen_define_code_c()
     
     #add readmat macro
     if alloc_type == 'heap':
@@ -51,23 +55,29 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
         header_file_code += _gen_declaration_freenn()
     else:
         CompilerException("Error: unknown memory type allocation")
+    
     # generate function header code
     function_header : str = _gen_function_header_code_c(nodes)
     code_generated += function_header
     header_file_code += function_header[:-3] + ";\n"
 
-    
+    if parallel == 'omp':
+        code_generated += _gen_omp_setup()
 
     return [header_file_code, code_generated]
 
 def post_codegen_c() -> str:
     return "}"
 
-def _gen_include_code_c(nodes :list[Node]) -> str:
+def _gen_include_code_c(nodes :list[Node], parallel: str) -> str:
     CompilerLogger().info("Generate include code")
 
     code_generated : str = ""
     list_includes : list[str] = []
+    
+    if parallel == 'omp':
+        list_includes.append("#include <omp.h>")
+
     for node in nodes:
         if isinstance(node, OpNode):
             CompilerLogger().info("Generate include code for: " + node.get_name())
@@ -222,3 +232,22 @@ def _gen_binary_matrices(nodes : list[Node]):
                 tensor_type = onnx_type_to_python_struct_type(node.get_data_type())
                 for val in tensor:
                     f.write(struct.pack(tensor_type, val))
+
+def _gen_define_code_c():
+    code : str = "// MACROS\n\n"
+    
+    parallel : str = CompilerConfig()['parallel']
+
+    if parallel == 'omp':
+        num_threads = CompilerConfig()['num_threads']
+        code += "#define NUM_THREADS (" + str(num_threads) + ")\n"
+
+    code += "\n\n"
+
+    return code
+
+def _gen_omp_setup() -> str:
+    code : str = ""
+    num_threads = CompilerConfig()['num_threads']
+    code += "omp_set_num_threads(" + str(num_threads) + ");"
+    return code
