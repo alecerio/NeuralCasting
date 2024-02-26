@@ -10,6 +10,7 @@ from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import signed_integer_types
 from neural_cast.frontend.common.common import unsigned_integer_types
 from neural_cast.frontend.common.common import floating_point_types
+import re
 
 def node_shape(node : Node) -> list[int]:
     shape = node.infer_output_shape()
@@ -190,6 +191,34 @@ def gen_const_values_code(tensor) -> str:
     for val in flat_tensor:
         code += str(val) + ", "
     return code
+
+def gen_introduce_omp_in_for_loop_elemen_wise(for_loop_begin : str, A_name : str, B_name : str, C_name : str) -> str:
+    for_loops : list[str] = for_loop_begin.split('\n')
+    for_loops = [x for x in for_loops if x != '']
+    bounds : list[int] = []
+    for loop in for_loops:
+        match = re.search(r'<(.*?);', loop)
+        if match:
+            bound_str : str = match.group(1)
+            bounds.append(int(bound_str))
+    max_bound = max(bounds)
+    max_index = bounds.index(max_bound)
+    
+    private_indices : str = ''
+    for n_index in range(0, max_index):
+        index : str = 'i' + str(n_index)
+        private_indices += index
+        if n_index < max_index-1:
+            private_indices += ', '
+    omp_directive : str = '#pragma omp parallel for shared(tensor_' + A_name + ', tensor_' + B_name + ', tensor_' + C_name + ') private(' + private_indices + ')'
+    
+    parall_for_loops : str = ''
+    for index, loop in enumerate(for_loops):
+        if index == max_index:
+            parall_for_loops += omp_directive + '\n'
+        parall_for_loops += loop + '\n'
+    
+    return parall_for_loops
 
 def _first_instance_non_one(shape : list[int]) -> int:
     for i in range(len(shape)):

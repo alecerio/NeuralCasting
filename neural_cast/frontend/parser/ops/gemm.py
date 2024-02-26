@@ -16,6 +16,7 @@ from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
+from neural_cast.frontend.common.common import CompilerConfig
 
 class Gemm(OpNode):
     def __init__(self, name : str):
@@ -31,6 +32,8 @@ class Gemm(OpNode):
         Return:
             The code related to gemm operation.
         """
+
+        parallel : str = CompilerConfig()['parallel']
 
         # node identifier
         name : str = fix_identifier(self._name)
@@ -52,6 +55,11 @@ class Gemm(OpNode):
         # output type
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
+
+        # omp directives
+        if parallel == 'omp':
+            omp_parallel_for : str = self.gen_omp_parallel_for(input_name_w, input_name, output_name, input_name_b)
+            omp_reduction : str = '#pragma omp reduction(temp: +)'
         
         # read template c code
         code : str = self._read_template_c("Gemm.c")
@@ -65,6 +73,12 @@ class Gemm(OpNode):
         code = self._expand_pattern(code, "$INPUT_NAME_B", input_name_b)
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
+        if parallel == 'omp':
+            code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", omp_parallel_for)
+            code = self._expand_pattern(code, "$OMP_REDUCTION", omp_reduction)
+        else:
+            code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", "")
+            code = self._expand_pattern(code, "$OMP_REDUCTION", "")
 
         return code
     
@@ -102,3 +116,7 @@ class Gemm(OpNode):
     
     def generate_includes_code_c(self) -> str:
         return ""
+    
+    def gen_omp_parallel_for(self, W_name, x_name, y_name, b_name) -> str:
+        code : str = '#pragma omp parallel for shared(' + W_name + ', ' + x_name + ', ' + y_name + ', ' + b_name + ') collapse(1)'
+        return code

@@ -169,7 +169,7 @@ def _gen_declarations_matrices(nodes : list[Node]) -> str:
     for node in nodes:
         mat_type : str = onnx_tensor_elem_type_to_c_dictionary(node.infer_output_type())
         if isinstance(node, InitializerNode):
-            code += mat_type + " tensor_" + fix_identifier(node.get_name()) + ";\n"
+            code += 'static ' + mat_type + " tensor_" + fix_identifier(node.get_name()) + ";\n"
     code += "\n"
     return code
 
