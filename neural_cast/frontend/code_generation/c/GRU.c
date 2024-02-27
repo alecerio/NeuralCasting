@@ -17,8 +17,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 {
     // a = W_ir @ x + b_ir
     float a[$HIDDEN_SIZE];
+$OMP_WIR_X_BIR
     for(int i=0; i< $HIDDEN_SIZE; i++) {
         a[i] = 0.0f;
+$OMP_REDUCTION_A
         for(int j=0; j<$INPUT_SIZE; j++) {
             a[i] += tensor_$W_NAME[($HIDDEN_SIZE*$INPUT_SIZE) + i*$INPUT_SIZE + j] * tensor_$INPUT_NAME[j];
         }
@@ -27,8 +29,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // b = W_hr @ h1 + b_hr
     float b[$HIDDEN_SIZE];
+$OMP_WHR_H1_BHR
     for(int i=0; i< $HIDDEN_SIZE; i++) {
         b[i] = 0.0f;
+$OMP_REDUCTION_B
         for(int j=0; j<$HIDDEN_SIZE; j++) {
             b[i] += tensor_$R_NAME[($HIDDEN_SIZE*$HIDDEN_SIZE) + i*$HIDDEN_SIZE + j] * tensor_$INPUT_HIDDEN_NAME[j];
         }
@@ -37,8 +41,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // c = W_iz @ x + b_iz
     float c[$HIDDEN_SIZE];
+$OMP_WIZ_X_BIZ
     for(int i=0; i< $HIDDEN_SIZE; i++) {
         c[i] = 0.0f;
+$OMP_REDUCTION_C
         for(int j=0; j<$INPUT_SIZE; j++) {
             c[i] += tensor_$W_NAME[i*$INPUT_SIZE + j] * tensor_$INPUT_NAME[j];
         }
@@ -47,8 +53,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // d = W_hz @ h1 + b_hz
     float d[$HIDDEN_SIZE];
+$OMP_WHZ_H1_BHZ
     for(int i=0; i< $HIDDEN_SIZE; i++) {
         d[i] = 0.0f;
+$OMP_REDUCTION_D
         for(int j=0; j<$HIDDEN_SIZE; j++) {
             d[i] += tensor_$R_NAME[i*$HIDDEN_SIZE + j] * tensor_$INPUT_HIDDEN_NAME[j];
         }
@@ -57,8 +65,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // e = W_in @ x + b_in
     float e[$HIDDEN_SIZE];
+$OMP_WIN_X_BIN
     for(int i=0; i< $HIDDEN_SIZE; i++) {
         e[i] = 0.0f;
+$OMP_REDUCTION_E
         for(int j=0; j<$INPUT_SIZE; j++) {
             e[i] += tensor_$W_NAME[(2*$HIDDEN_SIZE*$INPUT_SIZE) + i*$HIDDEN_SIZE + j] * tensor_$INPUT_NAME[j];
         }
@@ -67,8 +77,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // f = W_hn @ h1 + b_hn
     float f[$HIDDEN_SIZE];
+$OMP_WHN_H1_BHN
     for(int i=0; i< $HIDDEN_SIZE; i++) {
         f[i] = 0.0f;
+$OMP_REDUCTION_F
         for(int j=0; j<$HIDDEN_SIZE; j++) {
             f[i] += tensor_$R_NAME[(2*$HIDDEN_SIZE*$HIDDEN_SIZE) + i*$HIDDEN_SIZE + j] * tensor_$INPUT_HIDDEN_NAME[j];
         }
@@ -77,6 +89,7 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // r = sigmoid(a + b)
     float r[$HIDDEN_SIZE];
+$OMP_SIGMOID_1
     for(int i=0; i<$HIDDEN_SIZE; i++) {
         float s = a[i] + b[i];
         r[i] = 1.0f / (1.0f + expf(-s));
@@ -84,6 +97,7 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // z = sigmoid(c + d)
     float z[$HIDDEN_SIZE];
+$OMP_SIGMOID_2
     for(int i=0; i<$HIDDEN_SIZE; i++) {
         float s = c[i] + d[i];
         z[i] = 1.0f / (1.0f + expf(-s));
@@ -91,12 +105,14 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 
     // n = tanh(e + r*f)
     float n[$HIDDEN_SIZE];
+$OMP_TANH
     for(int i=0; i<$HIDDEN_SIZE; i++) {
         n[i] = tanh(e[i] + r[i] * f[i]);
     }
 
     // hn = (1-z) * n + z * h1
     float hn[$HIDDEN_SIZE];
+$OMP_HN
     for(int i=0; i<$HIDDEN_SIZE; i++) {
         tensor_$OUTPUT_HIDDEN_NAME[i] = (1.0f - z[i]) * n[i] + z[i] * tensor_$INPUT_HIDDEN_NAME[i];
         tensor_$OUTPUT_NAME[i] = tensor_$OUTPUT_HIDDEN_NAME[i];
