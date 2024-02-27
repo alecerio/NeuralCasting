@@ -1,3 +1,4 @@
+from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
@@ -15,6 +16,8 @@ class MatMul(OpNode):
         return super().__str__()
 
     def generate_code(self) -> str:
+        parallel : str = CompilerConfig()['parallel']
+
         name : str = fix_identifier(self.get_name())
         define_connected_output : str = gen_define_connected_output(self, 0)
         output_name : str = fix_identifier(self._output_varnames[0])
@@ -27,6 +30,13 @@ class MatMul(OpNode):
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
+        if parallel == 'omp':
+            omp_parallel_for : str = self._gen_omp_parallel_for(input_name_1, input_name_2, output_name)
+            omp_reduction : str = self._gen_omp_reduction()
+        else:
+            omp_parallel_for : str = ""
+            omp_reduction : str = ""
+        
         code : str = self._read_template_c("MatMul.c")
 
         code = self._expand_pattern(code, "$NAME", name)
@@ -38,6 +48,8 @@ class MatMul(OpNode):
         code = self._expand_pattern(code, "$N_COLS_RIGHT", str(n_cols_right))
         code = self._expand_pattern(code, "$N_COLS_LEFT", str(n_cols_left))
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
+        code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", omp_parallel_for)
+        code = self._expand_pattern(code, "$OMP_REDUCTION", omp_reduction)
 
         return code
     
@@ -96,3 +108,9 @@ class MatMul(OpNode):
             if shape[i] != 1:
                 return i
         return -1
+
+    def _gen_omp_parallel_for(self, input_name_1 : str, input_name_2 : str, output_name : str) -> str:
+        return '#pragma omp parallel for shared(tensor_' + input_name_1 + ', tensor_' + input_name_2 + ', tensor_' + output_name + ') collapse(2)'
+
+    def _gen_omp_reduction(self) -> str:
+        return '#pragma omp reduction(temp: +)'
