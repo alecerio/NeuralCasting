@@ -30,6 +30,7 @@ class Sub(OpNode):
         out_size : int = math.prod(out_shape)
         for_loop_begin : str = gen_for_loop_begin(out_shape)
         for_loop_end : str = gen_for_loop_end(out_shape)
+        nflops : int = out_size
         
         input1 : Node = self._inputs[0]
         input2 : Node = self._inputs[1]
@@ -55,6 +56,7 @@ class Sub(OpNode):
         code = self._expand_pattern(code, "$INDEX_1", index_1)
         code = self._expand_pattern(code, "$INDEX_2", index_2)
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     
