@@ -14,6 +14,10 @@ float tensor_$OUTPUT_HIDDEN_NAME[$HIDDEN_SIZE];
 #undef CONNECTED_HIDDEN
 #endif
 
+#ifdef COMPILER_BENCHMARK
+neuralcasting_start_benchmark = omp_get_wtime();
+#endif
+
 {
     // a = W_ir @ x + b_ir
     float a[$HIDDEN_SIZE];
@@ -118,6 +122,10 @@ $OMP_HN
         tensor_$OUTPUT_NAME[i] = tensor_$OUTPUT_HIDDEN_NAME[i];
     }
 }
+
+#ifdef COMPILER_BENCHMARK
+BENCHMARK("tensor_$NAME", $NFLOPS)
+#endif
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");

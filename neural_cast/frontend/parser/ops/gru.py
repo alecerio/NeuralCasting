@@ -69,6 +69,10 @@ class GRU(OpNode):
             omp_sigmoid_2 : str = ""
             omp_tanh : str = ""
             omp_hn : str = ""
+        
+        nflops_exp : int = 4
+        nflops_tanh : int = 4
+        nflops : int = hidden_size * ( 6 * ( in_size + hidden_size + 2 ) + nflops_tanh + 2 * ( 2 + nflops_exp ) )
 
         code : str = self._read_template_c("GRU.c")
 
@@ -101,6 +105,8 @@ class GRU(OpNode):
         code = self._expand_pattern(code, "$OMP_SIGMOID_2", omp_sigmoid_2)
         code = self._expand_pattern(code, "$OMP_TANH", omp_tanh)
         code = self._expand_pattern(code, "$OMP_HN", omp_hn)
+
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     
