@@ -48,6 +48,8 @@ class Gather(OpNode):
         output_datatype : int = self.infer_output_type()
         output_datatype_str : str = onnx_type_to_c_dictionary(output_datatype)
 
+        nflops : int = 0
+
         code : str = self._read_template_c("Gather.c")
 
         code = self._expand_pattern(code, "$NAME", name)
@@ -63,6 +65,7 @@ class Gather(OpNode):
         code = self._expand_pattern(code, "$VALUE_TYPE", str(values_datatype_str))
         code = self._expand_pattern(code, "$INDEX_TYPE", str(indices_datatype_str))
         code = self._expand_pattern(code, "$OUTPUT_TYPE", str(output_datatype_str))
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     

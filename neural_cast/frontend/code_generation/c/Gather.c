@@ -7,6 +7,10 @@ $OUTPUT_TYPE tensor_$OUTPUT_NAME[$OUTPUT_SIZE];
 #undef CONNECTED_OUTPUT
 #endif
 
+#ifdef COMPILER_BENCHMARK
+neuralcasting_start_benchmark = omp_get_wtime();
+#endif
+
 #define AXIS ($AXIS)
 
 #if AXIS == 0
@@ -47,6 +51,10 @@ return -1;
 #endif
 
 #undef AXIS
+
+#ifdef COMPILER_BENCHMARK
+BENCHMARK("tensor_$NAME", $NFLOPS)
+#endif
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");
