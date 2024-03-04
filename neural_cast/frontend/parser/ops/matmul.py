@@ -29,6 +29,7 @@ class MatMul(OpNode):
         n_cols_left : int = self._infer_ncols_left()
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
+        nflops : int = n_rows_left * n_cols_right + n_cols_left * 2
 
         if parallel == 'omp':
             omp_parallel_for : str = self._gen_omp_parallel_for(input_name_1, input_name_2, output_name)
@@ -50,6 +51,7 @@ class MatMul(OpNode):
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
         code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", omp_parallel_for)
         code = self._expand_pattern(code, "$OMP_REDUCTION", omp_reduction)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     
