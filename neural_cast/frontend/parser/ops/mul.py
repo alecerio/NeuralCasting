@@ -1,3 +1,4 @@
+from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
@@ -11,6 +12,7 @@ from neural_cast.frontend.parser.ops.common.common import gen_element_wise_broad
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 import math
 from neural_cast.frontend.parser.ops.common.common import infer_output_shape_for_element_wise_binary_operators
+from neural_cast.frontend.parser.ops.common.common import gen_introduce_omp_in_for_loop_elemen_wise
 
 class Mul(OpNode):
     def __init__(self, name : str):
@@ -20,6 +22,7 @@ class Mul(OpNode):
         return super().__str__()
 
     def generate_code(self) -> str:
+        parallel : str = CompilerConfig()['parallel']
         name : str = fix_identifier(self.get_name())
         define_connected_output : str = gen_define_connected_output(self, 0)
         input_name_1 : str = fix_identifier(self._input_varnames[0])
@@ -29,6 +32,9 @@ class Mul(OpNode):
         out_size : int = math.prod(out_shape)
         for_loop_begin : str = gen_for_loop_begin(out_shape)
         for_loop_end : str = gen_for_loop_end(out_shape)
+
+        if parallel == 'omp':
+            for_loop_begin = gen_introduce_omp_in_for_loop_elemen_wise(for_loop_begin, input_name_1, input_name_2, output_name)
 
         input1 : Node = self._inputs[0]
         input2 : Node = self._inputs[1]

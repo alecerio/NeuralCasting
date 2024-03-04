@@ -4,6 +4,8 @@ Description:
     The class ReLu represents the ReLU (Rectified Linear Unit) activation function.
 """
 
+from neural_cast.frontend.common.common import CompilerConfig
+from neural_cast.frontend.parser.ops.common.common import gen_introduce_omp_in_for_loop_elem_by_elem
 import math
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
@@ -30,6 +32,8 @@ class ReLu(OpNode):
             The code related to the ReLu function.
         """
         
+        parallel : str = CompilerConfig()['parallel']
+
         define_connected_output : str = gen_define_connected_output(self, 0)
         name : str = fix_identifier(self._name)
         input_name : str = fix_identifier(self._input_varnames[0])
@@ -41,6 +45,9 @@ class ReLu(OpNode):
         index : str = gen_for_loop_index(out_shape)
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
+
+        if parallel == 'omp':
+            for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
 
         code : str = self._read_template_c("ReLu.c")
 

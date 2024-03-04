@@ -1,3 +1,5 @@
+from neural_cast.frontend.parser.ops.common.common import gen_introduce_omp_in_for_loop_elemen_wise
+from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
@@ -18,6 +20,7 @@ class Sub(OpNode):
         return super.__str__()
     
     def generate_code(self) -> str:
+        parallel : str = CompilerConfig()['parallel']
         name : str = fix_identifier(self.get_name())
         define_connected_output : str = gen_define_connected_output(self, 0)
         input_name_1 : str = fix_identifier(self._input_varnames[0])
@@ -31,6 +34,9 @@ class Sub(OpNode):
         input1 : Node = self._inputs[0]
         input2 : Node = self._inputs[1]
         [index_tot, index_1, index_2] = gen_element_wise_broadcasting_indices(input1, input2, out_shape, "Sub")
+
+        if parallel == 'omp':
+            for_loop_begin = gen_introduce_omp_in_for_loop_elemen_wise(for_loop_begin, input_name_1, input_name_2, output_name)
 
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)

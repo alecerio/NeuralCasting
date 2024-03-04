@@ -1,3 +1,5 @@
+from neural_cast.frontend.common.common import CompilerConfig
+from neural_cast.frontend.parser.ops.common.common import gen_introduce_omp_in_for_loop_elem_by_elem
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
@@ -17,6 +19,8 @@ class Tanh(OpNode):
         return super().__str__()
     
     def generate_code(self) -> str:
+        parallel : str = CompilerConfig()['parallel']
+
         name : str = self.get_name()
         define_connected_output : str = gen_define_connected_output(self, 0)
         output_name : str = fix_identifier(self._output_varnames[0])
@@ -28,6 +32,9 @@ class Tanh(OpNode):
         index : str = gen_for_loop_index(out_shape)
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
+
+        if parallel == 'omp':
+            for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
 
         code : str = self._read_template_c("Tanh.c")
 

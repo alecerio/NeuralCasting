@@ -8,6 +8,8 @@ from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
 from neural_cast.frontend.parser.ops.common.common import gen_for_loop_index
 from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
+from neural_cast.frontend.common.common import CompilerConfig
+from neural_cast.frontend.parser.ops.common.common import gen_introduce_omp_in_for_loop_elem_by_elem
 
 class Sigmoid(OpNode):
     def __init__(self, name : str):
@@ -17,6 +19,7 @@ class Sigmoid(OpNode):
         return super.__str__()
 
     def generate_code(self) -> str:
+        parallel : str = CompilerConfig()['parallel']
         name : str = fix_identifier(self.get_name())
         define_connected_output : str = gen_define_connected_output(self, 0)
         input_name : str = fix_identifier(self._input_varnames[0])
@@ -28,6 +31,9 @@ class Sigmoid(OpNode):
         index : str = gen_for_loop_index(in_shape)
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
+
+        if parallel == 'omp':
+            for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
 
         code : str = self._read_template_c("Sigmoid.c")
 

@@ -7,8 +7,10 @@ $OUTPUT_TYPE tensor_$OUTPUT_NAME[$OUTPUT_SIZE];
 #undef CONNECTED_OUTPUT
 #endif
 
+$OMP_PARALLEL_FOR
 for(int32_t i=0; i<$OUTPUT_SIZE; i++) {
     $OUTPUT_TYPE temp = 0.0f;
+$OMP_REDUCTION
     for(int32_t j=0; j<$INPUT_SIZE; j++) {
         temp += tensor_$INPUT_NAME_W[i * $INPUT_SIZE + j] * tensor_$INPUT_NAME_X[j];
     }

@@ -1,1 +1,1 @@
-gcc -o nsnet main.c nsnet.c -lm
+gcc -O3 -o nsnet main.c nsnet.c -lm -fopenmp

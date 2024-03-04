@@ -1,3 +1,4 @@
+from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.node.op_node import OpNode
 from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.parser.ops.constant import Constant
@@ -14,12 +15,18 @@ class Squeeze(OpNode):
         return super().__str__()
     
     def generate_code(self) -> str:
+        parallel : str = CompilerConfig()['parallel']
         name : str = self.get_name()
         define_connected_output : str = gen_define_connected_output(self, 0)
         output_name : str = fix_identifier(self._output_varnames[0])
         input_name : str = fix_identifier(self._input_varnames[0])
         in_shape : int = self.infer_output_shape()
         in_size : int = math.prod(in_shape)
+
+        if parallel == 'omp':
+            omp_parallel_for : str = self._gen_omp_parallel_for(input_name, output_name)
+        else:
+            omp_parallel_for : str = ""
 
         code : str = self._read_template_c("Squeeze.c")
 
@@ -28,6 +35,7 @@ class Squeeze(OpNode):
         code = self._expand_pattern(code, "$OUTPUT_NAME", output_name)
         code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
+        code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", omp_parallel_for)
 
         return code
     
@@ -67,3 +75,7 @@ class Squeeze(OpNode):
     
     def get_op_type(self) -> str:
         return "Squeeze"
+    
+    def _gen_omp_parallel_for(self, input_name : str, output_name : str) -> str:
+        code : str = '#pragma omp parallel for shared(tensor_' + input_name + ', tensor_' + output_name + ')'
+        return code
