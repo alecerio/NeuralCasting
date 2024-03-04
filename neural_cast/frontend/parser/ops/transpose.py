@@ -32,6 +32,8 @@ class Transpose(OpNode):
         index : str = gen_for_loop_index(in_shape)
         index_out : str = self._gen_index_out()
 
+        nflops : int = 0
+
         code : str = self._read_template_c("Transpose.c")
 
         code = self._expand_pattern(code, "$NAME", name)
@@ -43,6 +45,7 @@ class Transpose(OpNode):
         code = self._expand_pattern(code, "$INDEX_IN", index)
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     
