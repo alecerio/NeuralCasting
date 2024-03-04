@@ -22,6 +22,7 @@ class Squeeze(OpNode):
         input_name : str = fix_identifier(self._input_varnames[0])
         in_shape : int = self.infer_output_shape()
         in_size : int = math.prod(in_shape)
+        nflops : int = 0
 
         if parallel == 'omp':
             omp_parallel_for : str = self._gen_omp_parallel_for(input_name, output_name)
@@ -36,6 +37,7 @@ class Squeeze(OpNode):
         code = self._expand_pattern(code, "$INPUT_SIZE", str(in_size))
         code = self._expand_pattern(code, "$INPUT_NAME", input_name)
         code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", omp_parallel_for)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     
