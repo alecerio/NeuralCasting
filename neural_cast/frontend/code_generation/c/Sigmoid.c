@@ -7,10 +7,18 @@ $OUTPUT_TYPE tensor_$OUTPUT_NAME[$INPUT_SIZE];
 #undef CONNECTED_OUTPUT
 #endif
 
+#ifdef COMPILER_BENCHMARK
+neuralcasting_start_benchmark = omp_get_wtime();
+#endif
+
 $FOR_LOOPS_BEGIN
 $OUTPUT_TYPE ex = exp(tensor_$INPUT_NAME[$INDEX]);
 tensor_$OUTPUT_NAME[$INDEX] = ex / (1.0f + ex);
 $FOR_LOOPS_END
+
+#ifdef COMPILER_BENCHMARK
+BENCHMARK("tensor_$NAME", $NFLOPS)
+#endif
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");

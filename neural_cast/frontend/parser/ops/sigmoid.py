@@ -31,6 +31,8 @@ class Sigmoid(OpNode):
         index : str = gen_for_loop_index(in_shape)
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
+        nflops_exp : int = 4
+        nflops : int = in_size * (nflops_exp + 2)
 
         if parallel == 'omp':
             for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
@@ -46,6 +48,7 @@ class Sigmoid(OpNode):
         code = self._expand_pattern(code, "$FOR_LOOPS_END", for_loop_end)
         code = self._expand_pattern(code, "$INDEX", index)
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     

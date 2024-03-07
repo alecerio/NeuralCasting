@@ -28,6 +28,9 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     #add readmat macro
     if alloc_type == 'heap':
         header_file_code += _gen_readmat_macro()
+    
+    # add benchmark macro
+    header_file_code += _gen_benchmark_macro()
 
     # generate file header
     code_generated += _gen_header_code_c()
@@ -63,6 +66,8 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
 
     if parallel == 'omp':
         code_generated += _gen_omp_setup()
+
+    code_generated += _gen_benchmark_setup()
 
     return [header_file_code, code_generated]
 
@@ -193,6 +198,14 @@ def _gen_readmat_macro() -> str:
     f.close()
     return macro
 
+def _gen_benchmark_macro() -> str:
+    codegen_c_path : str = CompilerConfig()['codegen_c_path']
+    f = open(codegen_c_path + '/Benchmark.h')
+    macro : str = f.read()
+    macro = macro + '\n\n'
+    f.close()
+    return macro
+
 def _gen_allocnn_definition(nodes : list[Node]) -> str:
     code : str = ''
     code += 'void allocnn() {\n'
@@ -249,5 +262,12 @@ def _gen_define_code_c():
 def _gen_omp_setup() -> str:
     code : str = ""
     num_threads = CompilerConfig()['num_threads']
-    code += "omp_set_num_threads(" + str(num_threads) + ");"
+    code += "omp_set_num_threads(" + str(num_threads) + ");\n\n"
     return code
+
+def _gen_benchmark_setup() -> str:
+    return "#ifdef COMPILER_BENCHMARK\n" + \
+        "double neuralcasting_time_benchmark = 0.0f;\n" + \
+        "double neuralcasting_end_benchmark = 0.0f;\n" + \
+        "double neuralcasting_start_benchmark = 0.0f;\n" + \
+        "#endif\n\n"

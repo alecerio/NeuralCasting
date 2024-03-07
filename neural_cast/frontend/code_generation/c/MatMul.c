@@ -7,6 +7,10 @@ $OUTPUT_TYPE tensor_$OUTPUT_NAME[$N_ROWS_LEFT * $N_COLS_RIGHT];
 #undef CONNECTED_OUTPUT
 #endif
 
+#ifdef COMPILER_BENCHMARK
+neuralcasting_start_benchmark = omp_get_wtime();
+#endif
+
 $OMP_PARALLEL_FOR
 for(int32_t i=0; i<$N_ROWS_LEFT; i++) {
     for(int32_t j=0; j<$N_COLS_RIGHT; j++) {
@@ -20,6 +24,10 @@ $OMP_REDUCTION
         tensor_$OUTPUT_NAME[i*$N_COLS_RIGHT + j] = temp;
     }
 }
+
+#ifdef COMPILER_BENCHMARK
+BENCHMARK("tensor_$NAME", $NFLOPS)
+#endif
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");

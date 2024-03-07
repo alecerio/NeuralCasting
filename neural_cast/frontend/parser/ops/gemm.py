@@ -56,6 +56,9 @@ class Gemm(OpNode):
         output_type : int = self.infer_output_type()
         output_type_str : str = onnx_type_to_c_dictionary(output_type)
 
+        # nflops
+        nflops : int = in_size * out_size * 2 + out_size
+
         # omp directives
         if parallel == 'omp':
             omp_parallel_for : str = self.gen_omp_parallel_for(input_name_w, input_name, output_name, input_name_b)
@@ -79,6 +82,7 @@ class Gemm(OpNode):
         else:
             code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", "")
             code = self._expand_pattern(code, "$OMP_REDUCTION", "")
+        code = self._expand_pattern(code, "$NFLOPS", nflops)
 
         return code
     
