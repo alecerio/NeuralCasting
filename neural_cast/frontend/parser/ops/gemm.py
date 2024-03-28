@@ -82,7 +82,7 @@ class Gemm(OpNode):
         else:
             code = self._expand_pattern(code, "$OMP_PARALLEL_FOR", "")
             code = self._expand_pattern(code, "$OMP_REDUCTION", "")
-        code = self._expand_pattern(code, "$NFLOPS", nflops)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     

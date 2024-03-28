@@ -58,7 +58,7 @@ class Mul(OpNode):
         code = self._expand_pattern(code, "$INDEX_1", index_1)
         code = self._expand_pattern(code, "$INDEX_2", index_2)
         code = self._expand_pattern(code, "$OUTPUT_TYPE", output_type_str)
-        code = self._expand_pattern(code, "$NFLOPS", nflops)
+        code = self._expand_pattern(code, "$NFLOPS", str(nflops))
 
         return code
     
