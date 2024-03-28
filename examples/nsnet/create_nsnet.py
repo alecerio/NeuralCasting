@@ -27,7 +27,7 @@ test_path : str = CompilerConfig()['repo'] + 'debug_framework/'
 temp_path : str = CompilerConfig()['temp_path']
 path_onnx = test_path + 'nsnet2.onnx'
 
-# run compiler
+# run compiler 
 run(CompilerConfig(), framework='onnx', path=path_onnx)
 
 # copy main.c to output folder
