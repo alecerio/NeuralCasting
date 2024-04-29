@@ -23,6 +23,7 @@ from neural_cast.frontend.common.common import CompilerLogger
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.ops.gru import GRU
+from neural_cast.frontend.parser.ops.softmax import Softmax
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -166,6 +167,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
             opnode : Squeeze = Squeeze(name)
         elif optype == 'GRU':
             opnode : GRU = GRU(name)
+        elif optype == 'Softmax':
+            opnode : Softmax = Softmax(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -205,6 +208,8 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_squeeze_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, GRU):
                 _fill_gru_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Softmax):
+                _fill_tanh_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -357,6 +362,12 @@ def _fill_gru_node(node : GRU, nodes : list[Node], in_names : list[str], out_nam
     node.append_input(in_node_initH, in_names[5])
     node.append_output(out_node, out_names[0])
     node.append_output(out_hidden, out_names[1])
+
+def _fill_tanh_node(node : Softmax, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
     for node in nodes:
