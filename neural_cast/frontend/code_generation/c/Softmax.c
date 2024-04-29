@@ -18,7 +18,7 @@ $OUTPUT_TYPE tensor_$OUTPUT_NAME[$INPUT_SIZE];
     float exps[$INPUT_SIZE];
     $FOR_LOOPS_BEGIN
         exps[$INDEX] = exp(tensor_$INPUT_NAME[$INDEX]-maximum);
-        sum += exps[i];
+        sum += exps[$INDEX];
     $FOR_LOOPS_END
 
     $FOR_LOOPS_BEGIN
