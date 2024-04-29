@@ -35,7 +35,7 @@ class Softmax(OpNode):
         if parallel == 'omp':
             for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
 
-        code : str = self._read_template_c("Sigmoid.c")
+        code : str = self._read_template_c("Softmax.c")
 
         code = self._expand_pattern(code, "$NAME", name)
         code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
