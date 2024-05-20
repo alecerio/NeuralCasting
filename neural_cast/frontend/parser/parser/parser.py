@@ -24,6 +24,7 @@ from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.ops.gru import GRU
 from neural_cast.frontend.parser.ops.softmax import Softmax
+from neural_cast.frontend.parser.ops.qlinear import QLinear
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -169,6 +170,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
             opnode : GRU = GRU(name)
         elif optype == 'Softmax':
             opnode : Softmax = Softmax(name)
+        elif optype == 'QLinear':
+            opnode : QLinear = QLinear(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -210,6 +213,8 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_gru_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Softmax):
                 _fill_tanh_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QLinear):
+                _fill_qlinear_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -367,6 +372,16 @@ def _fill_tanh_node(node : Softmax, nodes : list[Node], in_names : list[str], ou
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_qlinear_node(node : Softmax, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sf = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_z = _get_input_node_reference(nodes, in_names[2], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_sf, in_names[1])
+    node.append_input(in_node_z, in_names[2])
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
