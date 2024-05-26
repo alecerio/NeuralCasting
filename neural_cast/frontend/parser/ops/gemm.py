@@ -122,5 +122,5 @@ class Gemm(OpNode):
         return ""
     
     def gen_omp_parallel_for(self, W_name, x_name, y_name, b_name) -> str:
-        code : str = '#pragma omp parallel for shared(' + W_name + ', ' + x_name + ', ' + y_name + ', ' + b_name + ') collapse(1)'
+        code : str = '#pragma omp parallel for shared(tensor_' + W_name + ', tensor_' + x_name + ', tensor_' + y_name + ', tensor_' + b_name + ') collapse(1)'
         return code
