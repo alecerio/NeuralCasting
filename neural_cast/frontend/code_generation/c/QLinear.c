@@ -3,7 +3,7 @@
 //                         QLIN $(NAME)
 // -------------------------------------------------------
 
-NCAST_QUANT8(tensor_$(INPUT_NAME), tensor_$(OUTPUT_NAME), QLIN_$(NAME)_OUTPUT_SIZE, tensor_$(SCALING_FACTOR_NAME), tensor_$(ZERO_NAME))
+NCAST_QUANT8(tensor_$(INPUT_NAME), tensor_$(OUTPUT_NAME), QLIN_$(NAME)_OUTPUT_SIZE, tensor_$(SCALING_FACTOR_NAME)[0], tensor_$(ZERO_NAME)[0])
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");

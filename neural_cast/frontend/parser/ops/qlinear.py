@@ -67,7 +67,7 @@ class QLinear(OpNode):
         return input1.infer_output_type()
 
     def get_op_type(self) -> str:
-        return "QLinear"
+        return "QuantizeLinear"
 
     def generate_includes_code_c(self) -> str:
         code : str = self._read_template_c("QLinear_inc.c")
