@@ -4,7 +4,6 @@ from neural_cast.frontend.parser.node.init_node import InitializerNode
 from neural_cast.frontend.parser.node_types.node_type import NodeType
 from neural_cast.frontend.parser.node_types.tensor_type import TensorType
 from neural_cast.frontend.parser.node.op_node import OpNode
-from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.parser.ops.common.common import node_type_binary_operation
