@@ -7,8 +7,8 @@ NCAST_QUANT8(tensor_$(INPUT_NAME), tensor_$(OUTPUT_NAME), QLIN_$(NAME)_OUTPUT_SI
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $NAME -----------------\n");
-for(int i=0; i<$(OUTPUT_SIZE); i++) {
-    printf("%f ", tensor_$(OUTPUT_NAME)[i]);
+for(int i=0; i<QLIN_$(NAME)_OUTPUT_SIZE; i++) {
+    printf("%d ", tensor_$(OUTPUT_NAME)[i]);
 }
 printf("\n");
 printf("------------------------------------------------------\n\n");
