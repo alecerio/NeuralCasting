@@ -30,7 +30,7 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
         header_file_code += _gen_readmat_macro()
     
     # add benchmark macro
-    header_file_code += _gen_benchmark_macro()
+    #header_file_code += _gen_benchmark_macro()
 
     # generate file header
     code_generated += _gen_header_code_c()
