@@ -393,12 +393,6 @@ def _fill_gru_node(node : GRU, nodes : list[Node], in_names : list[str], out_nam
     node.append_output(out_node, out_names[0])
     node.append_output(out_hidden, out_names[1])
 
-def _fill_tanh_node(node : Softmax, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
-    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
-    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
-    node.append_input(in_node, in_names[0])
-    node.append_output(out_node, out_names[0])
-
 def _fill_qlinear_node(node : QLinear, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_sf = _get_input_node_reference(nodes, in_names[1], out_dict)
