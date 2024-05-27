@@ -27,6 +27,7 @@ from neural_cast.frontend.parser.ops.softmax import Softmax
 from neural_cast.frontend.parser.ops.qlinear import QLinear
 from neural_cast.frontend.parser.ops.qgemm import QGemm
 from neural_cast.frontend.parser.ops.dequantizelinear import DequantizeLinear
+from neural_cast.frontend.parser.ops.qlinearadd import QLinearAdd
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -178,6 +179,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
             opnode : QGemm = QGemm(name)
         elif optype == 'DequantizeLinear':
             opnode : DequantizeLinear = DequantizeLinear(name)
+        elif optype == 'QLinearAdd':
+            opnode : QLinearAdd = QLinearAdd(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -225,6 +228,8 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_qgemm_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, DequantizeLinear):
                 _fill_dequantizelinear_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QLinearAdd):
+                _fill_qlinearadd_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -384,7 +389,7 @@ def _fill_tanh_node(node : Softmax, nodes : list[Node], in_names : list[str], ou
     node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
-def _fill_qlinear_node(node : Softmax, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_qlinear_node(node : QLinear, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_sf = _get_input_node_reference(nodes, in_names[1], out_dict)
     in_node_z = _get_input_node_reference(nodes, in_names[2], out_dict)
@@ -394,7 +399,7 @@ def _fill_qlinear_node(node : Softmax, nodes : list[Node], in_names : list[str],
     node.append_input(in_node_z, in_names[2])
     node.append_output(out_node, out_names[0])
 
-def _fill_qgemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_qgemm_node(node : QGemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update QGemm node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_sx = _get_input_node_reference(nodes, in_names[1], out_dict)
@@ -420,7 +425,7 @@ def _fill_qgemm_node(node : Gemm, nodes : list[Node], in_names : list[str], out_
     
     node.append_output(out_node, out_names[0])
 
-def _fill_dequantizelinear_node(node : Softmax, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_dequantizelinear_node(node : DequantizeLinear, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     in_node_sf = _get_input_node_reference(nodes, in_names[1], out_dict)
     in_node_z = _get_input_node_reference(nodes, in_names[2], out_dict)
@@ -428,6 +433,29 @@ def _fill_dequantizelinear_node(node : Softmax, nodes : list[Node], in_names : l
     node.append_input(in_node, in_names[0])
     node.append_input(in_node_sf, in_names[1])
     node.append_input(in_node_z, in_names[2])
+    node.append_output(out_node, out_names[0])
+
+def _fill_qlinearadd_node(node : QLinearAdd, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node_a = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sa = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_za = _get_input_node_reference(nodes, in_names[2], out_dict)
+    in_node_b = _get_input_node_reference(nodes, in_names[3], out_dict)
+    in_node_sb = _get_input_node_reference(nodes, in_names[4], out_dict)
+    in_node_zb = _get_input_node_reference(nodes, in_names[5], out_dict)
+    in_node_sc = _get_input_node_reference(nodes, in_names[6], out_dict)
+    in_node_zc = _get_input_node_reference(nodes, in_names[7], out_dict)
+
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    
+    node.append_input(in_node_a, in_names[0])
+    node.append_input(in_node_sa, in_names[1])
+    node.append_input(in_node_za, in_names[2])
+    node.append_input(in_node_b, in_names[3])
+    node.append_input(in_node_sb, in_names[4])
+    node.append_input(in_node_zb, in_names[5])
+    node.append_input(in_node_sc, in_names[6])
+    node.append_input(in_node_zc, in_names[7])
+
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
