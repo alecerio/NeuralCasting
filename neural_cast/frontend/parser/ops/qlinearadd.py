@@ -90,4 +90,4 @@ class QLinearAdd(OpNode):
     def infer_output_type(self) -> int:
         input1 : Node = self._inputs[0]
         input2 : Node = self._inputs[1]
-        return node_type_binary_operation(input1, input2, "element-wise addition")
+        return node_type_binary_operation(input1, input2, "element-wise quantized addition")
