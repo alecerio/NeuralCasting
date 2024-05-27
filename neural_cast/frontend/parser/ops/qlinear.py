@@ -4,12 +4,7 @@ from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.parser.ops.common.common import node_shape
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
-from neural_cast.frontend.parser.ops.common.common import gen_for_loop_begin
-from neural_cast.frontend.parser.ops.common.common import gen_for_loop_end
-from neural_cast.frontend.parser.ops.common.common import gen_for_loop_index
-from neural_cast.frontend.common.common import onnx_type_to_c_dictionary
 from neural_cast.frontend.common.common import CompilerConfig
-from neural_cast.frontend.parser.ops.common.common import gen_introduce_omp_in_for_loop_elem_by_elem
 
 class QLinear(OpNode):
     def __init__(self, name : str):
@@ -25,7 +20,6 @@ class QLinear(OpNode):
         output_name : str = fix_identifier(self._output_varnames[0])
         y_scale_id : str = fix_identifier(self._input_varnames[1])
         zero_id : str = fix_identifier(self._input_varnames[2])
-
 
         #if parallel == 'omp':
         #    for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
