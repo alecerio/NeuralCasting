@@ -14,7 +14,7 @@
         float sy = tensor_$(INPUT_NAME_SY)[0];
         float swxy = (sw*sx)/sy;
 
-        int32_t res_i = (int32_t)(swxy * temp) + tensor_$(INPUT_NAME_ZY)[0];
+        int32_t res_i = ((int32_t)NCAST_ROUND(swxy * temp)) + (tensor_$(INPUT_NAME_ZY)[0]);
 
         NCAST_CLIP_INT8(res_i)
         tensor_$(OUTPUT_NAME)[i] = (int8_t)res_i;
@@ -26,7 +26,7 @@
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $(NAME) -----------------\n");
 for(int i=0; i<QGEMM_$(NAME)_OUTPUT_SIZE; i++) {
-    printf("%f ", tensor_$(OUTPUT_NAME)[i]);
+    printf("%d ", tensor_$(OUTPUT_NAME)[i]);
 }
 printf("\n");
 printf("------------------------------------------------------\n\n");
