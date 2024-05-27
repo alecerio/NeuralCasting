@@ -227,7 +227,7 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
             elif isinstance(node, GRU):
                 _fill_gru_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Softmax):
-                _fill_tanh_node(node, nodes, in_names, out_names, in_dict, out_dict)
+                _fill_softmax_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, QLinear):
                 _fill_qlinear_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, QGemm):
@@ -506,6 +506,12 @@ def _fill_qlinearsigmoid_node(node : QLinearSigmoid, nodes : list[Node], in_name
     node.append_input(in_node_sy, in_names[3])
     node.append_input(in_node_zy, in_names[4])
 
+    node.append_output(out_node, out_names[0])
+
+def _fill_softmax_node(node : QLinearSigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
