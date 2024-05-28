@@ -30,6 +30,7 @@ from neural_cast.frontend.parser.ops.dequantizelinear import DequantizeLinear
 from neural_cast.frontend.parser.ops.qlinearadd import QLinearAdd
 from neural_cast.frontend.parser.ops.qlinearmul import QLinearMul
 from neural_cast.frontend.parser.ops.qlinearsigmoid import QLinearSigmoid
+from neural_cast.frontend.parser.ops.conv import Conv
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -187,6 +188,20 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
             opnode : QLinearMul = QLinearMul(name)
         elif optype == 'QLinearSigmoid':
             opnode : QLinearSigmoid = QLinearSigmoid(name)
+        elif optype == 'Conv':
+            kernel_size = None
+            stride = None
+            padding = None
+            for attr in op.attribute:
+                if attr.name == 'kernel_shape':
+                    kernel_size = onnx.helper.get_attribute_value(attr)[0]
+                elif attr.name == 'strides':
+                    stride = onnx.helper.get_attribute_value(attr)[0]
+                elif attr.name == 'pads':
+                    padding = onnx.helper.get_attribute_value(attr)[0]
+            if kernel_size == None or stride == None or padding == None:
+                raise CompilerException("Error: attribute in Conv operator not found")    
+            opnode : Conv = Conv(name, kernel_size, padding, stride)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -240,6 +255,8 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_qlinearmul_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, QLinearSigmoid):
                 _fill_qlinearsigmoid_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Conv):
+                _fill_conv_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -506,6 +523,16 @@ def _fill_softmax_node(node : QLinearSigmoid, nodes : list[Node], in_names : lis
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_conv_node(node : QLinearSigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_w = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_b = _get_input_node_reference(nodes, in_names[2], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_w, in_names[1])
+    node.append_input(in_node_b, in_names[2])
     node.append_output(out_node, out_names[0])
 
 def _get_input_node_reference(nodes : list[Node], in_name : str, out_dict : dict) -> Node:
