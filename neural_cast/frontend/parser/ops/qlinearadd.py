@@ -34,7 +34,9 @@ class QLinearAdd(OpNode):
         out_shape : int = self.infer_output_shape()
         for_loop_begin : str = gen_for_loop_begin(out_shape)
         for_loop_end : str = gen_for_loop_end(out_shape)
-        [index_tot, index_1, index_2] = gen_element_wise_broadcasting_indices(input1_name, input2_name, out_shape, "QLinearAdd")
+        input1 : Node = self._inputs[0]
+        input2 : Node = self._inputs[3]
+        [index_tot, index_1, index_2] = gen_element_wise_broadcasting_indices(input1, input2, out_shape, "QLinearAdd")
         
         #if parallel == 'omp':
         #    for_loop_begin = gen_introduce_omp_in_for_loop_elemen_wise(for_loop_begin, input_name_1, input_name_2, output_name)
