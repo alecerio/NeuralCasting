@@ -58,7 +58,7 @@ static float NCAST_SIGMOID_LUT[] = {
 };
 #endif // NCAST_SIGMOID_LUT_DEFINED
 
-static float tensor_$(NAME)_qsigmoid_temp[QSIGMOID_OUTPUT_SIZE];
+static float tensor_$(NAME)_qsigmoid_temp[QSIGMOID_$(NAME)_OUTPUT_SIZE];
 
 $(DEFINE_CONNECTED_OUTPUT)
 #ifdef CONNECTED_OUTPUT

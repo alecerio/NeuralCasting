@@ -13,7 +13,7 @@ NCAST_QUANT8(tensor_$(NAME)_qsigmoid_temp, tensor_$(OUTPUT_NAME), QSIGMOID_$(NAM
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $(NAME) -----------------\n");
-for(int i=0; i<QLINEARMUL_$(NAME)_OUTPUT_SIZE; i++) {
+for(int i=0; i<QSIGMOID_$(NAME)_OUTPUT_SIZE; i++) {
     printf("%d ", tensor_$(OUTPUT_NAME)[i]);
 }
 printf("\n");

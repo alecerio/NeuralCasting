@@ -15,7 +15,7 @@ class Tanh(OpNode):
     def generate_code(self) -> str:
         #parallel : str = CompilerConfig()['parallel']
 
-        name : str = self.get_name()
+        name : str = fix_identifier(self.get_name())
         output_name : str = fix_identifier(self._output_varnames[0])
         input_name : str = fix_identifier(self._input_varnames[0])
 
@@ -35,7 +35,7 @@ class Tanh(OpNode):
         return code
 
     def generate_declaration_code_c(self) -> str:
-        name : str = self.get_name()
+        name : str = fix_identifier(self.get_name())
         out_shape : int = self.infer_output_shape()
         out_size : int = math.prod(out_shape)
         define_connected_output : str = gen_define_connected_output(self, 0)

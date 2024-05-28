@@ -55,7 +55,7 @@ class QLinearSigmoid(OpNode):
         code = self._expand_pattern(code, "$(NAME)", name)
         code = self._expand_pattern(code, "$(OUTPUT_SIZE)", str(out_size))
         code = self._expand_pattern(code, "$(OUTPUT_NAME)", output_name)
-        code = self._expand_pattern(code, "$DEFINE_CONNECTED_OUTPUT", define_connected_output)
+        code = self._expand_pattern(code, "$(DEFINE_CONNECTED_OUTPUT)", define_connected_output)
 
         return code
     
