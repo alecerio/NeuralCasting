@@ -1,4 +1,6 @@
 
+// CONV OPERATOR $(NAME)
+
 {
 
 for (int oc = 0; oc < $(OUTPUT_CHANNELS); oc++) {

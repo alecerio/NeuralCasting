@@ -20,15 +20,12 @@ class Conv(OpNode):
         name : str = fix_identifier(self.get_name())
         [_, input_channels, input_height, input_width] = self._inputs[0].infer_output_shape()
         output_channels = self._inputs[2].infer_output_shape()[-1]
-        kernel_size : int = self.kernel_size
-        padding : int = self.padding
-        stride : int = self.stride
         output_name : str = fix_identifier(self._output_varnames[0])
         input_name : str = fix_identifier(self._input_varnames[0])
         weights_name : str = fix_identifier(self._input_varnames[1])
         bias_name : str = fix_identifier(self._input_varnames[2])
-        output_height : int = int((input_height - kernel_size + 2 * padding) / stride + 1)
-        output_width : int = int((input_width - kernel_size + 2 * padding) / stride + 1)
+        output_height : int = int((input_height - self.kernel_size + 2 * self.padding) / self.stride + 1)
+        output_width : int = int((input_width - self.kernel_size + 2 * self.padding) / self.stride + 1)
         output_size = output_channels * output_width * output_height
         
 
@@ -43,9 +40,9 @@ class Conv(OpNode):
         code = self._expand_pattern(code, "$(WEIGHTS_NAME)", weights_name)
         code = self._expand_pattern(code, "$(BIASES_NAME)", bias_name)
         code = self._expand_pattern(code, "$(INPUT_HEIGHT)", str(input_height))
-        code = self._expand_pattern(code, "$(KERNEL_SIZE)", str(kernel_size))
-        code = self._expand_pattern(code, "$(PADDING)", str(padding))
-        code = self._expand_pattern(code, "$(STRIDE)", str(stride))
+        code = self._expand_pattern(code, "$(KERNEL_SIZE)", str(self.kernel_size))
+        code = self._expand_pattern(code, "$(PADDING)", str(self.padding))
+        code = self._expand_pattern(code, "$(STRIDE)", str(self.stride))
         code = self._expand_pattern(code, "$(INPUT_WIDTH)", str(input_width))
         code = self._expand_pattern(code, "$(OUTPUT_CHANNELS)", str(output_channels))
         code = self._expand_pattern(code, "$(OUTPUT_HEIGHT)", str(output_height))
@@ -73,17 +70,16 @@ class Conv(OpNode):
         return code
     
     def infer_output_shape(self) -> list[list[int]]:
-        input : Node = self._inputs[0]
-        shape : list[int] = node_shape(input)
-        return shape
+        [_, _, input_height, input_width] = self._inputs[0].infer_output_shape()
+        output_height : int = int((input_height - self.kernel_size + 2 * self.padding) / self.stride + 1)
+        output_width : int = int((input_width - self.kernel_size + 2 * self.padding) / self.stride + 1)
+        bias : Node = self._inputs[2]
+        bias_shape = bias.infer_output_shape()
+        return [1, bias_shape[1], output_height, output_width]
     
     def infer_output_type(self) -> int:
-        input1 : Node = self._inputs[0]
-        bias : Node = self._inputs[2]
-        input1_shape = input1.infer_output_shape()
-        bias_shape = bias.infer_output_shape()
-        print(type(input1_shape))
-        return [1, bias_shape[1], input1_shape[2], input1_shape[3]]
+        input : Node = self._inputs[0]
+        return input.infer_output_type()
     
     def get_op_type(self) -> str:
         return "Conv"
