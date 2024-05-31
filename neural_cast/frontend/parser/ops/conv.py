@@ -4,6 +4,7 @@ from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.parser.ops.common.common import node_shape
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
+from neural_cast.frontend.common.common import CompilerConfig
 
 class Conv(OpNode):
     def __init__(self, name : str, kernel_size : int, padding : int, stride : int):
@@ -16,7 +17,7 @@ class Conv(OpNode):
         return super.__str__()
 
     def generate_code(self) -> str:
-        #parallel : str = CompilerConfig()['parallel']
+        parallel : str = CompilerConfig()['parallel']
         name : str = fix_identifier(self.get_name())
         [_, input_channels, input_height, input_width] = self._inputs[0].infer_output_shape()
         output_channels = self._inputs[2].infer_output_shape()[-1]
@@ -29,8 +30,10 @@ class Conv(OpNode):
         output_size = output_channels * output_width * output_height
         
 
-        #if parallel == 'omp':
-        #    for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
+        if parallel == 'omp':
+            omp_pragma1 : str = '#pragma omp parallel for collapse(3)'
+            omp_pragma2 : str = '#pragma omp parallel for collapse(4)'
+            omp_pragma3 : str = '#pragma omp atomic'
 
         code : str = self._read_template_c("Conv.c")
 
@@ -49,6 +52,15 @@ class Conv(OpNode):
         code = self._expand_pattern(code, "$(OUTPUT_WIDTH)", str(output_width))
         code = self._expand_pattern(code, "$(INPUT_CHANNELS)", str(input_channels))
         code = self._expand_pattern(code, "$(OUTPUT_SIZE)", str(output_size))
+
+        if parallel == 'omp':
+            code = self._expand_pattern(code, "$(OMP_PRAGMA1)", omp_pragma1)
+            code = self._expand_pattern(code, "$(OMP_PRAGMA2)", omp_pragma2)
+            code = self._expand_pattern(code, "$(OMP_PRAGMA3)", omp_pragma3)
+        else:
+            code = self._expand_pattern(code, "$(OMP_PRAGMA1)", '')
+            code = self._expand_pattern(code, "$(OMP_PRAGMA2)", '')
+            code = self._expand_pattern(code, "$(OMP_PRAGMA3)", '')
 
         return code
     
