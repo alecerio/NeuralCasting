@@ -1,5 +1,6 @@
 // MAXPOOL OPERATOR $(NAME)
 
+$(OMP_PRAGMA1)
 for (int i = 0; i < $(OUTPUT_HEIGHT); ++i) {
     for (int j = 0; j < $(OUTPUT_WIDTH); ++j) {
         float max_val = -FLT_MAX;

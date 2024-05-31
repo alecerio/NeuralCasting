@@ -4,6 +4,7 @@ from neural_cast.frontend.parser.node.node import Node
 from neural_cast.frontend.common.common import fix_identifier
 from neural_cast.frontend.parser.ops.common.common import node_shape
 from neural_cast.frontend.parser.ops.common.common import gen_define_connected_output
+from neural_cast.frontend.common.common import CompilerConfig
 
 class MaxPool(OpNode):
     def __init__(self, name : str, kernel_size : int, stride : int):
@@ -15,7 +16,7 @@ class MaxPool(OpNode):
         return super.__str__()
 
     def generate_code(self) -> str:
-        #parallel : str = CompilerConfig()['parallel']
+        parallel : str = CompilerConfig()['parallel']
         name : str = fix_identifier(self.get_name())
         input_name : str = fix_identifier(self._input_varnames[0])
         output_name : str = fix_identifier(self._output_varnames[0])
@@ -26,8 +27,8 @@ class MaxPool(OpNode):
         out_shape = self.infer_output_shape()
         out_size = math.prod(out_shape)
 
-        #if parallel == 'omp':
-        #    for_loop_begin = gen_introduce_omp_in_for_loop_elem_by_elem(for_loop_begin, input_name, output_name)
+        if parallel == 'omp':
+            omp_pragma1 : str = '#pragma omp parallel for collapse(2)'
 
         code : str = self._read_template_c("MaxPool.c")
 
@@ -41,6 +42,11 @@ class MaxPool(OpNode):
         code = self._expand_pattern(code, "$(OUTPUT_NAME)", output_name)
         code = self._expand_pattern(code, "$(OUTPUT_SIZE)", str(out_size))
         code = self._expand_pattern(code, "$(INPUT_WIDTH)", str(in_width))
+
+        if parallel == 'omp':
+            code = self._expand_pattern(code, "$(OMP_PRAGMA1)", omp_pragma1)
+        else:
+            code = self._expand_pattern(code, "$(OMP_PRAGMA1)", '')
 
         return code
     
