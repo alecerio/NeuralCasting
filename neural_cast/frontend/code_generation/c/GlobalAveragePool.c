@@ -1,6 +1,7 @@
 
 // OPERATOR GLOBAL AVERAGE POOL $(NAME)
 
+$(OMP_PRAGMA1)
 for (int n = 0; n < $(N); ++n) {
     for (int c = 0; c < $(C); ++c) {
         float sum = 0.0;
