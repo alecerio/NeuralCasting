@@ -80,11 +80,7 @@ class MaxPool(OpNode):
     
     def infer_output_type(self) -> int:
         input1 : Node = self._inputs[0]
-        bias : Node = self._inputs[2]
-        input1_shape = input1.infer_output_shape()
-        bias_shape = bias.infer_output_shape()
-        print(type(input1_shape))
-        return [1, bias_shape[1], input1_shape[2], input1_shape[3]]
+        return input1.infer_output_type()
     
     def get_op_type(self) -> str:
         return "MaxPool"
