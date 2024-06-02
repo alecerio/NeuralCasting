@@ -34,6 +34,7 @@ from neural_cast.frontend.parser.ops.conv import Conv
 from neural_cast.frontend.parser.ops.maxpool import MaxPool
 from neural_cast.frontend.parser.ops.flatten import Flatten
 from neural_cast.frontend.parser.ops.globalaveragepool import GlobalAveragePool
+from neural_cast.frontend.parser.ops.identity import Identity
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -220,6 +221,8 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
             opnode : Flatten = Flatten(name)
         elif optype == 'GlobalAveragePool':
             opnode : GlobalAveragePool = GlobalAveragePool(name)
+        elif optype == 'Identity':
+            opnode : Identity = Identity(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -281,6 +284,8 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
                 _fill_flatten_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, GlobalAveragePool):
                 _fill_globalaveragepool_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Identity):
+                _fill_identity_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -575,6 +580,13 @@ def _fill_flatten_node(node : Flatten, nodes : list[Node], in_names : list[str],
 
 def _fill_globalaveragepool_node(node : GlobalAveragePool, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
     CompilerLogger().info("Update GlobalAveragePool node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_identity_node(node : Identity, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Identity node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])
