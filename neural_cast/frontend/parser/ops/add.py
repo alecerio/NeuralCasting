@@ -39,6 +39,7 @@ class Add(OpNode):
 
         input1 : Node = self._inputs[0]
         input2 : Node = self._inputs[1]
+
         [index_tot, index_1, index_2] = gen_element_wise_broadcasting_indices(input1, input2, out_shape, "Add")
         
         output_type : int = self.infer_output_type()
