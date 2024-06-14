@@ -55,4 +55,5 @@ class Flatten(OpNode):
         return "Flatten"
     
     def generate_includes_code_c(self) -> str:
-        return ""
+        code : str = self._read_template_c("Flatten_inc.c")
+        return code

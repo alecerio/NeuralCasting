@@ -1,7 +1,11 @@
 
 // FLATTEN OPERATOR $(NAME)
 
+#ifdef CONNECTED_OUTPUT
 tensor_$(OUTPUT_NAME) = tensor_$(INPUT_NAME);
+#else
+memcpy(tensor_$(OUTPUT_NAME), tensor_$(INPUT_NAME), $(OUTPUT_SIZE) * sizeof(float));
+#endif
 
 #ifdef COMPILER_DEBUG
 printf("----------------- DEBUG OUTPUT $(NAME) -----------------\n");

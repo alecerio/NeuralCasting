@@ -18,6 +18,7 @@ from tests.neural_networks.squeeze.main_test import TestSqueeze
 from tests.neural_networks.gru.main_test import TestGRU
 from tests.neural_networks.maxpool.main_test import TestMaxpool
 from tests.neural_networks.global_averagepool.main_test import TestGlobalAveragepool
+from tests.neural_networks.flatten.main_test import TestFlatten
 
 def run_neural_network_tests():
     curr_file = os.path.abspath(__file__)
@@ -43,5 +44,6 @@ def run_neural_network_tests():
     test_suite.addTest(unittest.makeSuite(TestGRU))
     test_suite.addTest(unittest.makeSuite(TestMaxpool))
     test_suite.addTest(unittest.makeSuite(TestGlobalAveragepool))
+    test_suite.addTest(unittest.makeSuite(TestFlatten))
     test_runner = unittest.TextTestRunner(verbosity=2)
     result = test_runner.run(test_suite)
