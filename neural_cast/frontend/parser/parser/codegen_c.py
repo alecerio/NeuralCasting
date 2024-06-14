@@ -30,7 +30,7 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
         header_file_code += _gen_readmat_macro()
     
     # add benchmark macro
-    header_file_code += _gen_benchmark_macro()
+    #header_file_code += _gen_benchmark_macro()
 
     # generate file header
     code_generated += _gen_header_code_c()
@@ -56,6 +56,7 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     elif alloc_type == 'heap':
         header_file_code += _gen_declaration_allocnn()
         header_file_code += _gen_declaration_freenn()
+        header_file_code += _gen_declarations_c(nodes)
     else:
         CompilerException("Error: unknown memory type allocation")
     
@@ -67,7 +68,7 @@ def pre_codegen_c(nodes : list[Node]) -> [str, str]:
     if parallel == 'omp':
         code_generated += _gen_omp_setup()
 
-    code_generated += _gen_benchmark_setup()
+    #code_generated += _gen_benchmark_setup()
 
     return [header_file_code, code_generated]
 

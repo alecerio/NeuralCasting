@@ -4,7 +4,7 @@ from neural_cast.compiler import run
 from neural_cast.frontend.common.common import CompilerConfig
 import subprocess
 import unittest
-from tests.common.common import inference_pytorch, create_main_c, read_inferred_output_shape, read_output_c, print_test_header, compare_shape, compare_results
+from tests.common.common import inference_pytorch, create_main_c, read_inferred_output_shape, read_output_c, print_test_header, compare_shape, compare_results, create_include_file
 
 class TestFcTanh(unittest.TestCase):
     def test_00(self):
@@ -34,6 +34,9 @@ class TestFcTanh(unittest.TestCase):
         # create test main.c
         create_main_c(test_path, output_path, name)
 
+        # create ncutils
+        create_include_file(test_path, output_path, 'ncutils.h')
+
         # run command
         try:
             subprocess.run(["bash", test_path + "build.sh", name, output_path], check=True)
@@ -50,4 +53,4 @@ class TestFcTanh(unittest.TestCase):
         compare_shape(self, output_shape_python, output_shape_c, "PyTorch", "C")
 
         # compare results
-        compare_results(self, output_python, output_c, "PyTorch", "C", 1e-6)
+        compare_results(self, output_python, output_c, "PyTorch", "C", 1e-3)

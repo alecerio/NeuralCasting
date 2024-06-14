@@ -37,6 +37,17 @@ def create_main_c(test_path, output_path, name, main_name='main.c'):
     f.write(main_code)
     f.close()
 
+def create_include_file(test_path, output_path, file_name):
+    # read file code
+    f = open(test_path + file_name, 'r')
+    code : str = f.read()
+    f.close()
+
+    # generate file in output directory
+    f = open(output_path + file_name, 'w')
+    f.write(code)
+    f.close()
+
 def read_inferred_output_shape(temp_path):
     output_shape_path : str = temp_path + "out_shape.json"
     with open(output_shape_path, 'r') as json_file:

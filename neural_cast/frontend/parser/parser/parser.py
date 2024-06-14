@@ -24,6 +24,17 @@ from neural_cast.frontend.exceptions.CompilerException import CompilerException
 from neural_cast.frontend.common.common import CompilerConfig
 from neural_cast.frontend.parser.ops.gru import GRU
 from neural_cast.frontend.parser.ops.softmax import Softmax
+from neural_cast.frontend.parser.ops.qlinear import QLinear
+from neural_cast.frontend.parser.ops.qgemm import QGemm
+from neural_cast.frontend.parser.ops.dequantizelinear import DequantizeLinear
+from neural_cast.frontend.parser.ops.qlinearadd import QLinearAdd
+from neural_cast.frontend.parser.ops.qlinearmul import QLinearMul
+from neural_cast.frontend.parser.ops.qlinearsigmoid import QLinearSigmoid
+from neural_cast.frontend.parser.ops.conv import Conv
+from neural_cast.frontend.parser.ops.maxpool import MaxPool
+from neural_cast.frontend.parser.ops.flatten import Flatten
+from neural_cast.frontend.parser.ops.globalaveragepool import GlobalAveragePool
+from neural_cast.frontend.parser.ops.identity import Identity
 
 def parse() -> list[Node]:
     CompilerLogger().info("run parser")
@@ -169,6 +180,49 @@ def _create_op_nodes(graph : onnx.onnx_ml_pb2.GraphProto, nodes : list[Node]) ->
             opnode : GRU = GRU(name)
         elif optype == 'Softmax':
             opnode : Softmax = Softmax(name)
+        elif optype == 'QuantizeLinear':
+            opnode : QLinear = QLinear(name)
+        elif optype == 'QGemm':
+            opnode : QGemm = QGemm(name)
+        elif optype == 'DequantizeLinear':
+            opnode : DequantizeLinear = DequantizeLinear(name)
+        elif optype == 'QLinearAdd':
+            opnode : QLinearAdd = QLinearAdd(name)
+        elif optype == 'QLinearMul':
+            opnode : QLinearMul = QLinearMul(name)
+        elif optype == 'QLinearSigmoid':
+            opnode : QLinearSigmoid = QLinearSigmoid(name)
+        elif optype == 'Conv':
+            kernel_size = None
+            stride = None
+            padding = None
+            for attr in op.attribute:
+                if attr.name == 'kernel_shape':
+                    kernel_size = onnx.helper.get_attribute_value(attr)[0]
+                elif attr.name == 'strides':
+                    stride = onnx.helper.get_attribute_value(attr)[0]
+                elif attr.name == 'pads':
+                    padding = onnx.helper.get_attribute_value(attr)[0]
+            if kernel_size == None or stride == None or padding == None:
+                raise CompilerException("Error: attribute in Conv operator not found")    
+            opnode : Conv = Conv(name, kernel_size, padding, stride)
+        elif optype == 'MaxPool':
+            kernel_size = None
+            stride = None
+            for attr in op.attribute:
+                if attr.name == 'kernel_shape':
+                    kernel_size = onnx.helper.get_attribute_value(attr)[0]
+                elif attr.name == 'strides':
+                    stride = onnx.helper.get_attribute_value(attr)[0]
+            if kernel_size == None or stride == None:
+                raise CompilerException("Error: attribute in MaxPool operator not found")    
+            opnode : MaxPool = MaxPool(name, kernel_size, stride)
+        elif optype == 'Flatten':
+            opnode : Flatten = Flatten(name)
+        elif optype == 'GlobalAveragePool':
+            opnode : GlobalAveragePool = GlobalAveragePool(name)
+        elif optype == 'Identity':
+            opnode : Identity = Identity(name)
         else:
             raise CompilerException("Error: unexpected operation node: " + optype)
         nodes.append(opnode)
@@ -209,7 +263,29 @@ def _update_opnodes_references(nodes : list[Node], in_dict : dict, out_dict : di
             elif isinstance(node, GRU):
                 _fill_gru_node(node, nodes, in_names, out_names, in_dict, out_dict)
             elif isinstance(node, Softmax):
-                _fill_tanh_node(node, nodes, in_names, out_names, in_dict, out_dict)
+                _fill_softmax_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QLinear):
+                _fill_qlinear_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QGemm):
+                _fill_qgemm_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, DequantizeLinear):
+                _fill_dequantizelinear_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QLinearAdd):
+                _fill_qlinearadd_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QLinearMul):
+                _fill_qlinearmul_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, QLinearSigmoid):
+                _fill_qlinearsigmoid_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Conv):
+                _fill_conv_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, MaxPool):
+                _fill_maxpool_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Flatten):
+                _fill_flatten_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, GlobalAveragePool):
+                _fill_globalaveragepool_node(node, nodes, in_names, out_names, in_dict, out_dict)
+            elif isinstance(node, Identity):
+                _fill_identity_node(node, nodes, in_names, out_names, in_dict, out_dict)
             else:
                 raise CompilerException("Error: unexpected op node")
 
@@ -363,7 +439,154 @@ def _fill_gru_node(node : GRU, nodes : list[Node], in_names : list[str], out_nam
     node.append_output(out_node, out_names[0])
     node.append_output(out_hidden, out_names[1])
 
-def _fill_tanh_node(node : Softmax, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+def _fill_qlinear_node(node : QLinear, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sf = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_z = _get_input_node_reference(nodes, in_names[2], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_sf, in_names[1])
+    node.append_input(in_node_z, in_names[2])
+    node.append_output(out_node, out_names[0])
+
+def _fill_qgemm_node(node : QGemm, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update QGemm node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sx = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_zx = _get_input_node_reference(nodes, in_names[2], out_dict)
+    in_node_qw = _get_input_node_reference(nodes, in_names[3], out_dict)
+    in_node_sw = _get_input_node_reference(nodes, in_names[4], out_dict)
+    in_node_zw = _get_input_node_reference(nodes, in_names[5], out_dict)
+    in_node_qb = _get_input_node_reference(nodes, in_names[6], out_dict)
+    in_node_sy = _get_input_node_reference(nodes, in_names[7], out_dict)
+    in_node_zy = _get_input_node_reference(nodes, in_names[8], out_dict)
+
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_sx, in_names[1])
+    node.append_input(in_node_zx, in_names[2])
+    node.append_input(in_node_qw, in_names[3])
+    node.append_input(in_node_sw, in_names[4])
+    node.append_input(in_node_zw, in_names[5])
+    node.append_input(in_node_qb, in_names[6])
+    node.append_input(in_node_sy, in_names[7])
+    node.append_input(in_node_zy, in_names[8])
+    
+    node.append_output(out_node, out_names[0])
+
+def _fill_dequantizelinear_node(node : DequantizeLinear, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sf = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_z = _get_input_node_reference(nodes, in_names[2], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_sf, in_names[1])
+    node.append_input(in_node_z, in_names[2])
+    node.append_output(out_node, out_names[0])
+
+def _fill_qlinearadd_node(node : QLinearAdd, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node_a = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sa = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_za = _get_input_node_reference(nodes, in_names[2], out_dict)
+    in_node_b = _get_input_node_reference(nodes, in_names[3], out_dict)
+    in_node_sb = _get_input_node_reference(nodes, in_names[4], out_dict)
+    in_node_zb = _get_input_node_reference(nodes, in_names[5], out_dict)
+    in_node_sc = _get_input_node_reference(nodes, in_names[6], out_dict)
+    in_node_zc = _get_input_node_reference(nodes, in_names[7], out_dict)
+
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    
+    node.append_input(in_node_a, in_names[0])
+    node.append_input(in_node_sa, in_names[1])
+    node.append_input(in_node_za, in_names[2])
+    node.append_input(in_node_b, in_names[3])
+    node.append_input(in_node_sb, in_names[4])
+    node.append_input(in_node_zb, in_names[5])
+    node.append_input(in_node_sc, in_names[6])
+    node.append_input(in_node_zc, in_names[7])
+
+    node.append_output(out_node, out_names[0])
+
+def _fill_qlinearmul_node(node : QLinearMul, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node_a = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sa = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_za = _get_input_node_reference(nodes, in_names[2], out_dict)
+    in_node_b = _get_input_node_reference(nodes, in_names[3], out_dict)
+    in_node_sb = _get_input_node_reference(nodes, in_names[4], out_dict)
+    in_node_zb = _get_input_node_reference(nodes, in_names[5], out_dict)
+    in_node_sc = _get_input_node_reference(nodes, in_names[6], out_dict)
+    in_node_zc = _get_input_node_reference(nodes, in_names[7], out_dict)
+
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    
+    node.append_input(in_node_a, in_names[0])
+    node.append_input(in_node_sa, in_names[1])
+    node.append_input(in_node_za, in_names[2])
+    node.append_input(in_node_b, in_names[3])
+    node.append_input(in_node_sb, in_names[4])
+    node.append_input(in_node_zb, in_names[5])
+    node.append_input(in_node_sc, in_names[6])
+    node.append_input(in_node_zc, in_names[7])
+
+    node.append_output(out_node, out_names[0])
+
+def _fill_qlinearsigmoid_node(node : QLinearSigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_sx = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_zx = _get_input_node_reference(nodes, in_names[2], out_dict)
+    in_node_sy = _get_input_node_reference(nodes, in_names[3], out_dict)
+    in_node_zy = _get_input_node_reference(nodes, in_names[4], out_dict)
+
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_sx, in_names[1])
+    node.append_input(in_node_zx, in_names[2])
+    node.append_input(in_node_sy, in_names[3])
+    node.append_input(in_node_zy, in_names[4])
+
+    node.append_output(out_node, out_names[0])
+
+def _fill_softmax_node(node : QLinearSigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_conv_node(node : QLinearSigmoid, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    in_node_w = _get_input_node_reference(nodes, in_names[1], out_dict)
+    in_node_b = _get_input_node_reference(nodes, in_names[2], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_input(in_node_w, in_names[1])
+    node.append_input(in_node_b, in_names[2])
+    node.append_output(out_node, out_names[0])
+
+def _fill_maxpool_node(node : MaxPool, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update MaxPool node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_flatten_node(node : Flatten, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Flatten node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_globalaveragepool_node(node : GlobalAveragePool, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update GlobalAveragePool node")
+    in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
+    out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
+    node.append_input(in_node, in_names[0])
+    node.append_output(out_node, out_names[0])
+
+def _fill_identity_node(node : Identity, nodes : list[Node], in_names : list[str], out_names : list[str], in_dict : dict, out_dict : dict):
+    CompilerLogger().info("Update Identity node")
     in_node = _get_input_node_reference(nodes, in_names[0], out_dict)
     out_node = _get_output_node_reference(nodes, out_names[0], in_dict)
     node.append_input(in_node, in_names[0])

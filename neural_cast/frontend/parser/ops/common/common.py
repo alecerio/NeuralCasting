@@ -166,6 +166,30 @@ def gen_element_wise_broadcasting_indices(input1 : Node, input2 : Node, output_s
     if in_dims_1 == in_dims_2 and in_shape_1 == in_shape_2:
         index_1 : str = index_tot
         index_2 : str = index_tot
+    elif in_dims_1 == in_dims_2 and in_shape_1 != in_shape_2:
+        i1 = _first_instance_non_one(in_shape_1)
+        i2 = _first_instance_non_one(in_shape_2)
+        temp_shape1 = in_shape_1[i1:]
+        temp_shape2 = in_shape_2[i2:]
+        original_dim = in_dims_1
+        if len(temp_shape1) > len(temp_shape2):
+            diff = len(temp_shape1) - len(temp_shape2)
+            if temp_shape1[diff:] == temp_shape2:
+                index_1 = gen_for_loop_index([1] * (original_dim-len(temp_shape1)) + temp_shape1)
+                index_2 = gen_for_loop_index([1] * (original_dim-len(temp_shape2)) + temp_shape2)
+                index_tot = index_1
+                return [index_tot, index_1, index_2]
+            else:
+                raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator")          
+        else:
+            diff = len(temp_shape2) - len(temp_shape1)
+            if temp_shape2[diff:] == temp_shape1:
+                index_1 = gen_for_loop_index([1] * (original_dim-len(temp_shape2)) + temp_shape2)
+                index_2 = gen_for_loop_index([1] * (original_dim-len(temp_shape1)) + temp_shape1)
+                index_tot = index_1
+                return [index_tot, index_1, index_2]
+            else:
+                raise CompilerException("Error: incompatible input broadcasting in " + op_name_for_error_message + " operator")
     elif in_dims_1 > in_dims_2:
         index_1 : str = index_tot
         if in_shape_2 == []:
