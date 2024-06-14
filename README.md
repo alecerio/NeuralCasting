@@ -119,16 +119,24 @@ run(config, framework='onnx', path=curr_path + '/model.onnx')
 There are different tests implemented to ensure the generated code is correct. You can find the list of implemented tests in `tests/neural_networks/`:
 
 - *constant*: test for ONNX constant operator.
+- *conv*: test for ONNX convolution operator.
 - *fc_add*: test for a neural network composed of a fully connected layer and an element-wise addition.
 - *fc_mul*: test for a neural network composed of a fully connected layer and an element-wise multiplication.
 - *fc_relu*: test for a neural network composed of a fully connected layer and a ReLu activation function.
-- *fc_relu*: test for a neural network composed of a first fully connected layer, a first ReLu activation function, a second fully connected layer and a second ReLu activation function.
+- *fc_relu_fc_relu*: test for a neural network composed of a first fully connected layer, a first ReLu activation function, a second fully connected layer and a second ReLu activation function.
 - *fc_sigmoid*: test for a neural network composed of a fully connected layer and a sigmoid activation function.
+- *fc_softmax*: test for a neural network composed of a fully connected layer and a softmax activation function.
 - *fc_sub*: test for a neural network composed of a fully connected layer and an element-wise subtraction.
 - *fc_tanh*: test for a neural network composed of a fully connected layer and a tanh activation function.
+- *flatten*: test for ONNX flatten operator.
 - *gather*: test for ONNX gather operator.
+- *global_averagepool*: test for ONNX global averagepool operator.
+- *gru*: test for ONNX GRU operator.
 - *matmul*: test for ONNX matmul operator.
+- *maxpool*: test for ONNX maxpool operator.
 - *reimplemented_gru*: test for a reimplementation of a GRU layer.
+- *squeeze*: test for ONNX squeeze operator.
+- *transpose*: test for ONNX transpose operator.
 
 ### Run the tests
 
