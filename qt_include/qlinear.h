@@ -1,0 +1,7 @@
+#ifndef __NCAST_QLINEAR__
+#define __NCAST_QLINEAR__
+
+#define QLINEAR(X, SX_FIXP, ZX, XQ, SIZE) \
+NCAST_QUANT8_FIXED(X, XQ, SIZE, SX_FIXP, ZX)
+
+#endif // __NCAST_QLINEAR__

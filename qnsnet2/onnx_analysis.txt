@@ -1,0 +1,798 @@
+Analisi completa del modello ONNX (senza valori binari)
+============================================================
+
+[1] Input del modello:
+- Nome: in_noisy, Tipo: FLOAT, Forma: [1, 1, 257]
+- Nome: h1, Tipo: FLOAT, Forma: [1, 1, 400]
+- Nome: h2, Tipo: FLOAT, Forma: [1, 1, 400]
+
+[2] Output del modello:
+- Nome: mask_pred, Tipo: FLOAT, Forma: [257]
+- Nome: h1n, Tipo: FLOAT, Forma: [400]
+- Nome: h2n, Tipo: FLOAT, Forma: [400]
+
+[3] Nodi nel grafo:
+- Nome: /Constant, Tipo: Constant
+  Input: []
+  Output: ['/Constant_output_0']
+  Attributo: value
+- Nome: /Constant_1, Tipo: Constant
+  Input: []
+  Output: ['/Constant_1_output_0']
+  Attributo: value
+- Nome: /Constant_2, Tipo: Constant
+  Input: []
+  Output: ['/Constant_2_output_0']
+  Attributo: value
+- Nome: /Constant_3, Tipo: Constant
+  Input: []
+  Output: ['/Constant_3_output_0']
+  Attributo: value
+- Nome: /Constant_4, Tipo: Constant
+  Input: []
+  Output: ['/Constant_4_output_0']
+  Attributo: value
+- Nome: /Constant_5, Tipo: Constant
+  Input: []
+  Output: ['/Constant_5_output_0']
+  Attributo: value
+- Nome: /Constant_6, Tipo: Constant
+  Input: []
+  Output: ['/Constant_6_output_0']
+  Attributo: value
+- Nome: /Constant_7, Tipo: Constant
+  Input: []
+  Output: ['/Constant_7_output_0']
+  Attributo: value
+- Nome: /Constant_8, Tipo: Constant
+  Input: []
+  Output: ['/Constant_8_output_0']
+  Attributo: value
+- Nome: /Constant_9, Tipo: Constant
+  Input: []
+  Output: ['/Constant_9_output_0']
+  Attributo: value
+- Nome: /Constant_10, Tipo: Constant
+  Input: []
+  Output: ['/Constant_10_output_0']
+  Attributo: value
+- Nome: /Constant_11, Tipo: Constant
+  Input: []
+  Output: ['/Constant_11_output_0']
+  Attributo: value
+- Nome: /Constant_12, Tipo: Constant
+  Input: []
+  Output: ['/Constant_12_output_0']
+  Attributo: value
+- Nome: /Constant_13, Tipo: Constant
+  Input: []
+  Output: ['/Constant_13_output_0']
+  Attributo: value
+- Nome: /Constant_14, Tipo: Constant
+  Input: []
+  Output: ['/Constant_14_output_0']
+  Attributo: value
+- Nome: /Constant_15, Tipo: Constant
+  Input: []
+  Output: ['/Constant_15_output_0']
+  Attributo: value
+- Nome: /Constant_16, Tipo: Constant
+  Input: []
+  Output: ['/Constant_16_output_0']
+  Attributo: value
+- Nome: /Constant_17, Tipo: Constant
+  Input: []
+  Output: ['/Constant_17_output_0']
+  Attributo: value
+- Nome: /Constant_18, Tipo: Constant
+  Input: []
+  Output: ['/Constant_18_output_0']
+  Attributo: value
+- Nome: /Constant_19, Tipo: Constant
+  Input: []
+  Output: ['/Constant_19_output_0']
+  Attributo: value
+- Nome: /Constant_20, Tipo: Constant
+  Input: []
+  Output: ['/Constant_20_output_0']
+  Attributo: value
+- Nome: /Constant_21, Tipo: Constant
+  Input: []
+  Output: ['/Constant_21_output_0']
+  Attributo: value
+- Nome: /Constant_22, Tipo: Constant
+  Input: []
+  Output: ['/Constant_22_output_0']
+  Attributo: value
+- Nome: /Constant_23, Tipo: Constant
+  Input: []
+  Output: ['/Constant_23_output_0']
+  Attributo: value
+- Nome: /Constant_24, Tipo: Constant
+  Input: []
+  Output: ['/Constant_24_output_0']
+  Attributo: value
+- Nome: /Constant_25, Tipo: Constant
+  Input: []
+  Output: ['/Constant_25_output_0']
+  Attributo: value
+- Nome: /Constant_26, Tipo: Constant
+  Input: []
+  Output: ['/Constant_26_output_0']
+  Attributo: value
+- Nome: /Constant_27, Tipo: Constant
+  Input: []
+  Output: ['/Constant_27_output_0']
+  Attributo: value
+- Nome: /Constant_28, Tipo: Constant
+  Input: []
+  Output: ['/Constant_28_output_0']
+  Attributo: value
+- Nome: /Constant_29, Tipo: Constant
+  Input: []
+  Output: ['/Constant_29_output_0']
+  Attributo: value
+- Nome: /Constant_30, Tipo: Constant
+  Input: []
+  Output: ['/Constant_30_output_0']
+  Attributo: value
+- Nome: /Constant_31, Tipo: Constant
+  Input: []
+  Output: ['/Constant_31_output_0']
+  Attributo: value
+- Nome: /Constant_32, Tipo: Constant
+  Input: []
+  Output: ['/Constant_32_output_0']
+  Attributo: value
+- Nome: /Constant_33, Tipo: Constant
+  Input: []
+  Output: ['/Constant_33_output_0']
+  Attributo: value
+- Nome: /Squeeze_1, Tipo: Squeeze
+  Input: ['h1']
+  Output: ['/Squeeze_1_output_0']
+- Nome: /Squeeze_2, Tipo: Squeeze
+  Input: ['h2']
+  Output: ['/Squeeze_2_output_0']
+- Nome: /Squeeze, Tipo: Squeeze
+  Input: ['in_noisy']
+  Output: ['/Squeeze_output_0']
+- Nome: /Constant_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_output_0', '/Constant_output_0_scale', '/Constant_output_0_zero_point']
+  Output: ['/Constant_output_0_quantized']
+- Nome: /Constant_1_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_1_output_0', '/Constant_1_output_0_scale', '/Constant_1_output_0_zero_point']
+  Output: ['/Constant_1_output_0_quantized']
+- Nome: /Constant_2_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_2_output_0', '/Constant_2_output_0_scale', '/Constant_2_output_0_zero_point']
+  Output: ['/Constant_2_output_0_quantized']
+- Nome: /Constant_3_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_3_output_0', '/Constant_3_output_0_scale', '/Constant_3_output_0_zero_point']
+  Output: ['/Constant_3_output_0_quantized']
+- Nome: /Constant_4_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_4_output_0', '/Constant_4_output_0_scale', '/Constant_4_output_0_zero_point']
+  Output: ['/Constant_4_output_0_quantized']
+- Nome: /Constant_5_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_5_output_0', '/Constant_5_output_0_scale', '/Constant_5_output_0_zero_point']
+  Output: ['/Constant_5_output_0_quantized']
+- Nome: /Constant_6_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_6_output_0', '/Constant_6_output_0_scale', '/Constant_6_output_0_zero_point']
+  Output: ['/Constant_6_output_0_quantized']
+- Nome: /Constant_7_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_7_output_0', '/Constant_7_output_0_scale', '/Constant_7_output_0_zero_point']
+  Output: ['/Constant_7_output_0_quantized']
+- Nome: /Constant_8_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_8_output_0', '/Constant_8_output_0_scale', '/Constant_8_output_0_zero_point']
+  Output: ['/Constant_8_output_0_quantized']
+- Nome: /Constant_9_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_9_output_0', '/Constant_9_output_0_scale', '/Constant_9_output_0_zero_point']
+  Output: ['/Constant_9_output_0_quantized']
+- Nome: /Constant_10_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_10_output_0', '/Constant_10_output_0_scale', '/Constant_10_output_0_zero_point']
+  Output: ['/Constant_10_output_0_quantized']
+- Nome: /Constant_11_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_11_output_0', '/Constant_11_output_0_scale', '/Constant_11_output_0_zero_point']
+  Output: ['/Constant_11_output_0_quantized']
+- Nome: /Constant_12_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_12_output_0', '/Constant_12_output_0_scale', '/Constant_12_output_0_zero_point']
+  Output: ['/Constant_12_output_0_quantized']
+- Nome: /Constant_13_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_13_output_0', '/Constant_13_output_0_scale', '/Constant_13_output_0_zero_point']
+  Output: ['/Constant_13_output_0_quantized']
+- Nome: /Constant_15_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_15_output_0', '/Constant_15_output_0_scale', '/Constant_15_output_0_zero_point']
+  Output: ['/Constant_15_output_0_quantized']
+- Nome: /Constant_16_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_16_output_0', '/Constant_16_output_0_scale', '/Constant_16_output_0_zero_point']
+  Output: ['/Constant_16_output_0_quantized']
+- Nome: /Constant_17_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_17_output_0', '/Constant_17_output_0_scale', '/Constant_17_output_0_zero_point']
+  Output: ['/Constant_17_output_0_quantized']
+- Nome: /Constant_18_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_18_output_0', '/Constant_18_output_0_scale', '/Constant_18_output_0_zero_point']
+  Output: ['/Constant_18_output_0_quantized']
+- Nome: /Constant_19_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_19_output_0', '/Constant_19_output_0_scale', '/Constant_19_output_0_zero_point']
+  Output: ['/Constant_19_output_0_quantized']
+- Nome: /Constant_20_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_20_output_0', '/Constant_20_output_0_scale', '/Constant_20_output_0_zero_point']
+  Output: ['/Constant_20_output_0_quantized']
+- Nome: /Constant_21_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_21_output_0', '/Constant_21_output_0_scale', '/Constant_21_output_0_zero_point']
+  Output: ['/Constant_21_output_0_quantized']
+- Nome: /Constant_22_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_22_output_0', '/Constant_22_output_0_scale', '/Constant_22_output_0_zero_point']
+  Output: ['/Constant_22_output_0_quantized']
+- Nome: /Constant_23_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_23_output_0', '/Constant_23_output_0_scale', '/Constant_23_output_0_zero_point']
+  Output: ['/Constant_23_output_0_quantized']
+- Nome: /Constant_24_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_24_output_0', '/Constant_24_output_0_scale', '/Constant_24_output_0_zero_point']
+  Output: ['/Constant_24_output_0_quantized']
+- Nome: /Constant_25_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_25_output_0', '/Constant_25_output_0_scale', '/Constant_25_output_0_zero_point']
+  Output: ['/Constant_25_output_0_quantized']
+- Nome: /Constant_26_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_26_output_0', '/Constant_26_output_0_scale', '/Constant_26_output_0_zero_point']
+  Output: ['/Constant_26_output_0_quantized']
+- Nome: /Constant_28_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_28_output_0', '/Constant_28_output_0_scale', '/Constant_28_output_0_zero_point']
+  Output: ['/Constant_28_output_0_quantized']
+- Nome: /Constant_29_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_29_output_0', '/Constant_29_output_0_scale', '/Constant_29_output_0_zero_point']
+  Output: ['/Constant_29_output_0_quantized']
+- Nome: /Constant_30_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_30_output_0', '/Constant_30_output_0_scale', '/Constant_30_output_0_zero_point']
+  Output: ['/Constant_30_output_0_quantized']
+- Nome: /Constant_31_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_31_output_0', '/Constant_31_output_0_scale', '/Constant_31_output_0_zero_point']
+  Output: ['/Constant_31_output_0_quantized']
+- Nome: /Constant_32_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_32_output_0', '/Constant_32_output_0_scale', '/Constant_32_output_0_zero_point']
+  Output: ['/Constant_32_output_0_quantized']
+- Nome: /Constant_33_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Constant_33_output_0', '/Constant_33_output_0_scale', '/Constant_33_output_0_zero_point']
+  Output: ['/Constant_33_output_0_quantized']
+- Nome: /Squeeze_1_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Squeeze_1_output_0', '/Squeeze_1_output_0_scale', '/Squeeze_1_output_0_zero_point']
+  Output: ['/Squeeze_1_output_0_quantized']
+- Nome: /Squeeze_2_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Squeeze_2_output_0', '/Squeeze_2_output_0_scale', '/Squeeze_2_output_0_zero_point']
+  Output: ['/Squeeze_2_output_0_quantized']
+- Nome: /Squeeze_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Squeeze_output_0', '/Squeeze_output_0_scale', '/Squeeze_output_0_zero_point']
+  Output: ['/Squeeze_output_0_quantized']
+- Nome: /MatMul_2_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_4_output_0_quantized', '/Constant_4_output_0_scale', '/Constant_4_output_0_zero_point', '/Squeeze_1_output_0_quantized', '/Squeeze_1_output_0_scale', '/Squeeze_1_output_0_zero_point', '/MatMul_2_output_0_scale', '/MatMul_2_output_0_zero_point']
+  Output: ['/MatMul_2_output_0_quantized']
+- Nome: /MatMul_4_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_8_output_0_quantized', '/Constant_8_output_0_scale', '/Constant_8_output_0_zero_point', '/Squeeze_1_output_0_quantized', '/Squeeze_1_output_0_scale', '/Squeeze_1_output_0_zero_point', '/MatMul_4_output_0_scale', '/MatMul_4_output_0_zero_point']
+  Output: ['/MatMul_4_output_0_quantized']
+- Nome: /MatMul_6_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_12_output_0_quantized', '/Constant_12_output_0_scale', '/Constant_12_output_0_zero_point', '/Squeeze_1_output_0_quantized', '/Squeeze_1_output_0_scale', '/Squeeze_1_output_0_zero_point', '/MatMul_6_output_0_scale', '/MatMul_6_output_0_zero_point']
+  Output: ['/MatMul_6_output_0_quantized']
+- Nome: /MatMul_8_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_17_output_0_quantized', '/Constant_17_output_0_scale', '/Constant_17_output_0_zero_point', '/Squeeze_2_output_0_quantized', '/Squeeze_2_output_0_scale', '/Squeeze_2_output_0_zero_point', '/MatMul_8_output_0_scale', '/MatMul_8_output_0_zero_point']
+  Output: ['/MatMul_8_output_0_quantized']
+- Nome: /MatMul_10_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_21_output_0_quantized', '/Constant_21_output_0_scale', '/Constant_21_output_0_zero_point', '/Squeeze_2_output_0_quantized', '/Squeeze_2_output_0_scale', '/Squeeze_2_output_0_zero_point', '/MatMul_10_output_0_scale', '/MatMul_10_output_0_zero_point']
+  Output: ['/MatMul_10_output_0_quantized']
+- Nome: /MatMul_12_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_25_output_0_quantized', '/Constant_25_output_0_scale', '/Constant_25_output_0_zero_point', '/Squeeze_2_output_0_quantized', '/Squeeze_2_output_0_scale', '/Squeeze_2_output_0_zero_point', '/MatMul_12_output_0_scale', '/MatMul_12_output_0_zero_point']
+  Output: ['/MatMul_12_output_0_quantized']
+- Nome: /MatMul_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_output_0_quantized', '/Constant_output_0_scale', '/Constant_output_0_zero_point', '/Squeeze_output_0_quantized', '/Squeeze_output_0_scale', '/Squeeze_output_0_zero_point', '/MatMul_output_0_scale', '/MatMul_output_0_zero_point']
+  Output: ['/MatMul_output_0_quantized']
+- Nome: /Add_2_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_2_output_0_quantized', '/MatMul_2_output_0_scale', '/MatMul_2_output_0_zero_point', '/Constant_5_output_0_quantized', '/Constant_5_output_0_scale', '/Constant_5_output_0_zero_point', '/Add_2_output_0_scale', '/Add_2_output_0_zero_point']
+  Output: ['/Add_2_output_0_quantized']
+- Nome: /Add_4_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_4_output_0_quantized', '/MatMul_4_output_0_scale', '/MatMul_4_output_0_zero_point', '/Constant_9_output_0_quantized', '/Constant_9_output_0_scale', '/Constant_9_output_0_zero_point', '/Add_4_output_0_scale', '/Add_4_output_0_zero_point']
+  Output: ['/Add_4_output_0_quantized']
+- Nome: /Add_6_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_6_output_0_quantized', '/MatMul_6_output_0_scale', '/MatMul_6_output_0_zero_point', '/Constant_13_output_0_quantized', '/Constant_13_output_0_scale', '/Constant_13_output_0_zero_point', '/Add_6_output_0_scale', '/Add_6_output_0_zero_point']
+  Output: ['/Add_6_output_0_quantized']
+- Nome: /Add_12_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_8_output_0_quantized', '/MatMul_8_output_0_scale', '/MatMul_8_output_0_zero_point', '/Constant_18_output_0_quantized', '/Constant_18_output_0_scale', '/Constant_18_output_0_zero_point', '/Add_12_output_0_scale', '/Add_12_output_0_zero_point']
+  Output: ['/Add_12_output_0_quantized']
+- Nome: /Add_14_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_10_output_0_quantized', '/MatMul_10_output_0_scale', '/MatMul_10_output_0_zero_point', '/Constant_22_output_0_quantized', '/Constant_22_output_0_scale', '/Constant_22_output_0_zero_point', '/Add_14_output_0_scale', '/Add_14_output_0_zero_point']
+  Output: ['/Add_14_output_0_quantized']
+- Nome: /Add_16_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_12_output_0_quantized', '/MatMul_12_output_0_scale', '/MatMul_12_output_0_zero_point', '/Constant_26_output_0_quantized', '/Constant_26_output_0_scale', '/Constant_26_output_0_zero_point', '/Add_16_output_0_scale', '/Add_16_output_0_zero_point']
+  Output: ['/Add_16_output_0_quantized']
+- Nome: /Add_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_output_0_quantized', '/MatMul_output_0_scale', '/MatMul_output_0_zero_point', '/Constant_1_output_0_quantized', '/Constant_1_output_0_scale', '/Constant_1_output_0_zero_point', '/Add_output_0_scale', '/Add_output_0_zero_point']
+  Output: ['/Add_output_0_quantized']
+- Nome: /MatMul_1_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_2_output_0_quantized', '/Constant_2_output_0_scale', '/Constant_2_output_0_zero_point', '/Add_output_0_quantized', '/Add_output_0_scale', '/Add_output_0_zero_point', '/MatMul_1_output_0_scale', '/MatMul_1_output_0_zero_point']
+  Output: ['/MatMul_1_output_0_quantized']
+- Nome: /MatMul_3_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_6_output_0_quantized', '/Constant_6_output_0_scale', '/Constant_6_output_0_zero_point', '/Add_output_0_quantized', '/Add_output_0_scale', '/Add_output_0_zero_point', '/MatMul_3_output_0_scale', '/MatMul_3_output_0_zero_point']
+  Output: ['/MatMul_3_output_0_quantized']
+- Nome: /MatMul_5_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_10_output_0_quantized', '/Constant_10_output_0_scale', '/Constant_10_output_0_zero_point', '/Add_output_0_quantized', '/Add_output_0_scale', '/Add_output_0_zero_point', '/MatMul_5_output_0_scale', '/MatMul_5_output_0_zero_point']
+  Output: ['/MatMul_5_output_0_quantized']
+- Nome: /Add_1_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_1_output_0_quantized', '/MatMul_1_output_0_scale', '/MatMul_1_output_0_zero_point', '/Constant_3_output_0_quantized', '/Constant_3_output_0_scale', '/Constant_3_output_0_zero_point', '/Add_1_output_0_scale', '/Add_1_output_0_zero_point']
+  Output: ['/Add_1_output_0_quantized']
+- Nome: /Add_3_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_3_output_0_quantized', '/MatMul_3_output_0_scale', '/MatMul_3_output_0_zero_point', '/Constant_7_output_0_quantized', '/Constant_7_output_0_scale', '/Constant_7_output_0_zero_point', '/Add_3_output_0_scale', '/Add_3_output_0_zero_point']
+  Output: ['/Add_3_output_0_quantized']
+- Nome: /Add_5_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_5_output_0_quantized', '/MatMul_5_output_0_scale', '/MatMul_5_output_0_zero_point', '/Constant_11_output_0_quantized', '/Constant_11_output_0_scale', '/Constant_11_output_0_zero_point', '/Add_5_output_0_scale', '/Add_5_output_0_zero_point']
+  Output: ['/Add_5_output_0_quantized']
+- Nome: /Add_7_quant, Tipo: QLinearAdd
+  Input: ['/Add_1_output_0_quantized', '/Add_1_output_0_scale', '/Add_1_output_0_zero_point', '/Add_2_output_0_quantized', '/Add_2_output_0_scale', '/Add_2_output_0_zero_point', '/Add_7_output_0_scale', '/Add_7_output_0_zero_point']
+  Output: ['/Add_7_output_0_quantized']
+- Nome: /Add_8_quant, Tipo: QLinearAdd
+  Input: ['/Add_3_output_0_quantized', '/Add_3_output_0_scale', '/Add_3_output_0_zero_point', '/Add_4_output_0_quantized', '/Add_4_output_0_scale', '/Add_4_output_0_zero_point', '/Add_8_output_0_scale', '/Add_8_output_0_zero_point']
+  Output: ['/Add_8_output_0_quantized']
+- Nome: /Sigmoid_quant, Tipo: QLinearSigmoid
+  Input: ['/Add_7_output_0_quantized', '/Add_7_output_0_scale', '/Add_7_output_0_zero_point', '/Sigmoid_output_0_scale', '/Sigmoid_output_0_zero_point']
+  Output: ['/Sigmoid_output_0_quantized']
+- Nome: /Sigmoid_1_quant, Tipo: QLinearSigmoid
+  Input: ['/Add_8_output_0_quantized', '/Add_8_output_0_scale', '/Add_8_output_0_zero_point', '/Sigmoid_1_output_0_scale', '/Sigmoid_1_output_0_zero_point']
+  Output: ['/Sigmoid_1_output_0_quantized']
+- Nome: /Mul_quant, Tipo: QLinearMul
+  Input: ['/Sigmoid_output_0_quantized', '/Sigmoid_output_0_scale', '/Sigmoid_output_0_zero_point', '/Add_6_output_0_quantized', '/Add_6_output_0_scale', '/Add_6_output_0_zero_point', '/Mul_output_0_scale', '/Mul_output_0_zero_point']
+  Output: ['/Mul_output_0_quantized']
+- Nome: /Sigmoid_1_output_0_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['/Sigmoid_1_output_0_quantized', '/Sigmoid_1_output_0_scale', '/Sigmoid_1_output_0_zero_point']
+  Output: ['/Sigmoid_1_output_0']
+- Nome: /Mul_2_quant, Tipo: QLinearMul
+  Input: ['/Sigmoid_1_output_0_quantized', '/Sigmoid_1_output_0_scale', '/Sigmoid_1_output_0_zero_point', '/Squeeze_1_output_0_quantized', '/Squeeze_1_output_0_scale', '/Squeeze_1_output_0_zero_point', '/Mul_2_output_0_scale', '/Mul_2_output_0_zero_point']
+  Output: ['/Mul_2_output_0_quantized']
+- Nome: /Add_9_quant, Tipo: QLinearAdd
+  Input: ['/Add_5_output_0_quantized', '/Add_5_output_0_scale', '/Add_5_output_0_zero_point', '/Mul_output_0_quantized', '/Mul_output_0_scale', '/Mul_output_0_zero_point', '/Add_9_output_0_scale', '/Add_9_output_0_zero_point']
+  Output: ['/Add_9_output_0_quantized']
+- Nome: /Sub, Tipo: Sub
+  Input: ['/Constant_14_output_0', '/Sigmoid_1_output_0']
+  Output: ['/Sub_output_0']
+- Nome: /Add_9_output_0_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['/Add_9_output_0_quantized', '/Add_9_output_0_scale', '/Add_9_output_0_zero_point']
+  Output: ['/Add_9_output_0']
+- Nome: /Sub_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Sub_output_0', '/Sub_output_0_scale', '/Sub_output_0_zero_point']
+  Output: ['/Sub_output_0_quantized']
+- Nome: /Tanh, Tipo: Tanh
+  Input: ['/Add_9_output_0']
+  Output: ['/Tanh_output_0']
+- Nome: /Tanh_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Tanh_output_0', '/Tanh_output_0_scale', '/Tanh_output_0_zero_point']
+  Output: ['/Tanh_output_0_quantized']
+- Nome: /Mul_1_quant, Tipo: QLinearMul
+  Input: ['/Sub_output_0_quantized', '/Sub_output_0_scale', '/Sub_output_0_zero_point', '/Tanh_output_0_quantized', '/Tanh_output_0_scale', '/Tanh_output_0_zero_point', '/Mul_1_output_0_scale', '/Mul_1_output_0_zero_point']
+  Output: ['/Mul_1_output_0_quantized']
+- Nome: /Add_10_quant, Tipo: QLinearAdd
+  Input: ['/Mul_1_output_0_quantized', '/Mul_1_output_0_scale', '/Mul_1_output_0_zero_point', '/Mul_2_output_0_quantized', '/Mul_2_output_0_scale', '/Mul_2_output_0_zero_point', '/Add_10_output_0_scale', '/Add_10_output_0_zero_point']
+  Output: ['/Add_10_output_0_quantized']
+- Nome: /Squeeze_3, Tipo: Squeeze
+  Input: ['/Add_10_output_0_quantized']
+  Output: ['h1n_quantized']
+- Nome: /MatMul_7_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_15_output_0_quantized', '/Constant_15_output_0_scale', '/Constant_15_output_0_zero_point', 'h1n_quantized', '/Add_10_output_0_scale', '/Add_10_output_0_zero_point', '/MatMul_7_output_0_scale', '/MatMul_7_output_0_zero_point']
+  Output: ['/MatMul_7_output_0_quantized']
+- Nome: /MatMul_9_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_19_output_0_quantized', '/Constant_19_output_0_scale', '/Constant_19_output_0_zero_point', 'h1n_quantized', '/Add_10_output_0_scale', '/Add_10_output_0_zero_point', '/MatMul_9_output_0_scale', '/MatMul_9_output_0_zero_point']
+  Output: ['/MatMul_9_output_0_quantized']
+- Nome: /MatMul_11_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_23_output_0_quantized', '/Constant_23_output_0_scale', '/Constant_23_output_0_zero_point', 'h1n_quantized', '/Add_10_output_0_scale', '/Add_10_output_0_zero_point', '/MatMul_11_output_0_scale', '/MatMul_11_output_0_zero_point']
+  Output: ['/MatMul_11_output_0_quantized']
+- Nome: h1n_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['h1n_quantized', '/Add_10_output_0_scale', '/Add_10_output_0_zero_point']
+  Output: ['h1n']
+- Nome: /Add_11_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_7_output_0_quantized', '/MatMul_7_output_0_scale', '/MatMul_7_output_0_zero_point', '/Constant_16_output_0_quantized', '/Constant_16_output_0_scale', '/Constant_16_output_0_zero_point', '/Add_11_output_0_scale', '/Add_11_output_0_zero_point']
+  Output: ['/Add_11_output_0_quantized']
+- Nome: /Add_13_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_9_output_0_quantized', '/MatMul_9_output_0_scale', '/MatMul_9_output_0_zero_point', '/Constant_20_output_0_quantized', '/Constant_20_output_0_scale', '/Constant_20_output_0_zero_point', '/Add_13_output_0_scale', '/Add_13_output_0_zero_point']
+  Output: ['/Add_13_output_0_quantized']
+- Nome: /Add_15_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_11_output_0_quantized', '/MatMul_11_output_0_scale', '/MatMul_11_output_0_zero_point', '/Constant_24_output_0_quantized', '/Constant_24_output_0_scale', '/Constant_24_output_0_zero_point', '/Add_15_output_0_scale', '/Add_15_output_0_zero_point']
+  Output: ['/Add_15_output_0_quantized']
+- Nome: /Add_17_quant, Tipo: QLinearAdd
+  Input: ['/Add_11_output_0_quantized', '/Add_11_output_0_scale', '/Add_11_output_0_zero_point', '/Add_12_output_0_quantized', '/Add_12_output_0_scale', '/Add_12_output_0_zero_point', '/Add_17_output_0_scale', '/Add_17_output_0_zero_point']
+  Output: ['/Add_17_output_0_quantized']
+- Nome: /Add_18_quant, Tipo: QLinearAdd
+  Input: ['/Add_13_output_0_quantized', '/Add_13_output_0_scale', '/Add_13_output_0_zero_point', '/Add_14_output_0_quantized', '/Add_14_output_0_scale', '/Add_14_output_0_zero_point', '/Add_18_output_0_scale', '/Add_18_output_0_zero_point']
+  Output: ['/Add_18_output_0_quantized']
+- Nome: /Sigmoid_2_quant, Tipo: QLinearSigmoid
+  Input: ['/Add_17_output_0_quantized', '/Add_17_output_0_scale', '/Add_17_output_0_zero_point', '/Sigmoid_2_output_0_scale', '/Sigmoid_2_output_0_zero_point']
+  Output: ['/Sigmoid_2_output_0_quantized']
+- Nome: /Sigmoid_3_quant, Tipo: QLinearSigmoid
+  Input: ['/Add_18_output_0_quantized', '/Add_18_output_0_scale', '/Add_18_output_0_zero_point', '/Sigmoid_3_output_0_scale', '/Sigmoid_3_output_0_zero_point']
+  Output: ['/Sigmoid_3_output_0_quantized']
+- Nome: /Mul_3_quant, Tipo: QLinearMul
+  Input: ['/Sigmoid_2_output_0_quantized', '/Sigmoid_2_output_0_scale', '/Sigmoid_2_output_0_zero_point', '/Add_16_output_0_quantized', '/Add_16_output_0_scale', '/Add_16_output_0_zero_point', '/Mul_3_output_0_scale', '/Mul_3_output_0_zero_point']
+  Output: ['/Mul_3_output_0_quantized']
+- Nome: /Sigmoid_3_output_0_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['/Sigmoid_3_output_0_quantized', '/Sigmoid_3_output_0_scale', '/Sigmoid_3_output_0_zero_point']
+  Output: ['/Sigmoid_3_output_0']
+- Nome: /Mul_5_quant, Tipo: QLinearMul
+  Input: ['/Sigmoid_3_output_0_quantized', '/Sigmoid_3_output_0_scale', '/Sigmoid_3_output_0_zero_point', '/Squeeze_2_output_0_quantized', '/Squeeze_2_output_0_scale', '/Squeeze_2_output_0_zero_point', '/Mul_5_output_0_scale', '/Mul_5_output_0_zero_point']
+  Output: ['/Mul_5_output_0_quantized']
+- Nome: /Add_19_quant, Tipo: QLinearAdd
+  Input: ['/Add_15_output_0_quantized', '/Add_15_output_0_scale', '/Add_15_output_0_zero_point', '/Mul_3_output_0_quantized', '/Mul_3_output_0_scale', '/Mul_3_output_0_zero_point', '/Add_19_output_0_scale', '/Add_19_output_0_zero_point']
+  Output: ['/Add_19_output_0_quantized']
+- Nome: /Sub_1, Tipo: Sub
+  Input: ['/Constant_27_output_0', '/Sigmoid_3_output_0']
+  Output: ['/Sub_1_output_0']
+- Nome: /Add_19_output_0_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['/Add_19_output_0_quantized', '/Add_19_output_0_scale', '/Add_19_output_0_zero_point']
+  Output: ['/Add_19_output_0']
+- Nome: /Sub_1_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Sub_1_output_0', '/Sub_1_output_0_scale', '/Sub_1_output_0_zero_point']
+  Output: ['/Sub_1_output_0_quantized']
+- Nome: /Tanh_1, Tipo: Tanh
+  Input: ['/Add_19_output_0']
+  Output: ['/Tanh_1_output_0']
+- Nome: /Tanh_1_output_0_QuantizeLinear, Tipo: QuantizeLinear
+  Input: ['/Tanh_1_output_0', '/Tanh_1_output_0_scale', '/Tanh_1_output_0_zero_point']
+  Output: ['/Tanh_1_output_0_quantized']
+- Nome: /Mul_4_quant, Tipo: QLinearMul
+  Input: ['/Sub_1_output_0_quantized', '/Sub_1_output_0_scale', '/Sub_1_output_0_zero_point', '/Tanh_1_output_0_quantized', '/Tanh_1_output_0_scale', '/Tanh_1_output_0_zero_point', '/Mul_4_output_0_scale', '/Mul_4_output_0_zero_point']
+  Output: ['/Mul_4_output_0_quantized']
+- Nome: /Add_20_quant, Tipo: QLinearAdd
+  Input: ['/Mul_4_output_0_quantized', '/Mul_4_output_0_scale', '/Mul_4_output_0_zero_point', '/Mul_5_output_0_quantized', '/Mul_5_output_0_scale', '/Mul_5_output_0_zero_point', '/Add_20_output_0_scale', '/Add_20_output_0_zero_point']
+  Output: ['/Add_20_output_0_quantized']
+- Nome: /Squeeze_4, Tipo: Squeeze
+  Input: ['/Add_20_output_0_quantized']
+  Output: ['h2n_quantized']
+- Nome: /MatMul_13_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_28_output_0_quantized', '/Constant_28_output_0_scale', '/Constant_28_output_0_zero_point', 'h2n_quantized', '/Add_20_output_0_scale', '/Add_20_output_0_zero_point', '/MatMul_13_output_0_scale', '/MatMul_13_output_0_zero_point']
+  Output: ['/MatMul_13_output_0_quantized']
+- Nome: h2n_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['h2n_quantized', '/Add_20_output_0_scale', '/Add_20_output_0_zero_point']
+  Output: ['h2n']
+- Nome: /Add_21_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_13_output_0_quantized', '/MatMul_13_output_0_scale', '/MatMul_13_output_0_zero_point', '/Constant_29_output_0_quantized', '/Constant_29_output_0_scale', '/Constant_29_output_0_zero_point', '/Add_21_output_0_scale', '/Add_21_output_0_zero_point']
+  Output: ['/Add_21_output_0_quantized']
+- Nome: /MatMul_14_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_30_output_0_quantized', '/Constant_30_output_0_scale', '/Constant_30_output_0_zero_point', '/Add_21_output_0_quantized', '/Add_21_output_0_scale', '/Add_21_output_0_zero_point', '/MatMul_14_output_0_scale', '/MatMul_14_output_0_zero_point']
+  Output: ['/MatMul_14_output_0_quantized']
+- Nome: /Add_22_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_14_output_0_quantized', '/MatMul_14_output_0_scale', '/MatMul_14_output_0_zero_point', '/Constant_31_output_0_quantized', '/Constant_31_output_0_scale', '/Constant_31_output_0_zero_point', '/Add_22_output_0_scale', '/Add_22_output_0_zero_point']
+  Output: ['/Add_22_output_0_quantized']
+- Nome: /MatMul_15_quant, Tipo: QLinearMatMul
+  Input: ['/Constant_32_output_0_quantized', '/Constant_32_output_0_scale', '/Constant_32_output_0_zero_point', '/Add_22_output_0_quantized', '/Add_22_output_0_scale', '/Add_22_output_0_zero_point', '/MatMul_15_output_0_scale', '/MatMul_15_output_0_zero_point']
+  Output: ['/MatMul_15_output_0_quantized']
+- Nome: /Add_23_quant, Tipo: QLinearAdd
+  Input: ['/MatMul_15_output_0_quantized', '/MatMul_15_output_0_scale', '/MatMul_15_output_0_zero_point', '/Constant_33_output_0_quantized', '/Constant_33_output_0_scale', '/Constant_33_output_0_zero_point', '/Add_23_output_0_scale', '/Add_23_output_0_zero_point']
+  Output: ['/Add_23_output_0_quantized']
+- Nome: /Sigmoid_4_quant, Tipo: QLinearSigmoid
+  Input: ['/Add_23_output_0_quantized', '/Add_23_output_0_scale', '/Add_23_output_0_zero_point', 'mask_pred_scale', 'mask_pred_zero_point']
+  Output: ['mask_pred_quantized']
+- Nome: mask_pred_DequantizeLinear, Tipo: DequantizeLinear
+  Input: ['mask_pred_quantized', 'mask_pred_scale', 'mask_pred_zero_point']
+  Output: ['mask_pred']
+
+[4] Informazioni sui tensori intermedi:
+- Nome: /Squeeze_output_0, Tipo: FLOAT, Forma: [257]
+- Nome: /Squeeze_1_output_0, Tipo: FLOAT, Forma: [400]
+- Nome: /Squeeze_2_output_0, Tipo: FLOAT, Forma: [400]
+- Nome: /Constant_output_0, Tipo: FLOAT, Forma: [400, 257]
+- Nome: /MatMul_output_0, Tipo: FLOAT, Forma: [400]
+- Nome: /Constant_1_output_0, Tipo: FLOAT, Forma: [400]
+- Nome: /Add_output_0, Tipo: FLOAT, Forma: [400]
+- Nome: /Constant_2_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_1_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_3_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_1_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_4_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_2_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_5_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_2_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_6_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_3_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_7_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_3_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_8_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_4_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_9_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_4_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_10_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_5_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_11_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_5_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_12_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_6_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_13_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_6_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_7_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Sigmoid_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_8_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Sigmoid_1_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Mul_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_9_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Tanh_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_14_output_0, Tipo: FLOAT, Forma: []
+- Nome: /Sub_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Mul_1_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Mul_2_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_10_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_15_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_7_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_16_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_11_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_17_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_8_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_18_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_12_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_19_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_9_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_20_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_13_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_21_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_10_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_22_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_14_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_23_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_11_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_24_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_15_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_25_output_0, Tipo: FLOAT, Forma: [1, 400, 400]
+- Nome: /MatMul_12_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_26_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_16_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_17_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Sigmoid_2_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_18_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Sigmoid_3_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Mul_3_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_19_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Tanh_1_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_27_output_0, Tipo: FLOAT, Forma: []
+- Nome: /Sub_1_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Mul_4_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Mul_5_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Add_20_output_0, Tipo: FLOAT, Forma: [1, 400]
+- Nome: /Constant_28_output_0, Tipo: FLOAT, Forma: [600, 400]
+- Nome: /MatMul_13_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Constant_29_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Add_21_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Relu_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Constant_30_output_0, Tipo: FLOAT, Forma: [600, 600]
+- Nome: /MatMul_14_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Constant_31_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Add_22_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Relu_1_output_0, Tipo: FLOAT, Forma: [600]
+- Nome: /Constant_32_output_0, Tipo: FLOAT, Forma: [257, 600]
+- Nome: /MatMul_15_output_0, Tipo: FLOAT, Forma: [257]
+- Nome: /Constant_33_output_0, Tipo: FLOAT, Forma: [257]
+- Nome: /Add_23_output_0, Tipo: FLOAT, Forma: [257]
+
+[5] Informazioni sulle costanti e sugli initializer (senza valori):
+- Nome: /Constant_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Squeeze_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Squeeze_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_2_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_2_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_3_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_3_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_4_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_4_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Squeeze_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Squeeze_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_2_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_2_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_2_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_2_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_5_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_5_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_6_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_6_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_3_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_3_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_3_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_3_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_7_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_7_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_8_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_8_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_4_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_4_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_4_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_4_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_9_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_9_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_10_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_10_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_5_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_5_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_5_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_5_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_11_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_11_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_12_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_12_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_6_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_6_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_6_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_6_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_13_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_13_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_7_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_7_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Sigmoid_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Sigmoid_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_8_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_8_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Sigmoid_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Sigmoid_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Mul_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Mul_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_9_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_9_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Mul_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Mul_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Sub_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Sub_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Tanh_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Tanh_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Mul_2_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Mul_2_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_10_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_10_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_15_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_15_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_7_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_7_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_11_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_11_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_16_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_16_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_17_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_17_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Squeeze_2_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Squeeze_2_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_8_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_8_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_12_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_12_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_18_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_18_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_19_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_19_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_9_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_9_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_13_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_13_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_20_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_20_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_21_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_21_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_10_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_10_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_14_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_14_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_22_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_22_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_23_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_23_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_11_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_11_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_15_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_15_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_24_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_24_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_25_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_25_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_12_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_12_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_16_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_16_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_26_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_26_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_17_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_17_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Sigmoid_2_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Sigmoid_2_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_18_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_18_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Sigmoid_3_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Sigmoid_3_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Mul_3_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Mul_3_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_19_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_19_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Mul_4_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Mul_4_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Sub_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Sub_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Tanh_1_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Tanh_1_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Mul_5_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Mul_5_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_20_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_20_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_28_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_28_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_13_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_13_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_21_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_21_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_29_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_29_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_30_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_30_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_14_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_14_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_22_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_22_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_31_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_31_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_32_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_32_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /MatMul_15_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /MatMul_15_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Add_23_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Add_23_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: /Constant_33_output_0_zero_point, Tipo: INT8, Forma: []
+- Nome: /Constant_33_output_0_scale, Tipo: FLOAT, Forma: []
+- Nome: mask_pred_zero_point, Tipo: INT8, Forma: []
+- Nome: mask_pred_scale, Tipo: FLOAT, Forma: []
+
+[6] Controllo per nodi di quantizzazione:
+- Nodo quantizzato trovato: /Constant_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_1_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_2_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_3_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_4_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_5_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_6_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_7_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_8_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_9_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_10_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_11_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_12_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_13_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_15_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_16_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_17_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_18_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_19_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_20_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_21_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_22_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_23_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_24_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_25_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_26_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_28_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_29_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_30_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_31_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_32_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Constant_33_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Squeeze_1_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Squeeze_2_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Squeeze_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Sigmoid_1_output_0_DequantizeLinear (DequantizeLinear)
+- Nodo quantizzato trovato: /Add_9_output_0_DequantizeLinear (DequantizeLinear)
+- Nodo quantizzato trovato: /Sub_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Tanh_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: h1n_DequantizeLinear (DequantizeLinear)
+- Nodo quantizzato trovato: /Sigmoid_3_output_0_DequantizeLinear (DequantizeLinear)
+- Nodo quantizzato trovato: /Add_19_output_0_DequantizeLinear (DequantizeLinear)
+- Nodo quantizzato trovato: /Sub_1_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: /Tanh_1_output_0_QuantizeLinear (QuantizeLinear)
+- Nodo quantizzato trovato: h2n_DequantizeLinear (DequantizeLinear)
+- Nodo quantizzato trovato: mask_pred_DequantizeLinear (DequantizeLinear)
+
+[7] Altri attributi del modello:
+- onnx.infer: onnxruntime.quant
+
+Analisi completata.
