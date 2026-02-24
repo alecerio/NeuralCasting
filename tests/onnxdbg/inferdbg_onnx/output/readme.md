@@ -1,1 +1,0 @@
-output folder for test results

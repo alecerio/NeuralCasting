@@ -1,97 +1,62 @@
-import onnxruntime as ort
+import subprocess
+from config.config import TEST_TMP_PATH
 import numpy as np
-import json
-import torch
 
-def inference_onnx_runtime(path_onnx, input_data):
-    session = ort.InferenceSession(path_onnx)
-    
-    name_dict = {}
-    for i in range(len(input_data)):
-        input_name = session.get_inputs()[i].name
-        name_dict[input_name] = input_data[i]
-    
-    outputs = session.run(None, name_dict)
-
-    n_outputs = len(outputs)
-    outputs_onnx = []
-    outputs_shape_onnx = []
-    for i in range(n_outputs):
-        output_onnx = outputs[i]
-        output_shape_onnx = output_onnx.shape
-        output_onnx = np.squeeze(output_onnx)
-        output_onnx = output_onnx.flatten()
-        outputs_onnx.append(output_onnx)
-        outputs_shape_onnx.append(output_shape_onnx)
-    return [outputs_onnx, outputs_shape_onnx]
-
-def create_main_c(test_path, output_path, name, main_name='main.c'):
-    # read main.c code and add include to nn
-    f = open(test_path + main_name, 'r')
-    main_code : str = "#include \"" + name + ".h\"\n"
-    main_code += f.read()
-    f.close()
-
-    # generate main.c in output directory
-    f = open(output_path + 'main.c', 'w')
-    f.write(main_code)
-    f.close()
-
-def create_include_file(test_path, output_path, file_name):
-    # read file code
-    f = open(test_path + file_name, 'r')
-    code : str = f.read()
-    f.close()
-
-    # generate file in output directory
-    f = open(output_path + file_name, 'w')
-    f.write(code)
-    f.close()
-
-def read_inferred_output_shape(temp_path):
-    output_shape_path : str = temp_path + "out_shape.json"
-    with open(output_shape_path, 'r') as json_file:
-        data = json.load(json_file)
-        output_keys = list(data.keys())
-    output_shape_c = data[output_keys[0]]
-    return output_shape_c
-
-def read_output_c(output_path):
-    f = open(output_path + "test_output.txt")
-    output_text : str = f.read()
-    f.close()
-    output_values_str : list[str] = output_text.split(" ")
-    output_c : list[float] = []
-    for i in range(len(output_values_str)):
-        output_c.append(float(output_values_str[i]))
-    return output_c
-
-def print_test_header(test_name : str, n_spaces : int = 0, n_newlines : int = 2):
-    print("\n" * n_newlines)
-    print("####################################################################################")
-    print("\t"*n_spaces + test_name)
-    print("####################################################################################")
-    print("\n" * n_newlines)
-
-def inference_pytorch(model, input_data):
-    output_pytorch = model(input_data)
-    output_shape_pytorch = output_pytorch.shape
-    output_pytorch = torch.squeeze(output_pytorch)
-    return [output_pytorch, output_shape_pytorch]
-
-def compare_shape(test, shape1, shape2, label1, label2, verbose=True):
+def run_bash_command(command: str, verbose: bool = False) -> None:
+    result = subprocess.run(
+        ["bash", "-c", command],
+        capture_output=True,
+        text=True,
+        check=False
+    )
     if verbose:
-        print("Output shape ", label1, ": ", shape1)
-        print("Output shape ", label2, ": ", shape2)
-    test.assertEqual(len(shape1), len(shape2))
-    for i in range(len(shape1)):
-        test.assertEquals(shape1[i], shape2[i])
+        print(result.stdout)
+        print(result.stderr)
+        print(result.returncode)
 
-def compare_results(test, output1, output2, label1, label2, delta, verbose=True):
-    if verbose:
-        print("Output ", label1, ": ", output1)
-        print("Output ", label2, ": ", output2)
-    test.assertEqual(len(output1), len(output2))
-    N : int = len(output1)
-    for i in range(N):
-        test.assertAlmostEqual(output1[i], output2[i], delta=delta)
+def clear_compilation_folder():
+    run_bash_command(f"rm -rf {TEST_TMP_PATH}/*")
+
+def generate_main_c(code: str, file_name: str):
+    with open(f"{TEST_TMP_PATH}/{file_name}.c", "w") as f:
+        f.write(code)
+
+def read_output(outfilename):
+    with open(outfilename, "r", encoding="utf-8") as f:
+        text = f.read().strip()
+    if not text:
+        return []
+    return [int(x) for x in text.split(",")]
+
+
+# ---- HELPER FUNZTIONS FOR QUANTIZATION ----
+
+def quantize_linear(x: np.array, s: float, z: int) -> np.array:
+    q_x = np.clip(x / s + z, -128, 127).astype(np.int8)
+    return q_x
+
+def dequantize_linear(q_x: np.array, s: float, z: int) -> np.array:
+    r_x = s * (q_x.astype(np.float32) - z)
+    return r_x
+
+def quantize_linear_fixed_point(x: np.array, s_fx: int, z_fx: int, Q: int) -> np.array:
+    z_fx = np.array(z_fx).astype(np.int64)
+    s_fx = np.array(s_fx).astype(np.int64)
+    q_x = (x*(2**Q) + z_fx * s_fx) / s_fx
+    q_x = np.clip(q_x, -128, 127).astype(np.int8)
+    return q_x
+
+def dequentize_linear_fixed_point(q_x: np.array, s_fx: int, z_fx: int, Q: int) -> np.array:
+    a0 = np.int64(q_x) - z_fx
+    r_x = (s_fx * a0) / (2**Q)
+    return r_x
+
+def compute_s_z(x_np: np.array):
+    s = (np.max(x_np) - np.min(x_np)) / 255.0
+    z = np.round(-128.0-np.min(x_np) / s).astype(np.int32)
+    return s, z
+
+def compute_sfx_zfx(s: float, z: int, Q: int):
+    s_fx = np.round(s * (2.**Q)).astype(np.int64)
+    z_fx = z
+    return s_fx, z_fx

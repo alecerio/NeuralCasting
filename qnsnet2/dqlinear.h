@@ -1,8 +1,0 @@
-
-#ifndef __NCAST_DQLINEAR__
-#define __NCAST_DQLINEAR__
-
-#define NCAST_DQLINEAR(WQ, S, Z, W, SIZE) \
-NCAST_DQUANT8_FIXED(WQ, W, SIZE, S, Z)
-
-#endif // __NCAST_DQLINEAR__
