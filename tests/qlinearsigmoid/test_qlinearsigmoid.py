@@ -15,7 +15,7 @@ def test_qlinearsigmoid():
     assert np.allclose(y_torch, y, atol=1e-6)
 
     # compute quantization data
-    Q = 31
+    Q = 15
     sx, zx = compute_s_z(x)
     sfxx, zfxx = compute_sfx_zfx(sx, zx, Q)
     LUT_MIN = -6
@@ -31,7 +31,7 @@ def test_qlinearsigmoid():
     assert np.allclose(y_rec2, y_torch, atol=1e-1)
 
     # compute quantized model fixed point c
-    y_rec3 = sigmoid_quant_fixed_point_c(x, sfxx, zx, Q)
+    y_rec3 = sigmoid_quant_fixed_point_c(x, sfxx, zx, Q, LUT_MIN, LUT_MAX, LUT_SIZE)
     assert np.allclose(y_rec3, y_torch, atol=1e-1)
 
 def linearsigmoid_torch_float(a: np.array) -> np.array:
@@ -97,11 +97,17 @@ def linearsigmoid_quant_fixed_point(a: np.array, sfxa: int, zfxa: int, LUT_MIN: 
 
     return y_rec
 
-def sigmoid_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, Q: int):
+def sigmoid_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, Q: int, LUT_MIN, LUT_MAX: int, LUT_SIZE: int):
     xq = quantize_linear_fixed_point(x, sfxx, zx, Q)
 
-    sfxluty = 8379858
-    zluty = -129
+    LUTX = np.linspace(LUT_MIN, LUT_MAX, LUT_SIZE, dtype=np.float32)
+    LUTY = 1.0 / (1.0 + np.exp(-LUTX))
+    step = LUTX[1] - LUTX[0]
+
+    slutx, zlutx = compute_s_z(LUTX)
+    sluty, zluty = compute_s_z(LUTY)
+    sfxlutx, zfxlutx = compute_sfx_zfx(slutx, zlutx, Q)
+    sfxluty, zfxluty = compute_sfx_zfx(sluty, zluty, Q)
 
     size = len(xq)
     xq_str = ",".join(map(str, xq))
@@ -109,6 +115,7 @@ def sigmoid_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, Q: int):
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -118,7 +125,7 @@ int main() {{
     int8_t xq[{size}] = {{ {xq_str} }};
 
     int8_t yq[{size}];
-    NC_QSIGMOID_FXS8(xq,yq,{size},{sfxx},{zx});
+    NC_QSIGMOID_FXS8(xq,yq,{size},{sfxx},{zx},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",yq,{size},"%d");
 
