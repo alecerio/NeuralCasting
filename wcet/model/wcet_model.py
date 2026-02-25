@@ -172,8 +172,4 @@ def _gen_name(op):
 def _clear_wcet_out():
     subprocess.run("rm -f *", cwd=f"{WCET_OUT_PATH}", shell=True)
 
-if __name__ == '__main__':
-    onnx_path = f"{ONNX_DIR}/convsenet_int8_optimized.onnx"
-    wcet_model(onnx_path)
-    analyze_output()
 
