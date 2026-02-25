@@ -75,6 +75,7 @@ def linearadd_quant_fixed_point_c(a: np.array, b: np.array, sfxa: int, za: int, 
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -85,7 +86,7 @@ int main() {{
     int8_t bq[{size}] = {{ {bq_str} }};
 
     int8_t cq[{size}];
-    NC_QLADD_FXS8(aq,bq,cq,{size},{sfxa},{za},{sfxb},{zb},{sfxc},{zc});
+    NC_QLADD_FXS8(aq,bq,cq,{size},{sfxa},{za},{sfxb},{zb},{sfxc},{zc},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",cq,{size},"%d");
 

@@ -48,7 +48,12 @@ def generate_int32_str():
     n = random.randint(0, 2**31 - 1)
     s = str(n)
     return s
-    
+
+def generate_int16_str():
+    n = random.randint(0, 2**16 - 1)
+    s = str(n)
+    return s
+
 def generate_list_int8_str(size):
     numbers = [random.randint(-128, 127) for _ in range(size)]
     return ",".join(str(n) for n in numbers)

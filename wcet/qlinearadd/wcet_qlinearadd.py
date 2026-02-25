@@ -1,10 +1,9 @@
-from config.config import PATMOS_OPAPP_PATH, LIB_DIR
-from wcet.common.common import generate_int32_str
+from wcet.common.common import generate_int16_str
 from wcet.common.common import generate_main_wcet_template, generate_input_c_template, generate_input_h_template, generate_wcet_analysis
 
 def generate_main_wcet(size):
-    f = generate_int32_str
-    nn_statement = f"NC_QLADD_FXS8(aq,bq,cq,{size},{f()},{f()},{f()},{f()},{f()},{f()})"
+    f = generate_int16_str
+    nn_statement = f"NC_QLADD_FXS8(aq,bq,cq,{size},{f()},{f()},{f()},{f()},{f()},{f()},int32_t)"
     generate_main_wcet_template(nn_statement)
 
 def generate_input_c(size):
