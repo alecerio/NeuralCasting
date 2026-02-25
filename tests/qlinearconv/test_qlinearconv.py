@@ -31,7 +31,7 @@ def test_qlinearconv():
     assert np.allclose(y_torch.detach().numpy(), y_float, atol=1e-6)
 
     # compute quantization data
-    Q = 31
+    Q = 15
     sx, zx = compute_s_z(xnp)
     sw, zw = compute_s_z(W)
     sb, zb = compute_s_z(B)
@@ -148,6 +148,7 @@ def convolution_quant_fixed_point_c(x: np.array, W: np.array, B: np.array, sfxx:
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -159,7 +160,7 @@ int main() {{
     int8_t Bq[{Cout}] = {{ {Bq_str} }};
 
     int8_t yq[{Cout*Lout}];
-    NC_QLINCONV_FXS8(xq,Wq,Bq,yq,{Ks},{Cin},{Lin},{Cout},{Lout},{P},{D},{S},{sfxx},{zfxx},{sfxw},{zfxw},{sfxy},{zfxy},{sfxb},{zfxb},{Q})
+    NC_QLINCONV_FXS8(xq,Wq,Bq,yq,{Ks},{Cin},{Lin},{Cout},{Lout},{P},{D},{S},{sfxx},{zfxx},{sfxw},{zfxw},{sfxy},{zfxy},{sfxb},{zfxb},{Q},{acctype})
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",yq,{Cout*Lout},"%d");
 

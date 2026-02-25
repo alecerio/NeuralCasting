@@ -3,26 +3,50 @@
 
 #include <stdint.h>
 
+/***********************************************************************************************************
+ *                                          PATMOS PRAGMA IN MACROS
+ ***********************************************************************************************************/
+
 #define CUSTOM_PRAGMA(x) _Pragma(#x)
+
+/***********************************************************************************************************
+ *                                              TEST UTILITIES
+ ***********************************************************************************************************/
 
 #define NC_OUTTNS(OUTFILENAME,X,SIZE,DTYPE) \
 { \
-  FILE *_UI(f) = fopen(OUTFILENAME, "w"); \
-  if (!_UI(f)) return -1; \
-  for (size_t _UI(i) = 0; _UI(i) < SIZE; _UI(i)++) { \
-    if (fprintf(_UI(f), DTYPE, X[_UI(i)]) < 0) { \
-      fclose(_UI(f)); \
+  FILE *f = fopen(OUTFILENAME, "w"); \
+  if (!f) return -1; \
+  for (size_t i = 0; i < SIZE; i++) { \
+    if (fprintf(f, DTYPE, X[i]) < 0) { \
+      fclose(f); \
       return -2; \
     } \
-    if (_UI(i) + 1 < SIZE) { \
-      fputc(',', _UI(f)); \
+    if (i + 1 < SIZE) { \
+      fputc(',', f); \
     } \
   } \
-  fclose(_UI(f)); \
+  fclose(f); \
 }
 
-#define CONCAT(a,b) a##b
-#define _UI(name) CONCAT(name,__COUNTER__)
+/***********************************************************************************************************
+ *                                        QUANTIZATION SUPPORT MACROS
+ ***********************************************************************************************************/
+
+/***************************************************
+ * Macro: NC_QLIN_FXS8
+ * Description:
+ *   Performs linear quantization on an input array,
+ *   converting floating-point values to int8.
+ *
+ * Parameters:
+ *   X    - Input array (float)
+ *   Y    - Output array (int8_t)
+ *   SIZE - Number of elements
+ *   SFX  - Scale factor
+ *   ZFX  - Zero-point factor
+ *   Q    - Quantization factor (bit shift)
+ ***************************************************/
 
 #define NC_QLIN_FXS8(X,Y,SIZE,SFX,ZFX,Q) \
 { \
@@ -40,6 +64,21 @@
     } \
 }
 
+/***************************************************
+ * Macro: NC_DQLIN_FXS8
+ * Description:
+ *   Performs linear dequantization on an input array,
+ *   converting int8 values back to floating-point.
+ *
+ * Parameters:
+ *   X    - Input array (int8_t)
+ *   Y    - Output array (float)
+ *   SIZE - Number of elements
+ *   SFX  - Scale factor
+ *   ZFX  - Zero-point factor
+ *   Q    - Quantization factor (bit shift)
+ ***************************************************/
+
 #define NC_DQLIN_FXS8(X,Y,SIZE,SFX,ZFX,Q) \
 { \
   int32_t sfx = (int32_t) SFX; \
@@ -52,17 +91,54 @@
   } \
 }
 
+/***************************************************
+ * Macro: NC_CLIP_SINT8
+ * Description:
+ *   Clips a value to the int8_t range.
+ *
+ * Parameters:
+ *   X - Value to be clipped (modified in place)
+ ***************************************************/
+
 #define NC_CLIP_SINT8(X) \
-do { \
+{ \
     if(X < INT8_MIN) \
         X = INT8_MIN; \
     else if(X > INT8_MAX) \
         X = INT8_MAX;  \
-} while(0)
+}
 
-/*
- * NC_<OP-NAME>_<SF-TYPE><S/U><N-BITS>
- */
+/***********************************************************************************************************
+ *                                              NC OPERATORS
+ ***********************************************************************************************************/
+
+/***************************************************
+ * Macro op structure: NC_<OP-NAME>_<SF-TYPE><S/U><N-BITS>
+ * <OP-NAME>: contracted name for the operator (e.g., QLINADD for Quantized Linear Addition)
+ * <SF-TYPE>: scaling factor type (e.g., FX for fixed point)
+ * <S/U>: if quantization is signed (S) or unsigned (U)
+ * <N-BITS>: number of bits for the quantization (e.g., 8 for 8-bit)
+ ***************************************************/
+
+/***************************************************
+ * Macro: NC_QLADD_FXS8
+ * Description:
+ *   Performs quantized element-wise addition between
+ *   two int8 input arrays and produces an int8 output.
+ *
+ * Parameters:
+ *   AQ      - First input array (int8_t)
+ *   BQ      - Second input array (int8_t)
+ *   CQ      - Output array (int8_t)
+ *   SIZE    - Number of elements
+ *   SFXA    - Scale factor for AQ (fixed point)
+ *   ZFXA    - Zero-point for AQ
+ *   SFXB    - Scale factor for BQ (fixed point) 
+ *   ZFXB    - Zero-point for BQ
+ *   SFXC    - Scale factor for CQ (fixed point)
+ *   ZFXC    - Zero-point for CQ
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
 
 #define NC_QLADD_FXS8(AQ,BQ,CQ,SIZE,SFXA,ZFXA,SFXB,ZFXB,SFXC,ZFXC,ACCTYPE) \
 { \
@@ -76,6 +152,32 @@ for(int i=0; i<SIZE; i++) { \
   ACCTYPE a5 = a2 + a3 + a4; \
   ACCTYPE a6 = (int32_t) a5  / (int32_t) SFXC; \
   CQ[i] = (int8_t) a6; \
+} \
+}
+
+#define NC_QLINCONV_FXS8(XQ,WQ,BQ,YQ,KS,CIN,LIN,COUT,LOUT,PAD,DIL,STR,SFXX,ZX,SFXW,ZW,SFXY,ZY,SFXB,ZB,Q,ACCTYPE) \
+{ \
+CUSTOM_PRAGMA(loopbound min 0 max COUT) \
+for(int o=0; o < COUT; o++) { \
+  ACCTYPE n0 = (ACCTYPE)SFXB * (BQ[o] - ZB); \
+  ACCTYPE d0 = (ACCTYPE)SFXY; \
+  ACCTYPE a0 = n0 / d0; \
+CUSTOM_PRAGMA(loopbound min 0 max LOUT) \
+  for(int t=0; t < LOUT; t++) { \
+    ACCTYPE acc = 0; \
+CUSTOM_PRAGMA(loopbound min 0 max CIN) \
+    for(int c=0; c < CIN; c++) { \
+CUSTOM_PRAGMA(loopbound min 0 max KS) \
+        for(int k=0; k < KS; k++) { \
+            acc += (WQ[o*CIN*KS + c*KS + k] - ZW) * (XQ[c*LIN + t+k-PAD]-ZX); \
+        } \
+        ACCTYPE t0 = (ACCTYPE)SFXW * (ACCTYPE)SFXX * acc; \
+        ACCTYPE t1 = (ACCTYPE)SFXY << Q; \
+        ACCTYPE a1 = t0 / t1; \
+        ACCTYPE a2 = a0 + a1 + ZY; \
+        YQ[o*LOUT+t] = (int8_t) a2; \
+    } \
+  } \
 } \
 }
 
@@ -215,32 +317,6 @@ CUSTOM_PRAGMA(loopbound min 0 max K) \
         int64_t q1, r1; IDIVMOD64(acca0, a3, q1, r1) \
         CQ[i*N+j] = (int8_t)(q1 + ZY); \
     } \
-} \
-}
-
-#define NC_QLINCONV_FXS8(XQ,WQ,BQ,YQ,KS,CIN,LIN,COUT,LOUT,PAD,DIL,STR,SFXX,ZX,SFXW,ZW,SFXY,ZY,SFXB,ZB,Q) \
-{ \
-CUSTOM_PRAGMA(loopbound min 0 max COUT) \
-for(int o=0; o < COUT; o++) { \
-  int64_t n0 = (int64_t)SFXB * (BQ[o] - ZB); \
-  int64_t d0 = (int64_t)SFXY; \
-  int64_t a0, r0; IDIVMOD64(n0, d0, a0, r0) \
-CUSTOM_PRAGMA(loopbound min 0 max LOUT) \
-  for(int t=0; t < LOUT; t++) { \
-    int64_t acc = 0; \
-CUSTOM_PRAGMA(loopbound min 0 max CIN) \
-    for(int c=0; c < CIN; c++) { \
-CUSTOM_PRAGMA(loopbound min 0 max KS) \
-        for(int k=0; k < KS; k++) { \
-            acc += (WQ[o*CIN*KS + c*KS + k] - ZW) * (XQ[c*LIN + t+k-PAD]-ZX); \
-        } \
-        int64_t t0 = (int64_t)SFXW * (int64_t)SFXX * acc; \
-        int64_t t1 = (int64_t)SFXY << Q; \
-        int64_t a1, r1; IDIVMOD64(t0, t1, a1, r1) \
-        int64_t a2 = a0 + a1 + ZY; \
-        YQ[o*LOUT+t] = (int8_t) a2; \
-    } \
-  } \
 } \
 }
 
