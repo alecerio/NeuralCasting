@@ -213,6 +213,52 @@ CUSTOM_PRAGMA(loopbound min 0 max KS) \
 }
 
 /***************************************************
+ * Macro: NC_QLINMATMUL
+ * Description:
+ *   Performs quantized matrix multiplication between
+ *   two int8 matrices and produces an int8 output.
+ *
+ * Parameters:
+ *   AQ      - Input matrix A (int8_t), shape [M x K]
+ *   BQ      - Input matrix B (int8_t), shape [K x N]
+ *   CQ      - Output matrix (int8_t), shape [M x N]
+ *   M       - Number of rows of A and C
+ *   N       - Number of columns of B and C
+ *   K       - Shared dimension (columns of A, rows of B)
+ *   SFXA    - Scale factor for A (fixed point)
+ *   SFXB    - Scale factor for B (fixed point)
+ *   ZA      - Zero-point for A
+ *   ZB      - Zero-point for B
+ *   SFXY    - Scale factor for output (fixed point)
+ *   ZY      - Zero-point for output
+ *   Q       - Quantization shift
+ *   QS      - Scale adjustment shift
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QLINMM_FXS8(AQ,BQ,CQ,M,N,K,SFXA,SFXB,ZA,ZB,SFXY,ZY,Q,ACCTYPE) \
+{ \
+ACCTYPE a0 = ((ACCTYPE) SFXA * (ACCTYPE) SFXB) / (ACCTYPE) SFXY; \
+ACCTYPE a3 =  ((ACCTYPE)1 << Q); \
+CUSTOM_PRAGMA(loopbound min 0 max M) \
+for(int i=0; i<M; i++) { \
+CUSTOM_PRAGMA(loopbound min 0 max N) \
+    for(int j=0; j<N; j++) { \
+        ACCTYPE acc = 0; \
+CUSTOM_PRAGMA(loopbound min 0 max K) \
+        for(int k=0; k<K; k++) { \
+            acc += ((ACCTYPE) AQ[i*M+k] - ZA) * ((ACCTYPE) BQ[k*N+j] - ZB); \
+        } \
+        ACCTYPE acca0 = acc * a0; \
+        ACCTYPE q1 = acca0 / a3; \
+        ACCTYPE q2 = q1 + ZY; \
+        NC_CLIP_SINT8(q2) \
+        CQ[i*N+j] = (int8_t)q2; \
+    } \
+} \
+}
+
+/***************************************************
  * Macro: NC_QLMUL_FXS8
  * Description:
  *   Performs quantized element-wise multiplication
@@ -236,16 +282,51 @@ CUSTOM_PRAGMA(loopbound min 0 max KS) \
 
 #define NC_QLMUL_FXS8(AQ,BQ,CQ,SIZE,SFXA,ZFXA,SFXB,ZFXB,SFXC,ZFXC,Q,ACCTYPE) \
 { \
-ACCTYPE a0 = (ACCTYPE)SFXA * (ACCTYPE)SFXB; \
-ACCTYPE a4 = (ACCTYPE)SFXC * ((ACCTYPE)1 << Q); \
+ACCTYPE a0 = (ACCTYPE)SFXA * (ACCTYPE)SFXB / (ACCTYPE)SFXC; \
 CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
-for(int i; i < SIZE; i++) { \
+for(int i=0; i < SIZE; i++) { \
   ACCTYPE a1 = AQ[i] - ZFXA; \
   ACCTYPE a2 = BQ[i] - ZFXB; \
   ACCTYPE a3 = a0 * a1 * a2; \
-  ACCTYPE a5 = a3 / a4; \
+  ACCTYPE a5 = a3 / ((ACCTYPE)1 << Q); \
   ACCTYPE a6 = a5 + ZFXC; \
   CQ[i] = (int8_t) a6; \
+} \
+}
+
+/***************************************************
+ * Macro: NC_QLPRELU_FXS8
+ * Description:
+ *   Applies quantized PReLU (Parametric ReLU) activation
+ *   on an int8 input array and produces an int8 output.
+ *
+ * Parameters:
+ *   X     - Input array (int8_t)
+ *   W     - PReLU slope (int32_t)
+ *   Y     - Output array (int8_t)
+ *   SIZE  - Number of elements
+ *   SFXX  - Scale factor for input (fixed point)
+ *   ZFXX  - Zero-point for input
+ *   SFXY  - Scale factor for output (fixed point)
+ *   ZFXY  - Zero-point for output
+ *   Q     - Quantization shift
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QLPRELU_FXS8(X,W,Y,SIZE,SFXX,ZFXX,SFXY,ZFXY,Q,ACCTYPE) \
+{ \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i<SIZE; i++) { \
+  ACCTYPE a0; \
+  if(X[i] >= ZFXX) \
+    a0 = (ACCTYPE) (SFXX) * (X[i] - ZFXX) << Q; \
+  else \
+    a0 = (ACCTYPE) (W) * (ACCTYPE) (SFXX) * (X[i] - ZFXX); \
+  ACCTYPE a1 = (ACCTYPE) (SFXY) << Q; \
+  ACCTYPE a2 = (a0 / a1); \
+  ACCTYPE a3 = a2 + ZFXY; \
+  NC_CLIP_SINT8(a3); \
+  Y[i] = (int8_t)(a3); \
 } \
 }
 
@@ -317,23 +398,6 @@ for(int i=0; i<SIZE; i++) { \
 memcpy(Y,X,SIZE*sizeof(*Y)); \
 }
 
-#define NC_QLPRELU_FXS8(X,W,Y,SIZE,SFXX,ZFXX,SFXY,ZFXY,Q) \
-{ \
-CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
-for(int i=0; i<SIZE; i++) { \
-  int64_t a0; \
-  if(X[i] >= ZFXX) \
-    a0 = (int64_t) (SFXX) * (X[i] - ZFXX) << Q; \
-  else \
-    a0 = (int64_t) (W) * (int64_t) (SFXX) * (X[i] - ZFXX); \
-  int64_t a1 = (int64_t) (SFXY) << Q; \
-  int64_t a2 = (a0 / a1); \
-  int64_t a3 = a2 + ZFXY; \
-  NC_CLIP_SINT8(a3); \
-  Y[i] = (int8_t)(a3); \
-} \
-}
-
 #define NC_QSIGMOIDLUT_FXS8_SIZE (256)
 #define NC_QSIGMOIDLUT_FXS8_STEP (1)
 #define NC_QSIGMOIDLUT_FXS8_SFXLUTX (101058056)
@@ -350,26 +414,6 @@ for(int i=0; i<SIZE; i++) { \
   int64_t lutx = (a0 / NC_QSIGMOIDLUT_FXS8_SFXLUTX) + NC_QSIGMOIDLUT_FXS8_ZFXLUTX; \
   int32_t idxlut = ((int32_t) lutx + (int32_t) (128)) / NC_QSIGMOIDLUT_FXS8_STEP; \
   Y[i] = NC_QSIGMOIDLUT_FXS8[idxlut]; \
-} \
-}
-
-#define NC_QLINMATMUL(AQ,BQ,CQ,M,N,K,SFXA,SFXB,ZA,ZB,SFXY,ZY,Q,QS) \
-{ \
-int64_t a0 = (int64_t) SFXA * (int64_t) SFXB >> QS; \
-int64_t a3 = (int64_t) SFXY * ((int64_t)1 << (Q-QS)); \
-CUSTOM_PRAGMA(loopbound min 0 max M) \
-for(int i=0; i<M; i++) { \
-CUSTOM_PRAGMA(loopbound min 0 max N) \
-    for(int j=0; j<N; j++) { \
-        int64_t acc = 0; \
-CUSTOM_PRAGMA(loopbound min 0 max K) \
-        for(int k=0; k<K; k++) { \
-            acc += ((int64_t) AQ[i*M+k] - ZA) * ((int64_t) BQ[k*N+j] - ZB); \
-        } \
-        int64_t acca0 = acc * a0; \
-        int64_t q1, r1; IDIVMOD64(acca0, a3, q1, r1) \
-        CQ[i*N+j] = (int8_t)(q1 + ZY); \
-    } \
 } \
 }
 

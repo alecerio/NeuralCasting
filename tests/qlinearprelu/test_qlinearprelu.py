@@ -16,7 +16,7 @@ def test_prelu2():
     assert np.allclose(y_torch, y_float, atol=1e-6)
 
     # compute quantization data
-    Q = 31
+    Q = 15
     sx, zx = compute_s_z(x)
     sy, zy = compute_s_z(y_float)
     sfxx, zfxx = compute_sfx_zfx(sx, zx, Q)
@@ -81,6 +81,7 @@ def prelu_quant_fixed_point_c(x: np.array, w: np.float32, sfxx: int, zx: int, sf
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -90,7 +91,7 @@ int main() {{
     int8_t xq[{size}] = {{ {xq_str} }};
 
     int8_t yq[{size}];
-    NC_QLPRELU_FXS8(xq,{wfx},yq,{size},{sfxx},{zx},{sfxy},{zy},{Q});
+    NC_QLPRELU_FXS8(xq,{wfx},yq,{size},{sfxx},{zx},{sfxy},{zy},{Q},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",yq,{size},"%d");
 

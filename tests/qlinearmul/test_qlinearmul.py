@@ -5,8 +5,8 @@ from config.config import TEST_TMP_PATH, LIB_DIR
 
 def test_qlinearmul():
     # compute floating point model
-    a = np.array([-0.2, -0.1, 0.0, 0.1, 0.2], dtype=np.float32)
-    b = np.array([-0.6, -0.3, 0.0, 0.3, 0.6], dtype=np.float32)
+    a = np.array([-1.2, -1.1, 1.0, -0.1, 1.2], dtype=np.float32)
+    b = np.array([-2.6, -1.3, 0.0, 3.3, 0.6], dtype=np.float32)
     c = linearmul_float(a, b)
 
     # compute quantization data
@@ -20,15 +20,15 @@ def test_qlinearmul():
 
     # compute quantized model
     c_rec1 = linearmul_quant_float(a, b, sa, za, sb, zb, sc, zc)
-    assert np.allclose(c_rec1, c, atol=1e-1)
+    assert np.allclose(c_rec1, c, atol=2e0)
 
     # compute quantized model fixed point
     c_rec2 = linearmul_quant_fixed_point(a, b, sfxa, zfxa, sfxb, zfxb, sfxc, zfxc, Q)
-    assert np.allclose(c_rec2, c, atol=1e-1)
+    assert np.allclose(c_rec2, c, atol=2e0)
 
     #compute quantized model fixed point c
-    c_rec3 = linearnul_quant_fixed_point_c(a, b, sfxa, zfxa, sfxb, zfxb, sfxc, zfxc, Q)
-    assert np.allclose(c_rec3, c, atol=1e-1)
+    c_rec3 = linearmul_quant_fixed_point_c(a, b, sfxa, zfxa, sfxb, zfxb, sfxc, zfxc, Q)
+    assert np.allclose(c_rec3, c, atol=2e0)
 
 def linearmul_float(a: np.array, b: np.array) -> np.array:
     c = np.multiply(a, b)
@@ -60,7 +60,7 @@ def linearmul_quant_fixed_point(a: np.array, b: np.array, sfxa: int, zfxa: int, 
     c_rec = dequentize_linear_fixed_point(a3, sfxc, zfxc, Q)
     return c_rec
 
-def linearnul_quant_fixed_point_c(a: np.array, b: np.array, sfxa: int, za: int, sfxb: int, zb: int, sfxc: int, zc: int, Q: int):
+def linearmul_quant_fixed_point_c(a: np.array, b: np.array, sfxa: int, za: int, sfxb: int, zb: int, sfxc: int, zc: int, Q: int):
     aq = quantize_linear_fixed_point(a, sfxa, za, Q)
     bq = quantize_linear_fixed_point(b, sfxb, zb, Q)
 

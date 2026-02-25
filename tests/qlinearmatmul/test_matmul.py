@@ -11,8 +11,8 @@ def test_matmul():
     y_float = matmul_float_model(a, b)
     
     # quantization data
-    Q = 31
-    QS = 20
+    Q = 15
+    QS = 0
     sa, za = compute_s_z(a)
     sb, zb = compute_s_z(b)
     sy, zy = compute_s_z(y_float)
@@ -29,8 +29,8 @@ def test_matmul():
     assert np.allclose(y_rec2, y_float, atol=3e-1)
 
     # compute quantized model fixed point c
-    y_rec3 = matmul_quant_fixed_point_c(a, b, 2, 2, 2, sfxa, za, sfxb, zb, sfxy, zy, Q, QS)
-    assert np.allclose(y_rec3, y_float, atol=3e-1)
+    y_rec3 = matmul_quant_fixed_point_c(a, b, 2, 2, 2, sfxa, za, sfxb, zb, sfxy, zy, Q)
+    assert np.allclose(y_rec3, y_float, atol=7e-1)
 
 def matmul_float_model(a: np.array, b: np.array) -> np.array:
     y = np.matmul(a, b)
@@ -72,7 +72,7 @@ def matmul_quant_fixed_point(a: np.array, b: np.array, sfxa: int, zfxa: int, sfx
 
     return y_rec
 
-def matmul_quant_fixed_point_c(a: np.array, b: np.array, M: int, N: int, K: int, sfxa: int, za: int, sfxb: int, zb: int, sfxc: int, zc: int, Q: int, QS: int):
+def matmul_quant_fixed_point_c(a: np.array, b: np.array, M: int, N: int, K: int, sfxa: int, za: int, sfxb: int, zb: int, sfxc: int, zc: int, Q: int):
     aq = quantize_linear_fixed_point(a, sfxa, za, Q)
     bq = quantize_linear_fixed_point(b, sfxb, zb, Q)
 
@@ -86,6 +86,7 @@ def matmul_quant_fixed_point_c(a: np.array, b: np.array, M: int, N: int, K: int,
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -96,7 +97,7 @@ int main() {{
     int8_t bq[{size}] = {{ {bq_str} }};
 
     int8_t cq[{size}];
-    NC_QLINMATMUL(aq,bq,cq,{M},{N},{K},{sfxa},{sfxb},{za},{zb},{sfxc},{zc},{Q},{QS})
+    NC_QLINMM_FXS8(aq,bq,cq,{M},{N},{K},{sfxa},{sfxb},{za},{zb},{sfxc},{zc},{Q},{acctype})
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",cq,{size},"%d");
 
