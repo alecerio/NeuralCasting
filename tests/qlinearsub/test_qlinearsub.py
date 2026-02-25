@@ -10,7 +10,7 @@ def test_linearsub():
     c_float = linearsub_float(a_float, b_float)
     
     # compute quantization data
-    Q = 31
+    Q = 15
     sa, za = compute_s_z(a_float)
     sb, zb = compute_s_z(b_float)
     sc, zc = compute_s_z(c_float)
@@ -75,6 +75,7 @@ def linearsub_quant_fixed_point_c(a: np.array, b: np.array, sfxa: int, za: int, 
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -85,7 +86,7 @@ int main() {{
     int8_t bq[{size}] = {{ {bq_str} }};
 
     int8_t cq[{size}];
-    NC_QLSUB_FXS8(aq,bq,cq,{size},{sfxa},{za},{sfxb},{zb},{sfxc},{zc});
+    NC_QLSUB_FXS8(aq,bq,cq,{size},{sfxa},{za},{sfxb},{zb},{sfxc},{zc},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",cq,{size},"%d");
 

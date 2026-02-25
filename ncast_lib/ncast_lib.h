@@ -398,6 +398,43 @@ for(int i=0; i<SIZE; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_QLSUB_FXS8
+ * Description:
+ *   Performs quantized element-wise subtraction
+ *   between two int8 input arrays and produces
+ *   an int8 output.
+ *
+ * Parameters:
+ *   AQ      - First input array (int8_t)
+ *   BQ      - Second input array (int8_t)
+ *   CQ      - Output array (int8_t)
+ *   SIZE    - Number of elements
+ *   SFXA    - Scale factor for AQ (fixed point)
+ *   ZFXA    - Zero-point for AQ
+ *   SFXB    - Scale factor for BQ (fixed point)
+ *   ZFXB    - Zero-point for BQ
+ *   SFXC    - Scale factor for CQ (fixed point)
+ *   ZFXC    - Zero-point for CQ
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QLSUB_FXS8(AQ,BQ,CQ,SIZE,SFXA,ZFXA,SFXB,ZFXB,SFXC,ZFXC,ACCTYPE) \
+{ \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i<SIZE; i++) { \
+  ACCTYPE a0 = (ACCTYPE) AQ[i] - ZFXA; \
+  ACCTYPE a2 = SFXA * a0; \
+  ACCTYPE a1 = (ACCTYPE) BQ[i] - ZFXB; \
+  ACCTYPE a3 = SFXB * a1; \
+  ACCTYPE a4 = SFXC * ZFXC; \
+  ACCTYPE a5 = a2 - a3 + a4; \
+  ACCTYPE a6 = (ACCTYPE)a5 / (ACCTYPE)SFXC; \
+  NC_CLIP_SINT8(a6); \
+  CQ[i] = (int8_t) a6; \
+} \
+}
+
 #define NC_TR2D(X,Y,COLS,ROWS) \
 { \
 CUSTOM_PRAGMA(loopbound min 0 max ROWS) \
@@ -406,22 +443,6 @@ for(int i=0; i < ROWS; i++) { \
   for(int j=0; j < COLS; j++) { \
     Y[j*ROWS+i]= X[i*COLS+j]; \
   } \
-} \
-}
-
-#define NC_QLSUB_FXS8(AQ,BQ,CQ,SIZE,SFXA,ZFXA,SFXB,ZFXB,SFXC,ZFXC) \
-{ \
-CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
-for(int i=0; i<SIZE; i++) { \
-  int64_t a0 = (int64_t) AQ[i] - ZFXA; \
-  int64_t a2 = SFXA * a0; \
-  int64_t a1 = (int64_t) BQ[i] - ZFXB; \
-  int64_t a3 = SFXB * a1; \
-  int64_t a4 = SFXC * ZFXC; \
-  int64_t a5 = a2 - a3 + a4; \
-  int64_t a6 = (int32_t)a5 / (int32_t)SFXC; \
-  NC_CLIP_SINT8(a6); \
-  CQ[i] = (int8_t) a6; \
 } \
 }
 
