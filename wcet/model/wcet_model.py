@@ -54,14 +54,13 @@ def wcet_model(onnx_path):
 
 
 def _qlinearadd_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearadd_wcet_analysis(name=name, size=size)
+    qlinearadd_wcet_analysis(name=name, size=size, acctype="int32_t")
 
 def _qlinearconv_analysis(op: NCastOp, ncgraph:NCastGraph):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
-    Q = 31
+    name = _gen_name(op)
+    Q = 15
     input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
     output_names = list(op.out_dict.keys())
@@ -75,78 +74,80 @@ def _qlinearconv_analysis(op: NCastOp, ncgraph:NCastGraph):
     PAD = attrs.get("pads", [0, 0])[0]
     DIL = attrs.get("dilations", 1)[0]
     STR = attrs.get("strides", 1)[0]
-
-    qlinearconv_wcet_analysis(name, COUT, CIN, KS, LIN, PAD, DIL, STR, Q)
+    acctype = "int32_t"
+    qlinearconv_wcet_analysis(name, COUT, CIN, KS, LIN, PAD, DIL, STR, Q, acctype)
 
 def _qlinearmatmul_analysis(op, ncgraph):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     a_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     b_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
     M = a_shape[-2]
     K = a_shape[-1]
     N = b_shape[-1]
-    qlinearmatmul_wcet_analysis(name, M, N, K)
+    Q = 15
+    acctype = "int32_t"
+    qlinearmatmul_wcet_analysis(name, M, N, K, Q, acctype)
 
 def _qlinearmul_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearmul_wcet_analysis(name, size)
+    acctype = "int32_t"
+    Q = 15
+    qlinearmul_wcet_analysis(name, size, Q, acctype)
     
 def _qlinearprelu_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearprelu_wcet_analysis(name, size)
+    acctype = "int32_t"
+    Q = 15
+    qlinearprelu_wcet_analysis(name, size, Q, acctype)
 
 def _qlinearrelu_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearrelu_wcet_analysis(name, size)
+    acctype = "int32_t"
+    qlinearrelu_wcet_analysis(name, size, acctype)
 
 def _qlinearsigmoid_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearsigmoid_wcet_analysis(name, size)
+    acctype = "int32_t"
+    qlinearsigmoid_wcet_analysis(name, size, acctype)
 
 def _qlinearsub_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearsub_wcet_analysis(name, size)
+    acctype = "int32_t"
+    qlinearsub_wcet_analysis(name, size, acctype)
 
 def _qlineartanh_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlineartanh_wcet_analysis(name, size)
+    acctype = "int32_t"
+    qlineartanh_wcet_analysis(name, size, acctype)
 
 def _transpose_analysis(op, ncgraph):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     rows = input_shape[-2]
     cols = input_shape[-1]
     transpose_wcet_analysis(name, cols, rows)
 
 def _unsqueeze_analysis(op):
-    return
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
     unsqueeze_wcet_analysis(name, size)
 
 def _extract_output_size(op, index):
     out_keys = list(op.out_dict.keys())
-    shape = op.out_dict[out_keys[0]].shape
+    shape = op.out_dict[out_keys[index]].shape
     size = 1
     for dim in shape:
         size = size * dim
     return size
 
 def analyze_output():
+    analysis_output = ""
     files = [f.name for f in Path(f"{WCET_OUT_PATH}").glob("*.txt")]
     for file in files:
         filename = file.split('.')[0]
@@ -154,7 +155,9 @@ def analyze_output():
             with open(f"{WCET_OUT_PATH}/{file}", "r") as f:
                 results = f.read()
                 cycles = _extract_num_cycles(results)
-                print(f"{filename}: {cycles}")
+                analysis_output += f"{filename}: {cycles}\n"
+    with open(f"{WCET_OUT_PATH}/wcet-analysis-output.txt", "w") as f:
+        f.write(analysis_output)
 
 def _extract_num_cycles(results: str):
     match = re.search(r"cycles:\s*(-?\d+)", results)
@@ -162,6 +165,9 @@ def _extract_num_cycles(results: str):
         cycles = int(match.group(1))
         return int(cycles)
     return None
+
+def _gen_name(op):
+    return f"{op.onnx_unit.op_type}-{set_valid_tensor_identifier(op.onnx_unit.name)}"
 
 def _clear_wcet_out():
     subprocess.run("rm -f *", cwd=f"{WCET_OUT_PATH}", shell=True)
