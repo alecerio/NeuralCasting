@@ -1,4 +1,4 @@
-from config.config import ONNX_DIR, PATMOS_OUT_PATH
+from config.config import ONNX_DIR, PATMOS_OUT_PATH, WCET_OUT_PATH
 from graph.ncast_graph import NCastGraph
 import warnings
 from patmos.qlinearadd.patmos_qlinearadd import qlinearadd_patmos_analysis
@@ -52,13 +52,14 @@ def patmos_model(onnx_path):
             warnings.warn(f"Operator {optype} not supported on Patmos benchmark.")
 
 def _qlinearadd_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearadd_patmos_analysis(name=name, size=size)
+    acctype = "int32_t"
+    qlinearadd_patmos_analysis(name, size, acctype)
 
 def _qlinearconv_analysis(op, ncgraph):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
-    Q = 31
+    name = _gen_name(op)
+    Q = 15
     input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
     output_names = list(op.out_dict.keys())
@@ -72,61 +73,72 @@ def _qlinearconv_analysis(op, ncgraph):
     PAD = attrs.get("pads", [0, 0])[0]
     DIL = attrs.get("dilations", 1)[0]
     STR = attrs.get("strides", 1)[0]
-
-    qlinearconv_patmos_analysis(name, KS, CIN, LIN, COUT, PAD, DIL, STR, Q)
+    acctype = "int32_t"
+    qlinearconv_patmos_analysis(name, KS, CIN, LIN, COUT, PAD, DIL, STR, Q, acctype)
 
 def _qlinearmatmul_analysis(op, ncgraph):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     a_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     b_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
     M = a_shape[-2]
     K = a_shape[-1]
     N = b_shape[-1]
-    qlinearmatmul_patmos_analysis(name, M, K, N)
+    Q = 15
+    acctype = "int32_t"
+    qlinearmatmul_patmos_analysis(name, M, K, N, Q, acctype)
 
 def _qlinearmul_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearmul_patmos_analysis(name, size)
+    Q = 15
+    acctype = "int32_t"
+    qlinearmul_patmos_analysis(name, size, Q, acctype)
 
 def _qlinearprelu_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearprelu_patmos_analysis(name, size)
+    Q = 15
+    acctype = "int32_t"
+    qlinearprelu_patmos_analysis(name, size, Q, acctype)
 
 def _qlinearrelu_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearrelu_patmos_analysis(name, size)
+    acctype = "int32_t"
+    qlinearrelu_patmos_analysis(name, size, acctype)
 
 def _qlinearsigmoid_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearsigmoid_patmos_analysis(name, size)
+    acctype = "int32_t"
+    qlinearsigmoid_patmos_analysis(name, size, acctype)
 
 def _qlinearsub_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlinearsub_patmos_analysis(name, size)
+    acctype = "int32_t"
+    qlinearsub_patmos_analysis(name, size, acctype)
 
 def _qlineartanh_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
-    qlineartanh_patmos_analysis(name, size)
+    acctype = "int32_t"
+    qlineartanh_patmos_analysis(name, size, acctype)
 
 def _transpose_analysis(op, ncgraph):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     rows = input_shape[-2]
     cols = input_shape[-1]
     transpose_patmos_analysis(name, cols, rows)
 
 def _unsqueeze_analysis(op):
-    name = set_valid_tensor_identifier(op.onnx_unit.name)
+    name = _gen_name(op)
     size = _extract_output_size(op, 0)
     unsqueeze_patmos_analysis(name, size)
 
 def analyze_output():
+    analysis_output = ""
     files = [f.name for f in Path(f"{PATMOS_OUT_PATH}").glob("*.txt")]
     for file in files:
         filename = file.split('.')[0]
@@ -134,7 +146,9 @@ def analyze_output():
             with open(f"{PATMOS_OUT_PATH}/{file}", "r") as f:
                 results = f.read()
                 cycles = _extract_num_cycles(results)
-                print(f"{filename}: {cycles}")
+                analysis_output += f"{filename}: {cycles}\n"
+    with open(f"{WCET_OUT_PATH}/wcet-analysis-output.txt", "w") as f:
+        f.write(analysis_output)
 
 def _extract_num_cycles(results: str):
     match = re.search(r"cpu-cycles:\s*(-?\d+)", results)
@@ -142,6 +156,9 @@ def _extract_num_cycles(results: str):
         cycles = int(match.group(1))
         return int(cycles)
     return None
+
+def _gen_name(op):
+    return f"{op.onnx_unit.op_type}-{set_valid_tensor_identifier(op.onnx_unit.name)}"
 
 def _clear_patmos_out():
     subprocess.run("rm -f *", cwd=f"{PATMOS_OUT_PATH}", shell=True)
