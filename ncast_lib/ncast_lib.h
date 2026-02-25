@@ -469,6 +469,18 @@ for(int i=0; i<SIZE; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_TR2D
+ * Description:
+ *   Performs 2D matrix transposition.
+ *
+ * Parameters:
+ *   X     - Input matrix (row-major)
+ *   Y     - Output matrix (row-major, transposed)
+ *   COLS  - Number of columns of input matrix
+ *   ROWS  - Number of rows of input matrix
+ ***************************************************/
+
 #define NC_TR2D(X,Y,COLS,ROWS) \
 { \
 CUSTOM_PRAGMA(loopbound min 0 max ROWS) \
@@ -480,49 +492,23 @@ for(int i=0; i < ROWS; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_UNSQUEEZE
+ * Description:
+ *   Copies input data to output without modification.
+ *   Typically used to represent an "unsqueeze" operation
+ *   in frameworks where shape changes but data remains
+ *   identical in memory.
+ *
+ * Parameters:
+ *   X    - Input array
+ *   Y    - Output array
+ *   SIZE - Number of elements
+ ***************************************************/
+
 #define NC_UNSQUEEZE(X,Y,SIZE) \
 { \
 memcpy(Y,X,SIZE*sizeof(*Y)); \
-}
-
-#define UDIVMOD64(n, d, q_out, r_out) \
-{ \
-uint64_t _n = (n); \
-uint64_t _d = (d); \
-uint64_t _q = 0; \
-uint64_t _r = 0; \
-CUSTOM_PRAGMA(loopbound min 0 max 63) \
-for (int _i = 63; _i >= 0; _i--) { \
-    _r = (_r << 1) | ((_n >> _i) & 1ULL); \
-    if (_r >= _d) { \
-        _r -= _d; \
-        _q |= (1ULL << _i); \
-    } \
-} \
-(q_out) = _q; \
-(r_out) = _r; \
-}
-
-#define IDIVMOD64(n, d, q_out, r_out) \
-{ \
-int64_t _n = (n); \
-int64_t _d = (d); \
-uint64_t _un = (_n < 0) ? -(uint64_t)_n : (uint64_t)_n; \
-uint64_t _ud = (_d < 0) ? -(uint64_t)_d : (uint64_t)_d; \
-uint64_t _uq = 0; \
-uint64_t _ur = 0; \
-CUSTOM_PRAGMA(loopbound min 0 max 63) \
-for (int _i = 63; _i >= 0; _i--) { \
-    _ur = (_ur << 1) | ((_un >> _i) & 1ULL); \
-    if (_ur >= _ud) { \
-        _ur -= _ud; \
-        _uq |= (1ULL << _i); \
-    } \
-} \
-int64_t _q = (_n < 0) ^ (_d < 0) ? -(int64_t)_uq : (int64_t)_uq; \
-int64_t _r = (_n < 0) ? -(int64_t)_ur : (int64_t)_ur; \
-(q_out) = _q; \
-  (r_out) = _r; \
 }
 
 #endif // NCAST_LIB_H
