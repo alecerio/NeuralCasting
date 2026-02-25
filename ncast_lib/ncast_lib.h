@@ -435,6 +435,40 @@ for(int i=0; i<SIZE; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_QTANH_FXS8
+ * Description:
+ *   Applies quantized tanh activation using a lookup
+ *   table (LUT) on an int8 input array.
+ *
+ * Parameters:
+ *   X       - Input array (int8_t)
+ *   Y       - Output array (int8_t)
+ *   SIZE    - Number of elements
+ *   SFXX    - Scale factor for input
+ *   ZFXX    - Zero-point for input
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QTANHLUT_FXS8_SIZE (256)
+#define NC_QTANHLUT_FXS8_STEP (1)
+#define NC_QTANHLUT_FXS8_SFXLUTX (1542)
+#define NC_QTANHLUT_FXS8_ZFXLUTX (0)
+#define NC_QTANHLUT_FXS8_SFXLUTY (257)
+#define NC_QTANHLUT_FXS8_ZFXLUTY (0)
+extern const int8_t NC_QTANHLUT_FXS8[NC_QTANHLUT_FXS8_SIZE];
+
+#define NC_QTANH_FXS8(X,Y,SIZE,SFXX,ZFXX,ACCTYPE) \
+{ \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i<SIZE; i++) { \
+  ACCTYPE a0 = SFXX * (X[i] - ZFXX); \
+  ACCTYPE lutx = (a0 / NC_QTANHLUT_FXS8_SFXLUTX) + NC_QTANHLUT_FXS8_ZFXLUTX; \
+  ACCTYPE idxlut = ((ACCTYPE) lutx + (ACCTYPE) (128)) / NC_QTANHLUT_FXS8_STEP; \
+  Y[i] = NC_QTANHLUT_FXS8[idxlut]; \
+} \
+}
+
 #define NC_TR2D(X,Y,COLS,ROWS) \
 { \
 CUSTOM_PRAGMA(loopbound min 0 max ROWS) \
@@ -443,25 +477,6 @@ for(int i=0; i < ROWS; i++) { \
   for(int j=0; j < COLS; j++) { \
     Y[j*ROWS+i]= X[i*COLS+j]; \
   } \
-} \
-}
-
-#define NC_QTANHLUT_FXS8_SIZE (256)
-#define NC_QTANHLUT_FXS8_STEP (1)
-#define NC_QTANHLUT_FXS8_SFXLUTX (101058056)
-#define NC_QTANHLUT_FXS8_ZFXLUTX (0)
-#define NC_QTANHLUT_FXS8_SFXLUTY (16842802)
-#define NC_QTANHLUT_FXS8_ZFXLUTY (0)
-extern const int8_t NC_QTANHLUT_FXS8[NC_QTANHLUT_FXS8_SIZE];
-
-#define NC_QTANH_FXS8(X,Y,SIZE,SFXX,ZFXX) \
-{ \
-CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
-for(int i=0; i<SIZE; i++) { \
-  int64_t a0 = SFXX * (X[i] - ZFXX); \
-  int64_t lutx = (a0 / NC_QTANHLUT_FXS8_SFXLUTX) + NC_QTANHLUT_FXS8_ZFXLUTX; \
-  int32_t idxlut = ((int32_t) lutx + (int32_t) (128)) / NC_QTANHLUT_FXS8_STEP; \
-  Y[i] = NC_QTANHLUT_FXS8[idxlut]; \
 } \
 }
 

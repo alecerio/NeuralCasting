@@ -15,7 +15,7 @@ def test_tanh():
     assert np.allclose(y_torch, y, atol=1e-6)
 
     # compute quantization data
-    Q = 31
+    Q = 15
     sx, zx = compute_s_z(x)
     sfxx, zfxx = compute_sfx_zfx(sx, zx, Q)
     LUT_MIN = -6
@@ -31,7 +31,7 @@ def test_tanh():
     assert np.allclose(y_rec2, y_torch, atol=1e-1)
 
     # compute quantized model fixed point c
-    y_rec3 = tanh_quant_fixed_point_c(x, sfxx, zx, Q)
+    y_rec3 = tanh_quant_fixed_point_c(x, sfxx, zx, LUT_MIN, LUT_MAX, LUT_SIZE, Q)
     assert np.allclose(y_rec3, y_torch, atol=1e-1)
 
 def tanh_torch_float(a: np.array) -> np.array:
@@ -96,11 +96,15 @@ def tanh_quant_fixed_point(a: np.array, sfxa: int, zfxa: int, LUT_MIN: int, LUT_
 
     return y_rec
 
-def tanh_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, Q: int):
+def tanh_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, LUT_MIN: int, LUT_MAX: int, LUT_SIZE: int, Q: int):
     xq = quantize_linear_fixed_point(x, sfxx, zx, Q)
 
-    sfxluty = 16842802
-    zluty = 0
+    LUTX = np.linspace(LUT_MIN, LUT_MAX, LUT_SIZE, dtype=np.float32)
+    LUTY = np.tanh(LUTX)
+
+    slutx, zlutx = compute_s_z(LUTX)
+    sluty, zluty = compute_s_z(LUTY)
+    sfxluty, _ = compute_sfx_zfx(sluty, zluty, Q)
 
     size = len(xq)
     xq_str = ",".join(map(str, xq))
@@ -108,6 +112,7 @@ def tanh_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, Q: int):
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -117,7 +122,7 @@ int main() {{
     int8_t xq[{size}] = {{ {xq_str} }};
 
     int8_t yq[{size}];
-    NC_QTANH_FXS8(xq,yq,{size},{sfxx},{zx});
+    NC_QTANH_FXS8(xq,yq,{size},{sfxx},{zx},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",yq,{size},"%d");
 
