@@ -10,7 +10,7 @@ def test_qlinearmul():
     c = linearmul_float(a, b)
 
     # compute quantization data
-    Q = 31
+    Q = 15
     sa, za = compute_s_z(a)
     sb, zb = compute_s_z(b)
     sc, zc = compute_s_z(c)
@@ -71,6 +71,7 @@ def linearnul_quant_fixed_point_c(a: np.array, b: np.array, sfxa: int, za: int, 
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -81,7 +82,7 @@ int main() {{
     int8_t bq[{size}] = {{ {bq_str} }};
 
     int8_t cq[{size}];
-    NC_QLMUL_FXS8(aq,bq,cq,{size},{sfxa},{za},{sfxb},{zb},{sfxc},{zc},{Q});
+    NC_QLMUL_FXS8(aq,bq,cq,{size},{sfxa},{za},{sfxb},{zb},{sfxc},{zc},{Q},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",cq,{size},"%d");
 

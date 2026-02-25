@@ -155,6 +155,37 @@ for(int i=0; i<SIZE; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_QLINCONV_FXS8
+ * Description:
+ *   Performs 1D quantized convolution between input
+ *   activations and weights, producing an int8 output.
+ *
+ * Parameters:
+ *   XQ      - Input feature map (int8_t)
+ *   WQ      - Weights (int8_t)
+ *   BQ      - Bias (int32_t)
+ *   YQ      - Output feature map (int8_t)
+ *   KS      - Kernel size
+ *   CIN     - Number of input channels
+ *   LIN     - Input length
+ *   COUT    - Number of output channels
+ *   LOUT    - Output length
+ *   PAD     - Padding
+ *   DIL     - Dilation (currently unused in loop)
+ *   STR     - Stride
+ *   SFXX    - Scale factor for input (fixed point)
+ *   ZX      - Zero-point for input 
+ *   SFXW    - Scale factor for weights (fixed point)
+ *   ZW      - Zero-point for weights
+ *   SFXY    - Scale factor for output (fixed point)
+ *   ZY      - Zero-point for output
+ *   SFXB    - Scale factor for bias (fixed point)
+ *   ZB      - Zero-point for bias
+ *   Q       - Quantization shift
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
 #define NC_QLINCONV_FXS8(XQ,WQ,BQ,YQ,KS,CIN,LIN,COUT,LOUT,PAD,DIL,STR,SFXX,ZX,SFXW,ZW,SFXY,ZY,SFXB,ZB,Q,ACCTYPE) \
 { \
 CUSTOM_PRAGMA(loopbound min 0 max COUT) \
@@ -181,18 +212,40 @@ CUSTOM_PRAGMA(loopbound min 0 max KS) \
 } \
 }
 
-#define NC_QLMUL_FXS8(AQ,BQ,CQ,SIZE,SFXA,ZFXA,SFXB,ZFXB,SFXC,ZFXC,Q) \
+/***************************************************
+ * Macro: NC_QLMUL_FXS8
+ * Description:
+ *   Performs quantized element-wise multiplication
+ *   between two int8 input arrays and produces an
+ *   int8 output.
+ *
+ * Parameters:
+ *   AQ      - First input array (int8_t)
+ *   BQ      - Second input array (int8_t)
+ *   CQ      - Output array (int8_t)
+ *   SIZE    - Number of elements
+ *   SFXA    - Scale factor for AQ (fixed point)
+ *   ZFXA    - Zero-point for AQ
+ *   SFXB    - Scale factor for BQ (fixed point)
+ *   ZFXB    - Zero-point for BQ
+ *   SFXC    - Scale factor for CQ (fixed point)
+ *   ZFXC    - Zero-point for CQ
+ *   Q       - Quantization shift
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QLMUL_FXS8(AQ,BQ,CQ,SIZE,SFXA,ZFXA,SFXB,ZFXB,SFXC,ZFXC,Q,ACCTYPE) \
 { \
-int64_t a0 = (int64_t)SFXA * (int64_t)SFXB; \
-int64_t a4 = (int64_t)SFXC * ((int64_t)1 << Q); \
+ACCTYPE a0 = (ACCTYPE)SFXA * (ACCTYPE)SFXB; \
+ACCTYPE a4 = (ACCTYPE)SFXC * ((ACCTYPE)1 << Q); \
 CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
 for(int i; i < SIZE; i++) { \
-  int64_t a1 = AQ[i] - ZFXA; \
-  int64_t a2 = BQ[i] - ZFXB; \
-  int64_t a3 = a0 * a1 * a2; \
-  int64_t a5, r5; IDIVMOD64(a3, a4, a5, r5) \
-  int64_t a6 = a5 + ZFXC; \
-  CQ[i] = a6; \
+  ACCTYPE a1 = AQ[i] - ZFXA; \
+  ACCTYPE a2 = BQ[i] - ZFXB; \
+  ACCTYPE a3 = a0 * a1 * a2; \
+  ACCTYPE a5 = a3 / a4; \
+  ACCTYPE a6 = a5 + ZFXC; \
+  CQ[i] = (int8_t) a6; \
 } \
 }
 
