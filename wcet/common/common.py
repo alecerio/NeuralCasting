@@ -45,12 +45,12 @@ def _run_make(command, name):
         f.write(result.stdout)
 
 def generate_int32_str():
-    n = random.randint(0, 2**31 - 1)
+    n = random.randint(-2**31, 2**31 - 1)
     s = str(n)
     return s
 
 def generate_int16_str():
-    n = random.randint(0, 2**16 - 1)
+    n = random.randint(-2**15, 2**15 - 1)
     s = str(n)
     return s
 

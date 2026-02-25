@@ -330,6 +330,40 @@ for(int i=0; i<SIZE; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_RELU_FXS8
+ * Description:
+ *   Applies quantized ReLU activation on an int8 input
+ *   array and produces an int8 output.
+ *
+ * Parameters:
+ *   X       - Input array (int8_t)
+ *   Y       - Output array (int8_t)
+ *   SIZE    - Number of elements
+ *   SFXX    - Scale factor for input (fixed point)
+ *   ZFXX    - Zero-point for input
+ *   SFXY    - Scale factor for output (fixed point)
+ *   ZFXY    - Zero-point for output
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_RELU_FXS8(X,Y,SIZE,SFXX,ZFXX,SFXY,ZFXY, ACCTYPE) \
+{ \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i < SIZE; i++) { \
+  if(X[i] >= ZFXX) { \
+    ACCTYPE a0 = (ACCTYPE)SFXX * (X[i] - ZFXX); \
+    ACCTYPE a1 = a0 / SFXY; \
+    ACCTYPE a2 = a1 + ZFXY; \
+    NC_CLIP_SINT8(a2); \
+    Y[i] = (int8_t) (a2); \
+  } \
+  else { \
+    Y[i] = (int8_t) ZFXY; \
+  } \
+} \
+}
+
 #define NC_TR2D(X,Y,COLS,ROWS) \
 { \
 CUSTOM_PRAGMA(loopbound min 0 max ROWS) \
@@ -337,23 +371,6 @@ for(int i=0; i < ROWS; i++) { \
   CUSTOM_PRAGMA(loopbound min 0 max COLS) \
   for(int j=0; j < COLS; j++) { \
     Y[j*ROWS+i]= X[i*COLS+j]; \
-  } \
-} \
-}
-
-#define NC_RELU(X,Y,SIZE,SFXX,ZFXX,SFXY,ZFXY) \
-{ \
-CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
-for(int i=0; i < SIZE; i++) { \
-  if(X[i] >= ZFXX) { \
-    int64_t a0 = (int64_t)SFXX * (X[i] - ZFXX); \
-    int64_t a1 = a0 / SFXY; \
-    int64_t a2 = a1 + ZFXY; \
-    NC_CLIP_SINT8(a2); \
-    Y[i] = (int8_t) (a2); \
-  } \
-  else { \
-    Y[i] = (int8_t) ZFXY; \
   } \
 } \
 }

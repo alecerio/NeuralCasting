@@ -10,7 +10,7 @@ def test_qlinearrelu():
     y_float = qlinearrelu_float(x)
 
     # compute quantization data
-    Q = 31
+    Q = 15
     sx, zx = compute_s_z(x)
     sy, zy = compute_s_z(y_float)
     sfxx, zfxx = compute_sfx_zfx(sx, zx, Q)
@@ -72,6 +72,7 @@ def qlinearrelu_quant_fixed_point_c(x: np.array, sfxx: int, zx: int, sfxy: int, 
     cname = "main"
     exename = "test"
     outname = "out"
+    acctype = "int32_t"
 
     main = f"""
 #include "ncast_lib.h"
@@ -81,7 +82,7 @@ int main() {{
     int8_t xq[{size}] = {{ {xq_str} }};
 
     int8_t yq[{size}];
-    NC_RELU(xq,yq,{size},{sfxx},{zx},{sfxy},{zy});
+    NC_RELU_FXS8(xq,yq,{size},{sfxx},{zx},{sfxy},{zy},{acctype});
 
     NC_OUTTNS("{TEST_TMP_PATH}/{outname}.txt",yq,{size},"%d");
 
