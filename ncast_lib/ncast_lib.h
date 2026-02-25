@@ -364,6 +364,40 @@ for(int i=0; i < SIZE; i++) { \
 } \
 }
 
+/***************************************************
+ * Macro: NC_QSIGMOID_FXS8
+ * Description:
+ *   Applies quantized sigmoid activation using a
+ *   lookup table (LUT) on an int8 input array.
+ *
+ * Parameters:
+ *   X       - Input array (int8_t)
+ *   Y       - Output array (int8_t)
+ *   SIZE    - Number of elements
+ *   SFXX    - Scale factor for input (fixed point)
+ *   ZFXX    - Zero-point for input
+ *   ACCTYPE - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QSIGMOIDLUT_FXS8_SIZE (256)
+#define NC_QSIGMOIDLUT_FXS8_STEP (1)
+#define NC_QSIGMOIDLUT_FXS8_SFXLUTX (1542)
+#define NC_QSIGMOIDLUT_FXS8_ZFXLUTX (0)
+#define NC_QSIGMOIDLUT_FXS8_SFXLUTY (128)
+#define NC_QSIGMOIDLUT_FXS8_ZFXLUTY (-129)
+extern const int8_t NC_QSIGMOIDLUT_FXS8[NC_QSIGMOIDLUT_FXS8_SIZE];
+
+#define NC_QSIGMOID_FXS8(X,Y,SIZE,SFXX,ZFXX,ACCTYPE) \
+{ \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i<SIZE; i++) { \
+  ACCTYPE a0 = SFXX * (X[i] - ZFXX); \
+  ACCTYPE lutx = (a0 / NC_QSIGMOIDLUT_FXS8_SFXLUTX) + NC_QSIGMOIDLUT_FXS8_ZFXLUTX; \
+  int idxlut = ((int) lutx + (int) (128)) / NC_QSIGMOIDLUT_FXS8_STEP; \
+  Y[i] = NC_QSIGMOIDLUT_FXS8[idxlut]; \
+} \
+}
+
 #define NC_TR2D(X,Y,COLS,ROWS) \
 { \
 CUSTOM_PRAGMA(loopbound min 0 max ROWS) \
@@ -413,25 +447,6 @@ for(int i=0; i<SIZE; i++) { \
 #define NC_UNSQUEEZE(X,Y,SIZE) \
 { \
 memcpy(Y,X,SIZE*sizeof(*Y)); \
-}
-
-#define NC_QSIGMOIDLUT_FXS8_SIZE (256)
-#define NC_QSIGMOIDLUT_FXS8_STEP (1)
-#define NC_QSIGMOIDLUT_FXS8_SFXLUTX (1542)
-#define NC_QSIGMOIDLUT_FXS8_ZFXLUTX (0)
-#define NC_QSIGMOIDLUT_FXS8_SFXLUTY (128)
-#define NC_QSIGMOIDLUT_FXS8_ZFXLUTY (-129)
-extern const int8_t NC_QSIGMOIDLUT_FXS8[NC_QSIGMOIDLUT_FXS8_SIZE];
-
-#define NC_QSIGMOID_FXS8(X,Y,SIZE,SFXX,ZFXX,ACCTYPE) \
-{ \
-CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
-for(int i=0; i<SIZE; i++) { \
-  ACCTYPE a0 = SFXX * (X[i] - ZFXX); \
-  ACCTYPE lutx = (a0 / NC_QSIGMOIDLUT_FXS8_SFXLUTX) + NC_QSIGMOIDLUT_FXS8_ZFXLUTX; \
-  int idxlut = ((int) lutx + (int) (128)) / NC_QSIGMOIDLUT_FXS8_STEP; \
-  Y[i] = NC_QSIGMOIDLUT_FXS8[idxlut]; \
-} \
 }
 
 #define UDIVMOD64(n, d, q_out, r_out) \
