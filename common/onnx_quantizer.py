@@ -21,6 +21,17 @@ class MyDataReader(CalibrationDataReader):
         except StopIteration:
             return None
 
+class MyDataReaders(CalibrationDataReader):
+    def __init__(self, input_names, samples):
+        self.input_names = input_names
+        self.samples = iter(samples)
+
+    def get_next(self):
+        try:
+            xs = next(self.samples)  # (x1, x2, x3)
+            return {name: x for name, x in zip(self.input_names, xs)}
+        except StopIteration:
+            return None
 
 if __name__ == "__main__":
 
@@ -38,9 +49,20 @@ if __name__ == "__main__":
     model_fp32 = f"{args.path}/{args.model}.onnx"
     model_int8 = f"{args.path}/{args.model}_int8.onnx"
 
-    input_name = "stft_noisy"
-    samples = [np.random.randn(1, 257, 50).astype(np.float32) for _ in range(50)]
-    dr = MyDataReader(input_name, samples)
+    input_names = ["in_noisy", "h1", "h2"]
+    
+    samples = [
+    (
+        np.random.rand(1, 1, 257).astype(np.float32),
+        np.random.rand(1, 1, 400).astype(np.float32),
+        np.random.rand(1, 1, 400).astype(np.float32),
+    )
+    for _ in range(20)
+]
+
+    dr = MyDataReaders(input_names, samples)
+
+    hidden_name = ""
 
     quantize_static(
         model_input=model_fp32,
