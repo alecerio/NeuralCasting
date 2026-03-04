@@ -9,10 +9,24 @@ class QLinearMul(NCastOp):
         super().__init__(onnx_unit)
     
     def update_output_dict(self, graph, ops):
-        result = retrieve_input(graph, ops, self.onnx_unit.input[0])
-        shape: List[int] = result[0]
-        dtype: int = result[1]
-        self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(shape, dtype)
+        resultA = retrieve_input(graph, ops, self.onnx_unit.input[0])
+        shapeA: List[int] = resultA[0]
+        dtypeA: int = resultA[1]
+
+        resultB = retrieve_input(graph, ops, self.onnx_unit.input[3])
+        shapeB: List[int] = resultA[0]
+        dtypeB: int = resultA[1]
+        
+        if len(shapeA) > len(shapeB):
+            new_shape = shapeA
+        else:
+            new_shape = shapeB
+
+        self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(new_shape, dtypeA)
+
+        #print(self.onnx_unit.name)
+        #print(new_shape)
+        #print(" ------------------------- ")
 
     def emit_includes(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
         return ["#include <math.h>", "#include <stdint.h>"]

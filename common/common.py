@@ -2,6 +2,9 @@ import onnx
 from typing import List
 from ops.ncast_op import NCastOp
 
+def not_implemented_feature_exception(topic: str, excetion_text: str):
+    raise Exception(f"NotImplementedFeature [{topic}] {excetion_text}")
+
 def set_valid_tensor_identifier(name: str) -> str:
     valid_name = name.replace(".", "_").replace("/", "_").replace("-", "_").replace(":", "_")
     valid_name = "t_" + valid_name
