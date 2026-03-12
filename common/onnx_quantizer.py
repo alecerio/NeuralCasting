@@ -49,16 +49,12 @@ if __name__ == "__main__":
     model_fp32 = f"{args.path}/{args.model}.onnx"
     model_int8 = f"{args.path}/{args.model}_int8.onnx"
 
-    input_names = ["in_noisy", "h1", "h2"]
+    input_names = ["input"]
     
     samples = [
-    (
-        np.random.rand(1, 1, 257).astype(np.float32),
-        np.random.rand(1, 1, 400).astype(np.float32),
-        np.random.rand(1, 1, 400).astype(np.float32),
-    )
+    (np.random.rand(1, 3, 32, 32).astype(np.float32),)
     for _ in range(20)
-]
+    ]
 
     dr = MyDataReaders(input_names, samples)
 
