@@ -16,6 +16,7 @@ from ops.qlinear_matmul import QLinearMatmul
 from ops.sub import Sub
 from ops.tanh import Tanh
 from ops.ncast_op import NCastOp
+from ops.reshape import Reshape
 from config.config import NCastConfig, TEMPLATES_DIR
 from common.common import set_valid_tensor_identifier, set_onnx_data_type_to_string
 
@@ -31,6 +32,7 @@ op_dict = {
     "Unsqueeze": Unsqueeze,
     "QLinearMul": QLinearMul,
     "PRelu": PRelu,
+    "Reshape": Reshape,
     "Squeeze": Squeeze,
     "QLinearMatMul": QLinearMatmul,
     "Sub": Sub,
