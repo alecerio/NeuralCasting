@@ -3,6 +3,7 @@ from graph.ncast_graph import NCastGraph
 import warnings
 from patmos.qlinearadd.patmos_qlinearadd import qlinearadd_patmos_analysis
 from patmos.qlinearconv.patmos_qlinearconv import qlinearconv_patmos_analysis
+from patmos.qlinearconv2d.patmos_qlinearconv2d import qlinearconv2d_patmos_analysis
 from patmos.qlinearmatmul.patmos_qlinearmatmul import qlinearmatmul_patmos_analysis
 from patmos.qlinearmul.patmos_qlinearmul import qlinearmul_patmos_analysis
 from patmos.qlinearprelu.patmos_qlinearprelu import qlinearprelu_patmos_analysis
@@ -57,23 +58,82 @@ def _qlinearadd_analysis(op):
     qlinearadd_patmos_analysis(name, size, acctype)
 
 def _qlinearconv_analysis(op, ncgraph):
-    name = _gen_name(op)
-    Q = 15
-    input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
-    w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
-    output_names = list(op.out_dict.keys())
-    output_shape = op.out_dict[output_names[0]].shape
-    attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
-    group = attrs.get("group", 1)
-    CIN = w_shape[1] * group
-    KS = w_shape[2]
-    LIN = input_shape[2]
-    COUT = w_shape[0]
-    PAD = attrs.get("pads", [0, 0])[0]
-    DIL = attrs.get("dilations", 1)[0]
-    STR = attrs.get("strides", 1)[0]
-    acctype = "int32_t"
-    qlinearconv_patmos_analysis(name, KS, CIN, LIN, COUT, PAD, DIL, STR, Q, acctype)
+    rank = op._get_conv_rank(ncgraph.graph, ncgraph.ops)
+    print(f"rank: {rank}")
+    if rank == 1:
+        name = _gen_name(op)
+        Q = 15
+        input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
+        w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
+        output_names = list(op.out_dict.keys())
+        output_shape = op.out_dict[output_names[0]].shape
+        attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
+        group = attrs.get("group", 1)
+        CIN = w_shape[1] * group
+        KS = w_shape[2]
+        LIN = input_shape[2]
+        COUT = w_shape[0]
+        PAD = attrs.get("pads", [0, 0])[0]
+        DIL = attrs.get("dilations", 1)[0]
+        STR = attrs.get("strides", 1)[0]
+        acctype = "int32_t"
+        qlinearconv_patmos_analysis(name, KS, CIN, LIN, COUT, PAD, DIL, STR, Q, acctype)
+    elif rank == 2:
+        name = _gen_name(op)
+        Q = 15
+
+        input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
+        w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
+
+        output_names = list(op.out_dict.keys())
+        output_shape = op.out_dict[output_names[0]].shape
+
+        attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
+
+        group = attrs.get("group", 1)
+
+        CIN = w_shape[1] * group
+        KH = w_shape[2]
+        KW = w_shape[3]
+
+        HIN = input_shape[2]
+        WIN = input_shape[3]
+
+        COUT = w_shape[0]
+
+        pads = attrs.get("pads", [0, 0, 0, 0])
+        PADH = pads[0]
+        PADW = pads[1]
+
+        dilations = attrs.get("dilations", [1, 1])
+        DILH = dilations[0]
+        DILW = dilations[1]
+
+        strides = attrs.get("strides", [1, 1])
+        STRH = strides[0]
+        STRW = strides[1]
+
+        acctype = "int32_t"
+
+        qlinearconv2d_patmos_analysis(
+            name=name,
+            KH=KH,
+            KW=KW,
+            CIN=CIN,
+            HIN=HIN,
+            WIN=WIN,
+            COUT=COUT,
+            PADH=PADH,
+            PADW=PADW,
+            DILH=DILH,
+            DILW=DILW,
+            STRH=STRH,
+            STRW=STRW,
+            Q=Q,
+            acctype=acctype,
+        )
+    else:
+        raise Exception("Convolution rank not supported.")
 
 def _qlinearmatmul_analysis(op, ncgraph):
     name = _gen_name(op)

@@ -213,6 +213,86 @@ CUSTOM_PRAGMA(loopbound min 0 max KS) \
 }
 
 /***************************************************
+ * Macro: NC_QLINCONV2D_FXS8
+ * Description:
+ *   Performs 2D quantized convolution between input
+ *   activations and weights, producing an int8 output.
+ *
+ * Tensor layouts:
+ *   XQ: [CIN][HIN][WIN]
+ *   WQ: [COUT][CIN][KH][KW]
+ *   BQ: [COUT]
+ *   YQ: [COUT][HOUT][WOUT]
+ *
+ * Parameters:
+ *   XQ       - Input feature map (int8_t)
+ *   WQ       - Weights (int8_t)
+ *   BQ       - Bias (int32_t)
+ *   YQ       - Output feature map (int8_t)
+ *   KH       - Kernel height
+ *   KW       - Kernel width
+ *   CIN      - Number of input channels
+ *   HIN      - Input height
+ *   WIN      - Input width
+ *   COUT     - Number of output channels
+ *   HOUT     - Output height
+ *   WOUT     - Output width
+ *   PADH     - Padding on height
+ *   PADW     - Padding on width
+ *   DILH     - Dilation on height
+ *   DILW     - Dilation on width
+ *   STRH     - Stride on height
+ *   STRW     - Stride on width
+ *   SFXX     - Scale factor for input (fixed point)
+ *   ZX       - Zero-point for input
+ *   SFXW     - Scale factor for weights (fixed point)
+ *   ZW       - Zero-point for weights
+ *   SFXY     - Scale factor for output (fixed point)
+ *   ZY       - Zero-point for output
+ *   SFXB     - Scale factor for bias (fixed point)
+ *   ZB       - Zero-point for bias
+ *   Q        - Quantization shift
+ *   ACCTYPE  - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QLINCONV2D_FXS8(XQ,WQ,BQ,YQ,KH,KW,CIN,HIN,WIN,COUT,HOUT,WOUT,PADH,PADW,DILH,DILW,STRH,STRW,SFXX,ZX,SFXW,ZW,SFXY,ZY,SFXB,ZB,Q,ACCTYPE) \
+{ \
+  CUSTOM_PRAGMA(loopbound min 0 max COUT) \
+  for (int o = 0; o < COUT; o++) { \
+    ACCTYPE n0 = (ACCTYPE)SFXB * (ACCTYPE)(BQ[o] - ZB); \
+    ACCTYPE d0 = (ACCTYPE)SFXY; \
+    ACCTYPE a0 = n0 / d0; \
+    CUSTOM_PRAGMA(loopbound min 0 max HOUT) \
+    for (int oh = 0; oh < HOUT; oh++) { \
+      CUSTOM_PRAGMA(loopbound min 0 max WOUT) \
+      for (int ow = 0; ow < WOUT; ow++) { \
+        ACCTYPE acc = 0; \
+        CUSTOM_PRAGMA(loopbound min 0 max CIN) \
+        for (int c = 0; c < CIN; c++) { \
+          CUSTOM_PRAGMA(loopbound min 0 max KH) \
+          for (int kh = 0; kh < KH; kh++) { \
+            CUSTOM_PRAGMA(loopbound min 0 max KW) \
+            for (int kw = 0; kw < KW; kw++) { \
+              int ih = oh * STRH + kh * DILH - PADH; \
+              int iw = ow * STRW + kw * DILW - PADW; \
+              if ((ih >= 0) && (ih < HIN) && (iw >= 0) && (iw < WIN)) { \
+                acc += ((ACCTYPE)WQ[o*CIN*KH*KW + c*KH*KW + kh*KW + kw] - (ACCTYPE)ZW) \
+                     * ((ACCTYPE)XQ[c*HIN*WIN + ih*WIN + iw] - (ACCTYPE)ZX); \
+              } \
+            } \
+          } \
+        } \
+        ACCTYPE t0 = (ACCTYPE)SFXW * (ACCTYPE)SFXX * acc; \
+        ACCTYPE t1 = (ACCTYPE)SFXY << Q; \
+        ACCTYPE a1 = t0 / t1; \
+        ACCTYPE a2 = a0 + a1 + (ACCTYPE)ZY; \
+        YQ[o*HOUT*WOUT + oh*WOUT + ow] = (int8_t)a2; \
+      } \
+    } \
+  } \
+}
+
+/***************************************************
  * Macro: NC_QLINMATMUL
  * Description:
  *   Performs quantized matrix multiplication between

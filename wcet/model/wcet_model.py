@@ -5,6 +5,7 @@ from graph.ncast_graph import NCastGraph
 from ops.ncast_op import NCastOp
 from wcet.qlinearadd.wcet_qlinearadd import qlinearadd_wcet_analysis
 from wcet.qlinearconv.wcet_qlinearconv import qlinearconv_wcet_analysis
+from wcet.qlinearconv2.wcet_qlinearconv2 import qlinearconv2d_wcet_analysis
 from wcet.qlinearmatmul.wcet_qlinearmatmul import qlinearmatmul_wcet_analysis
 from wcet.qlinearmul.wcet_qlinearmul import qlinearmul_wcet_analysis
 from wcet.qlinearprelu.wcet_qlinearprelu import qlinearprelu_wcet_analysis
@@ -59,23 +60,82 @@ def _qlinearadd_analysis(op):
     qlinearadd_wcet_analysis(name=name, size=size, acctype="int32_t")
 
 def _qlinearconv_analysis(op: NCastOp, ncgraph:NCastGraph):
-    name = _gen_name(op)
-    Q = 15
-    input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
-    w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
-    output_names = list(op.out_dict.keys())
-    output_shape = op.out_dict[output_names[0]].shape
-    attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
-    group = attrs.get("group", 1)
-    CIN = w_shape[1] * group
-    KS = w_shape[2]
-    LIN = input_shape[2]
-    COUT = w_shape[0]
-    PAD = attrs.get("pads", [0, 0])[0]
-    DIL = attrs.get("dilations", 1)[0]
-    STR = attrs.get("strides", 1)[0]
-    acctype = "int32_t"
-    qlinearconv_wcet_analysis(name, COUT, CIN, KS, LIN, PAD, DIL, STR, Q, acctype)
+    rank = op._get_conv_rank(ncgraph.graph, ncgraph.ops)
+    print(f"rank: {rank}")
+    if rank == 1:
+        name = _gen_name(op)
+        Q = 15
+        input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
+        w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
+        output_names = list(op.out_dict.keys())
+        output_shape = op.out_dict[output_names[0]].shape
+        attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
+        group = attrs.get("group", 1)
+        CIN = w_shape[1] * group
+        KS = w_shape[2]
+        LIN = input_shape[2]
+        COUT = w_shape[0]
+        PAD = attrs.get("pads", [0, 0])[0]
+        DIL = attrs.get("dilations", 1)[0]
+        STR = attrs.get("strides", 1)[0]
+        acctype = "int32_t"
+        qlinearconv_wcet_analysis(name, COUT, CIN, KS, LIN, PAD, DIL, STR, Q, acctype)
+    elif rank == 2:
+        name = _gen_name(op)
+        Q = 15
+
+        input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
+        w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[1])
+
+        output_names = list(op.out_dict.keys())
+        output_shape = op.out_dict[output_names[0]].shape
+
+        attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
+
+        group = attrs.get("group", 1)
+
+        CIN = w_shape[1] * group
+        KH = w_shape[2]
+        KW = w_shape[3]
+
+        HIN = input_shape[2]
+        WIN = input_shape[3]
+
+        COUT = w_shape[0]
+
+        pads = attrs.get("pads", [0, 0, 0, 0])
+        PADH = pads[0]
+        PADW = pads[1]
+
+        dilations = attrs.get("dilations", [1, 1])
+        DILH = dilations[0]
+        DILW = dilations[1]
+
+        strides = attrs.get("strides", [1, 1])
+        STRH = strides[0]
+        STRW = strides[1]
+
+        acctype = "int32_t"
+
+        qlinearconv2d_wcet_analysis(
+            name=name,
+            COUT=COUT,
+            CIN=CIN,
+            KH=KH,
+            KW=KW,
+            HIN=HIN,
+            WIN=WIN,
+            PADH=PADH,
+            PADW=PADW,
+            DILH=DILH,
+            DILW=DILW,
+            STRH=STRH,
+            STRW=STRW,
+            Q=Q,
+            acctype=acctype,
+        )
+    else:
+        raise Exception("COnvolution rank not supported.")
 
 def _qlinearmatmul_analysis(op, ncgraph):
     name = _gen_name(op)

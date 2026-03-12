@@ -10,6 +10,44 @@ class QLinearConv(NCastOp):
         super().__init__(onnx_unit)
     
     def update_output_dict(self, graph, ops):
+        conv_rank = self._get_conv_rank(graph, ops)
+        if conv_rank == 1:
+            self._update_output_dict_1d(graph, ops)
+        elif conv_rank == 2:
+            self._update_output_dict_2d(graph, ops)
+        
+
+    def emit_includes(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
+        return ["#include <stdint.h>", "#include <math.h>"]
+
+    def emit_activations_initialization(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
+        conv_rank = self._get_conv_rank(graph, ops)
+        if conv_rank == 1:
+            return self._emit_activations_initialization_1d(graph, ops)
+        else:
+            raise Exception("Convolution rank not supported.")
+
+    def emit_attributes_initialization(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
+        return []
+
+    def emit_run_ops(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> str:
+        conv_rank = self._get_conv_rank(graph, ops)
+        if conv_rank == 1:
+            return self._emit_run_ops_1d(config, graph, ops)
+        else:
+            raise Exception("Convolution rank not supported.")
+        
+
+    def _get_conv_rank(self, graph, ops):
+        Wrank = len(retrieve_input(graph, ops, self.onnx_unit.input[0])[0])
+        if Wrank == 3:
+            return 1
+        elif Wrank == 4:
+            return 2
+        else:
+            raise Exception("Convolution rank not supported.")
+    
+    def _update_output_dict_1d(self, graph, ops):
         result = retrieve_input(graph, ops, self.onnx_unit.input[0])
         shape: List[int] = result[0]
         dtype: int = result[1]
@@ -30,11 +68,49 @@ class QLinearConv(NCastOp):
         Cout = W.dims[0]
         Lout = (shape[2] + pads[0] + pads[1] - dilations[0] * (kernel_shape[0] - 1) - 1) // strides[0] + 1
         self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict([1, Cout, Lout], dtype)
+    
+    def _update_output_dict_2d(self, graph, ops):
+        result = retrieve_input(graph, ops, self.onnx_unit.input[0])
+        shape: List[int] = result[0]
+        dtype: int = result[1]
 
-    def emit_includes(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
-        return ["#include <stdint.h>", "#include <math.h>"]
+        attrs = {a.name: helper.get_attribute_value(a) for a in self.onnx_unit.attribute}
 
-    def emit_activations_initialization(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
+        strides = attrs.get("strides", [1, 1])
+        pads = attrs.get("pads", [0, 0, 0, 0])
+        dilations = attrs.get("dilations", [1, 1])
+        kernel_shape = attrs.get("kernel_shape")
+
+        weight_name = self.onnx_unit.input[3]
+        W = None
+        for init in graph.initializer:
+            if init.name == weight_name:
+                W = init
+                break
+
+        if W is None:
+            raise ValueError(f"Weight tensor '{weight_name}' not found in graph.initializer")
+
+        N = shape[0]
+        Hin = shape[2]
+        Win = shape[3]
+
+        Cout = W.dims[0]
+
+        if kernel_shape is None:
+            kernel_shape = list(W.dims[2:])
+
+        Kh, Kw = kernel_shape
+        pad_top, pad_left, pad_bottom, pad_right = pads
+        dil_h, dil_w = dilations
+        str_h, str_w = strides
+
+        Hout = (Hin + pad_top + pad_bottom - dil_h * (Kh - 1) - 1) // str_h + 1
+        Wout = (Win + pad_left + pad_right - dil_w * (Kw - 1) - 1) // str_w + 1
+
+        self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict([N, Cout, Hout, Wout], dtype)
+    
+    def _emit_activations_initialization_1d(self, graph, ops):
         output = self.onnx_unit.output[0]
         if is_tensor_in_output(output, graph):
             return []
@@ -47,13 +123,8 @@ class QLinearConv(NCastOp):
                 size *= dim
             output_id = set_valid_tensor_identifier(output)
             return [f"{dtype_str} {output_id}[{size}];\n"]
-        
-
-    def emit_attributes_initialization(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
-        return []
-
-    def emit_run_ops(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> str:
-        #NCAST_QLINEAR_CONV(X, W, B, Y, CIN, COUT, LIN, SCALE_X, ZERO_X, SCALE_W, ZERO_W, SCALE_Y, ZERO_Y, DIL, GROUP, KERNEL, PADS, STRIDES)
+    
+    def _emit_run_ops_1d(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> str:
         x = set_valid_tensor_identifier(self.onnx_unit.input[0])
         w = set_valid_tensor_identifier(self.onnx_unit.input[3])
         if len(self.onnx_unit.input) > 8:
