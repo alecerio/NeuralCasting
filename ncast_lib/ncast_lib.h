@@ -591,4 +591,23 @@ for(int i=0; i < ROWS; i++) { \
 memcpy(Y,X,SIZE*sizeof(*Y)); \
 }
 
+/***************************************************
+ * Macro: NC_RESHAPE
+ * Description:
+ *   Copies input data to output without modification.
+ *   Typically used to represent an "reshape" operation
+ *   in frameworks where shape changes but data remains
+ *   identical in memory.
+ *
+ * Parameters:
+ *   X    - Input array
+ *   Y    - Output array
+ *   SIZE - Number of elements
+ ***************************************************/
+
+#define NC_RESHAPE(X,Y,SIZE) \
+{ \
+memcpy(Y,X,SIZE*sizeof(*Y)); \
+}
+
 #endif // NCAST_LIB_H
