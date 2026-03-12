@@ -19,12 +19,18 @@ class QLinearMatmul(NCastOp):
         shapeB: List[int] = resultB[0]
         dtypeB: int = resultB[1]
 
-        #print(self.onnx_unit.name)
-        #print(shapeA)
-        #print(shapeB)
-        #print(" ----------------------- ")
+        dimsA = len(shapeA)
+        dimsB = len(shapeB)
+        if dimsA > 1 and dimsB > 1:
+            shapeC = [shapeA[-2], shapeB[-1]]
+        elif dimsA > 1 and dimsB == 1:
+            shapeC = [shapeA[-2]]
+        elif dimsA == 1 and dimsB > 1:
+            shapeC = [shapeB[-1]]
+        else:
+            shapeC = [1]
 
-        self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(shapeA, dtypeA)
+        self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(shapeC, dtypeA)
 
     def emit_includes(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
         not_implemented_feature_exception("QLinearMatmul", "emit includes not supported")
