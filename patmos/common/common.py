@@ -9,19 +9,16 @@ def generate_patmos_analysis(unitname, generate_c_code):
     run_patmos_analysis(unitname)
 
 def run_patmos_analysis(name):
-    _compile_elf(name)
+    _compile_elf()
     _run_on_fpga(name)
 
-def _compile_elf(name):
+def _compile_elf():
     result = subprocess.run(
-        ["make", "patmos"],
+        ["make", "all"],
         cwd=f"{PATMOS_OPAPP_PATH}",
         capture_output=True,
         text=True
     )
-    print(result.stderr)
-    with open(f"{PATMOS_OUT_PATH}/{name}_patmos.txt", "w") as f:
-        f.write(result.stdout)
 
 def _run_on_fpga(name):
     result = subprocess.run(
