@@ -10,8 +10,10 @@ class QLinearAdd(NCastOp):
     
     def update_output_dict(self, graph, ops):
         result = retrieve_input(graph, ops, self.onnx_unit.input[0])
+        resultB = retrieve_input(graph, ops, self.onnx_unit.input[3])
         shape: List[int] = result[0]
         dtype: int = result[1]
+        shapeB: List[int] = resultB[0]
         self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(shape, dtype)
 
     def emit_includes(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
