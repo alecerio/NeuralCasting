@@ -1,6 +1,7 @@
 import onnx
 from typing import List
 from ops.ncast_op import NCastOp
+from onnx import numpy_helper
 
 def not_implemented_feature_exception(topic: str, excetion_text: str):
     raise Exception(f"NotImplementedFeature [{topic}] {excetion_text}")
@@ -36,6 +37,12 @@ def set_onnx_data_type_to_string(dtype):
 ##################################################################################################################################
 #                                       Functions to retrieve input tensor information                                 #       #    
 ##################################################################################################################################
+
+def get_init_data(graph, name):
+    for init in graph.initializer:
+        if init.name == name:
+            return numpy_helper.to_array(init)
+    return None
 
 def retrieve_input(graph, ops: List[NCastOp], input):
     result = _retrieve_if_input_tensor(graph, input)
