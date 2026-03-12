@@ -21,7 +21,6 @@ import subprocess
 
 def patmos_model(onnx_path):
     ncgraph = NCastGraph(onnx_path)
-    
     _clear_patmos_out()
 
     for op in ncgraph.ops:
@@ -31,7 +30,7 @@ def patmos_model(onnx_path):
         elif optype == 'QLinearConv':
             _qlinearconv_analysis(op, ncgraph)
         elif optype == 'QLinearMatMul':
-            _qlinearmatmul_analysis(op)
+            _qlinearmatmul_analysis(op, ncgraph)
         elif optype == 'QLinearMul':
             _qlinearmul_analysis(op)
         elif optype == 'PRelu':
@@ -80,6 +79,17 @@ def _qlinearmatmul_analysis(op, ncgraph):
     name = _gen_name(op)
     a_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     b_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
+    
+    if len(a_shape) > 1:
+        a_shape = a_shape[-2:]
+    else:
+        a_shape = [1, a_shape[0]]
+    
+    if len(b_shape) > 1:
+        b_shape = b_shape[-2:]
+    else:
+        b_shape = [a_shape[0], 1]
+
     M = a_shape[-2]
     K = a_shape[-1]
     N = b_shape[-1]
@@ -163,7 +173,4 @@ def _gen_name(op):
 def _clear_patmos_out():
     subprocess.run("rm -f *", cwd=f"{PATMOS_OUT_PATH}", shell=True)
 
-if __name__ == '__main__':
-    onnx_path = f"{ONNX_DIR}/convsenet_int8_optimized.onnx"
-    patmos_model(onnx_path)
-    analyze_output()
+
