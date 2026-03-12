@@ -16,13 +16,13 @@ def generate_makefile(name):
 
     makefile = f"""
 all:
-	patmos-clang -O2 -mserialize-pml=simple.pml {c_files} -o {name}.elf {inc_dirs} -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+	patmos-clang -O2 -mserialize-pml=simple.pml {c_files} -o {opapp_folder}.elf {inc_dirs} -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
 
 wcet:
-	platin wcet -i simple.pml -b {name}.elf --report
+	platin wcet -i simple.pml -b {opapp_folder}.elf --report
 
-patmos:
-	patmos-clang -O2 -mserialize-pml=simple.pml {c_files} -o {opapp_folder}.elf {inc_dirs} -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+#patmos:
+#	patmos-clang -O2 -mserialize-pml=simple.pml {c_files} -o {opapp_folder}.elf {inc_dirs} -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
     
 """
     
@@ -34,15 +34,24 @@ def run_wcet_analysis(name):
     _run_make("wcet", f"{name}_wcet")
 
 def _run_make(command, name):
-    result = subprocess.run(
+    process = subprocess.Popen(
         ["make", command],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         cwd=f"{PATMOS_OPAPP_PATH}",
-        capture_output=True,
-        text=True
+        text=True,
+        bufsize=1
     )
-    print(result.stderr)
+
+    result = ""
+    for line in process.stdout:
+        print(line, end='')
+        result += line + '\n'
+
+    process.wait()
+
     with open(f"{WCET_OUT_PATH}/{name}.txt", "w") as f:
-        f.write(result.stdout)
+        f.write(result)
 
 def generate_int32_str():
     n = random.randint(-2**31, 2**31 - 1)
