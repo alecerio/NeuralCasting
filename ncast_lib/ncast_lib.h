@@ -339,6 +339,56 @@ CUSTOM_PRAGMA(loopbound min 0 max K) \
 }
 
 /***************************************************
+ * Macro: NC_QGEMM_FXS8
+ * Description:
+ *   Performs quantized general matrix multiplication
+ *   between two int8 matrices with quantized bias
+ *   addition, producing an int8 output.
+ *
+ * Parameters:
+ *   AQ       - Input matrix A (int8_t), shape [M x K]
+ *   BQ       - Input matrix B (int8_t), shape [K x N]
+ *   CQ       - Output matrix (int8_t), shape [M x N]
+ *   BIASQ    - Quantized bias vector (int8_t), shape [M]
+ *   M        - Number of rows of A and C
+ *   N        - Number of columns of B and C
+ *   K        - Shared dimension (columns of A, rows of B)
+ *   SFXA     - Scale factor for A (fixed point)
+ *   SFXB     - Scale factor for B (fixed point)
+ *   SFXBIAS  - Scale factor for bias (fixed point)
+ *   ZA       - Zero-point for A
+ *   ZB       - Zero-point for B
+ *   ZBIAS    - Zero-point for bias
+ *   SFXY     - Scale factor for output (fixed point)
+ *   ZY       - Zero-point for output
+ *   Q        - Quantization shift
+ *   ACCTYPE  - Accumulator type (e.g., int32_t, int64_t)
+ ***************************************************/
+
+#define NC_QGEMM_FXS8(AQ,BQ,CQ,BIASQ,M,N,K,SFXA,SFXB,SFXBIAS,ZA,ZB,ZBIAS,SFXY,ZY,Q,ACCTYPE) \
+{ \
+ACCTYPE a0 = ((ACCTYPE) SFXA * (ACCTYPE) SFXB) / (ACCTYPE) SFXY; \
+ACCTYPE a3 =  ((ACCTYPE)1 << Q); \
+CUSTOM_PRAGMA(loopbound min 0 max M) \
+for(int i=0; i<M; i++) { \
+CUSTOM_PRAGMA(loopbound min 0 max N) \
+    for(int j=0; j<N; j++) { \
+        ACCTYPE acc = 0; \
+CUSTOM_PRAGMA(loopbound min 0 max K) \
+        for(int k=0; k<K; k++) { \
+            acc += ((ACCTYPE) AQ[i*M+k] - ZA) * ((ACCTYPE) BQ[k*N+j] - ZB); \
+        } \
+        ACCTYPE acca0 = acc * a0; \
+        ACCTYPE q1 = acca0 / a3; \
+        ACCTYPE q2 = q1 + ZY; \
+        ACCTYPE q3 = q2 + (SFXBIAS * ((ACCTYPE) BIASQ[i] - ZBIAS)) / SFXY; \
+        NC_CLIP_SINT8(q3) \
+        CQ[i*N+j] = (int8_t)q3; \
+    } \
+} \
+}
+
+/***************************************************
  * Macro: NC_QLMUL_FXS8
  * Description:
  *   Performs quantized element-wise multiplication
