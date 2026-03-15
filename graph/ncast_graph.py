@@ -19,6 +19,8 @@ from ops.ncast_op import NCastOp
 from ops.reshape import Reshape
 from ops.reduce_mean import ReduceMean
 from ops.qgemm import QGemm
+from ops.gather import Gather
+from ops.transpose import Transpose
 from config.config import NCastConfig, TEMPLATES_DIR
 from common.common import set_valid_tensor_identifier, set_onnx_data_type_to_string
 
@@ -27,12 +29,12 @@ op_dict = {
     "BatchNormalization": BatchNormalization,
     "Constant": Constant,
     "DequantizeLinear": DequantizeLinear,
+    "Gather": Gather,
     "QGemm": QGemm,
     "QuantizeLinear": QuantizeLinear,
     "QLinearConv": QLinearConv,
     "QLinearAdd": QLinearAdd,
     "QLinearSigmoid": QLinearSigmoid,
-    "Unsqueeze": Unsqueeze,
     "QLinearMul": QLinearMul,
     "PRelu": PRelu,
     "ReduceMean": ReduceMean,
@@ -40,7 +42,9 @@ op_dict = {
     "Squeeze": Squeeze,
     "QLinearMatMul": QLinearMatmul,
     "Sub": Sub,
-    "Tanh": Tanh
+    "Tanh": Tanh,
+    "Transpose": Transpose,
+    "Unsqueeze": Unsqueeze
 }
 
 class NCastGraph:
