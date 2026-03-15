@@ -52,7 +52,7 @@ if __name__ == "__main__":
     input_names = ["input"]
     
     samples = [
-    (np.random.rand(1, 3, 32, 32).astype(np.float32),)
+    (np.random.rand(1, 16, 64).astype(np.float32),)
     for _ in range(20)
     ]
 
