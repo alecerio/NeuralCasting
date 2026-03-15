@@ -1,7 +1,7 @@
 from ops.ncast_op import NCastOp, NCastOutputDict
 from config.config import NCastConfig
 from typing import List
-from common.common import retrieve_input, set_valid_tensor_identifier, set_onnx_data_type_to_string
+from common.common import retrieve_input, set_valid_tensor_identifier, set_onnx_data_type_to_string, get_init_data
 import onnx
 from onnx import numpy_helper
 
@@ -15,19 +15,9 @@ class Unsqueeze(NCastOp):
         dtype: int = result[1]
 
         # find axes
-        axes_name = self.onnx_unit.input[1]
-        const_node = None
-        for n in graph.node:
-            if n.output and n.output[0] == axes_name and n.op_type == "Constant":
-                const_node = n
-                break
-        axes = None
-        for attr in const_node.attribute:
-            if attr.name == "value":
-                axes = numpy_helper.to_array(attr.t).tolist()
-                break
-        
-        shape.insert(axes[0], 1)
+        axes = get_init_data(graph, self.onnx_unit.input[1])
+        for a in axes:
+            shape.insert(axes[a], 1)
         self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(shape, dtype)
 
 
