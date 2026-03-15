@@ -15,6 +15,7 @@ from wcet.qlinearsub.wcet_qlinearsub import qlinearsub_wcet_analysis
 from wcet.qlineartanh.wcet_qlineartanh import qlineartanh_wcet_analysis
 from wcet.transpose.wcet_transpose import transpose_wcet_analysis
 from wcet.unsqueeze.wcet_unsqueeze import unsqueeze_wcet_analysis
+from wcet.qgemm.wcet_qgemm import qgemm_wcet_analysis
 from common.common import set_valid_tensor_identifier
 import warnings
 from pathlib import Path
@@ -30,6 +31,8 @@ def wcet_model(onnx_path):
         optype = op.onnx_unit.op_type
         if optype == 'QLinearAdd':
             _qlinearadd_analysis(op)
+        elif optype == 'QGemm':
+            _qgemm_analysis(op)
         elif optype == 'QLinearConv':
             _qlinearconv_analysis(op, ncgraph)
         elif optype == 'QLinearMatMul':
@@ -52,7 +55,6 @@ def wcet_model(onnx_path):
             _unsqueeze_analysis(op)
         else:
             warnings.warn(f"Operator {optype} not supported for WCET analysis.")
-
 
 def _qlinearadd_analysis(op):
     name = _gen_name(op)
@@ -159,6 +161,44 @@ def _qlinearmatmul_analysis(op, ncgraph):
     Q = 15
     acctype = "int32_t"
     qlinearmatmul_wcet_analysis(name, M, N, K, Q, acctype)
+
+def _qgemm_analysis(op, ncgraph):
+    name = _gen_name(op)
+    a_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
+    b_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
+
+    attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
+    transA = attrs.get("transA", 0)
+    transB = attrs.get("transB", 0)
+    
+    dimsA = len(a_shape)
+    dimsB = len(b_shape)
+    if dimsA > 1 and dimsB > 1:
+        idxA = -2 if transA == 0 else -1
+        idxK = -1 if transA == 0 else -2
+        idxB = -1 if transB == 0 else -2
+        M = a_shape[idxA]
+        K = a_shape[idxK]
+        N = b_shape[idxB]
+    elif dimsA > 1 and dimsB == 1:
+        idxA = -2 if transA == 0 else -1
+        idxK = -1 if transA == 0 else -2
+        M = a_shape[idxA]
+        K = a_shape[idxK]
+        N = 1
+    elif dimsA == 1 and dimsB > 1:
+        idxB = -1 if transB == 0 else -2
+        idxK = -2 if transB == 0 else -1
+        M = 1
+        K = b_shape[idxK]
+        N = b_shape[idxB]
+    else:
+        M = 1
+        N = 1
+        K = a_shape[0]
+    Q = 15
+    acctype = "int32_t"
+    qgemm_wcet_analysis(name, M, N, K, Q, acctype)
 
 def _qlinearmul_analysis(op):
     name = _gen_name(op)
