@@ -14,6 +14,7 @@ class Reshape(NCastOp):
         dtype: int = result[1]
 
         new_shape = get_init_data(graph, self.onnx_unit.input[1])
+        new_shape = new_shape.astype(int).tolist()
         if new_shape is None:
             raise Exception("In Reshape, supported only shape an initializer.")
         
