@@ -13,6 +13,7 @@ from patmos.qlinearsub.patmos_qlinearsub import qlinearsub_patmos_analysis
 from patmos.qlineartanh.patmos_qlineartanh import qlineartanh_patmos_analysis
 from patmos.transpose.patmos_transpose import transpose_patmos_analysis
 from patmos.unsqueeze.patmos_unsqueeze import unsqueeze_patmos_analysis
+from patmos.qgemm.patmos_qgemm import qgemm_patmos_analysis
 from common.common import set_valid_tensor_identifier
 from wcet.model.wcet_model import _extract_output_size
 from pathlib import Path
@@ -22,12 +23,15 @@ import subprocess
 
 def patmos_model(onnx_path):
     ncgraph = NCastGraph(onnx_path)
+    return
     _clear_patmos_out()
 
     for op in ncgraph.ops:
         optype = op.onnx_unit.op_type
         if optype == 'QLinearAdd':
             _qlinearadd_analysis(op)
+        elif optype == 'QGemm':
+            _qgemm_analysis(op)
         elif optype == 'QLinearConv':
             _qlinearconv_analysis(op, ncgraph)
         elif optype == 'QLinearMatMul':
@@ -156,6 +160,44 @@ def _qlinearmatmul_analysis(op, ncgraph):
     Q = 15
     acctype = "int32_t"
     qlinearmatmul_patmos_analysis(name, M, K, N, Q, acctype)
+
+def _qgemm_analysis(op, ncgraph):
+    name = _gen_name(op)
+    a_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
+    b_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
+
+    attrs = {a.name: helper.get_attribute_value(a) for a in op.onnx_unit.attribute}
+    transA = attrs.get("transA", 0)
+    transB = attrs.get("transB", 0)
+    
+    dimsA = len(a_shape)
+    dimsB = len(b_shape)
+    if dimsA > 1 and dimsB > 1:
+        idxA = -2 if transA == 0 else -1
+        idxK = -1 if transA == 0 else -2
+        idxB = -1 if transB == 0 else -2
+        M = a_shape[idxA]
+        K = a_shape[idxK]
+        N = b_shape[idxB]
+    elif dimsA > 1 and dimsB == 1:
+        idxA = -2 if transA == 0 else -1
+        idxK = -1 if transA == 0 else -2
+        M = a_shape[idxA]
+        K = a_shape[idxK]
+        N = 1
+    elif dimsA == 1 and dimsB > 1:
+        idxB = -1 if transB == 0 else -2
+        idxK = -2 if transB == 0 else -1
+        M = 1
+        K = b_shape[idxK]
+        N = b_shape[idxB]
+    else:
+        M = 1
+        N = 1
+        K = a_shape[0]
+    Q = 15
+    acctype = "int32_t"
+    qgemm_patmos_analysis(name, M, K, N, Q, acctype)
 
 def _qlinearmul_analysis(op):
     name = _gen_name(op)
