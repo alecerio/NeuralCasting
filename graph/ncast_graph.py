@@ -21,6 +21,7 @@ from ops.reduce_mean import ReduceMean
 from ops.qgemm import QGemm
 from ops.gather import Gather
 from ops.transpose import Transpose
+from ops.qlinearsoftmax import QLinearSoftmax
 from config.config import NCastConfig, TEMPLATES_DIR
 from common.common import set_valid_tensor_identifier, set_onnx_data_type_to_string
 
@@ -41,6 +42,7 @@ op_dict = {
     "Reshape": Reshape,
     "Squeeze": Squeeze,
     "QLinearMatMul": QLinearMatmul,
+    "QLinearSoftmax": QLinearSoftmax,
     "Sub": Sub,
     "Tanh": Tanh,
     "Transpose": Transpose,
