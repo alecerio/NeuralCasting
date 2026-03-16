@@ -14,6 +14,7 @@ from patmos.qlineartanh.patmos_qlineartanh import qlineartanh_patmos_analysis
 from patmos.transpose.patmos_transpose import transpose_patmos_analysis
 from patmos.unsqueeze.patmos_unsqueeze import unsqueeze_patmos_analysis
 from patmos.qgemm.patmos_qgemm import qgemm_patmos_analysis
+from patmos.qlinearsoftmax.patmos_qlinearsoftmax import qlinearsoftmax_patmos_analysis
 from common.common import set_valid_tensor_identifier
 from wcet.model.wcet_model import _extract_output_size
 from pathlib import Path
@@ -38,6 +39,8 @@ def patmos_model(onnx_path):
             _qlinearmatmul_analysis(op, ncgraph)
         elif optype == 'QLinearMul':
             _qlinearmul_analysis(op)
+        elif optype == 'QLinearSoftmax':
+            _qlinearsoftmax_analysis(op)
         elif optype == 'PRelu':
             _qlinearprelu_analysis(op)
         elif optype == 'Relu':
@@ -224,6 +227,13 @@ def _qlinearsigmoid_analysis(op):
     size = _extract_output_size(op, 0)
     acctype = "int32_t"
     qlinearsigmoid_patmos_analysis(name, size, acctype)
+
+def _qlinearsoftmax_analysis(op):
+    name = _gen_name(op)
+    size = _extract_output_size(op, 0)
+    acctype = "int32_t"
+    Q = 15
+    qlinearsigmoid_patmos_analysis(name, size, Q, acctype)
 
 def _qlinearsub_analysis(op):
     name = _gen_name(op)
