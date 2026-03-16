@@ -22,6 +22,7 @@ from ops.qgemm import QGemm
 from ops.gather import Gather
 from ops.transpose import Transpose
 from ops.qlinearsoftmax import QLinearSoftmax
+from ops.layer_normalization import LayerNormalization
 from config.config import NCastConfig, TEMPLATES_DIR
 from common.common import set_valid_tensor_identifier, set_onnx_data_type_to_string
 
@@ -31,6 +32,7 @@ op_dict = {
     "Constant": Constant,
     "DequantizeLinear": DequantizeLinear,
     "Gather": Gather,
+    "LayerNormalization": LayerNormalization,
     "QGemm": QGemm,
     "QuantizeLinear": QuantizeLinear,
     "QLinearConv": QLinearConv,
