@@ -660,4 +660,36 @@ memcpy(Y,X,SIZE*sizeof(*Y)); \
 memcpy(Y,X,SIZE*sizeof(*Y)); \
 }
 
+#define NC_QLSMAXLUT_FXS8_SIZE (256)
+#define NC_QLSMAXLUT_FXS8_STEP (1)
+#define NC_QLSMAXLUT_FXS8_SFXLUTX (1028)
+#define NC_QLSMAXLUT_FXS8_ZFXLUTX (127)
+#define NC_QLSMAXLUT_FXS8_SFXLUTY (128)
+#define NC_QLSMAXLUT_FXS8_ZFXLUTY (-128)
+extern const int8_t NC_QLSMAXLUT_FXS8[NC_QLSMAXLUT_FXS8_SIZE];
+
+#define NC_QLSMAX_FXS8(X,Y,SIZE,SFXX,ZFXX,SFXY,ZFXY,Q,ACCTYPE) \
+{ \
+ACCTYPE a1 = 0; \
+ACCTYPE a2 = SIZE * NC_QLSMAXLUT_FXS8_ZFXLUTY; \
+ACCTYPE yq_[SIZE]; \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i<SIZE; i++) { \
+  ACCTYPE a0 = SFXX * (X[i] - ZFXX); \
+  ACCTYPE xq = (a0 / NC_QLSMAXLUT_FXS8_SFXLUTX) + NC_QLSMAXLUT_FXS8_ZFXLUTX; \
+  int idxlut = (xq + 128) / NC_QLSMAXLUT_FXS8_STEP; \
+  yq_[i] = NC_QLSMAXLUT_FXS8[idxlut]; \
+  a1 += yq_[i]; \
+} \
+ACCTYPE a4 = (a1 - a2) * SFXY; \
+CUSTOM_PRAGMA(loopbound min 0 max SIZE) \
+for(int i=0; i<SIZE; i++) { \
+ACCTYPE a0 = yq_[i] - NC_QLSMAXLUT_FXS8_ZFXLUTY; \
+ACCTYPE a3 = a0 << Q; \
+ACCTYPE yyq = (a3 / a4) + ZFXY; \
+NC_CLIP_SINT8(yyq); \
+Y[i] = (int8_t) yyq; \
+} \
+}
+
 #endif // NCAST_LIB_H
