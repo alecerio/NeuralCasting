@@ -6,6 +6,12 @@
 
 ## Description
 
+The **NeuralCasting repository** provides a framework for converting neural network models from the ONNX format into efficient, standalone C code tailored for embedded systems. It includes support for the Patmos processor, a time-predictable architecture designed for real-time applications, enabling execution with predictable timing behavior.
+
+The framework constructs an internal representation of the neural network and generates static C implementations of the supported operators, eliminating the need for heavyweight inference runtimes. It also offers quantization support (e.g., 8-bit and fixed-point arithmetic) to reduce memory usage and computational cost.
+
+Overall, NeuralCasting is designed to deploy neural networks on resource-constrained and real-time systems, ensuring efficient execution and enabling worst-case execution time (WCET) analysis.
+
 ## Setup
 
 ## Tests
