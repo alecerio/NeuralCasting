@@ -251,6 +251,35 @@ def plot_combined(records: List[RecordWCET]):
             measured_list.append(record.cycles_patmos)
             wcet_list.append(record.cycles_wcet)
 
+
+    REMOVE = [
+        "_tcm_", "tcm_", "_tcm",
+        "_conv1x1_", "_conv1x1", "conv1x1_",
+        "_quant", "_PRelu", "_frontend_", "kend_", "ntend_", "tcn_"
+    ]
+
+    for idx, op in enumerate(operators):
+        for r in REMOVE:
+            op = op.replace(r, "")
+        operators[idx] = op
+    
+    print("\n ------------------- \n")
+    print(operators)
+
+    op_sorted = ["MatMul_2","MatMul_4","MatMul_6","MatMul_8","MatMul_10","MatMul_12","MatMul","Add_2","Add_4","Add_6","Add_12","Add_14",
+                 "Add_16","Add","MatMul_1","MatMul_3","MatMul_5","Add_1","Add_3","Add_5","Add_7","Add_8","Mul","Mul_2","Add_9","Sub","Tanh",
+                 "Mul_1","Add_10","MatMul_7","MatMul_9","MatMul_11","Add_11","Add_13","Add_15","Add_17","Add_18","Mul_3","Mul_5","Add_19","Sub_1",
+                 "Tanh_1","Mul_4","Add_20","MatMul_13","Add_21","MatMul_14","Add_22","MatMul_15","Add_23"]
+    print("\n ------------------- \n")
+    print(op_sorted)
+
+    idx_map = {op: i for i, op in enumerate(operators)}
+    perm = [idx_map[op] for op in op_sorted]
+    operators = [operators[i] for i in perm]
+    measured_list = [measured_list[i] for i in perm]
+    wcet_list = [wcet_list[i] for i in perm]
+    types = [types[i] for i in perm]
+
     measured = np.array(measured_list)
     wcet = np.array(wcet_list)
     cycles = measured
@@ -278,7 +307,7 @@ def plot_combined(records: List[RecordWCET]):
 
     # ---- BAR PLOT ----
     ax1.bar(x, cycles, color=colors_)
-    ax1.set_ylabel("Measured cycles")
+    ax1.set_ylabel("Measured cycles", fontsize=20)
     ax1.set_yscale("log")
 
     # legenda
@@ -291,15 +320,127 @@ def plot_combined(records: List[RecordWCET]):
     ax2.scatter(x, ratio, c=colors_)
     ax2.axhline(1.0, linestyle="--")
 
-    ax2.set_ylabel("Measured / WCET")
-    ax2.set_xlabel("Operator")
+    ax2.set_ylabel("Measured / WCET", fontsize=20)
+    ax2.set_xlabel("Operator", fontsize=20)
     ax2.set_yscale("log")
 
     ax2.set_xticks(x)
-    ax2.set_xticklabels(operators, rotation=90)
+    ax2.set_xticklabels(operators, rotation=90, fontsize=18)
+
+    ax1.legend(fontsize=16)
+    #plt.yticks(fontsize=18)
+    ax1.tick_params(axis='y', labelsize=18)
+    ax2.tick_params(axis='y', labelsize=18)
 
     plt.tight_layout()
     plt.show()
+
+from typing import List
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plot_combined2(records_left: List[RecordWCET], records_right: List[RecordWCET], title_left, title_right):
+
+    def prepare_data(records: List[RecordWCET], shift_name):
+        operators = []
+        types = []
+        measured_list = []
+        wcet_list = []
+
+        for record in records:
+            if record.type != 'Unsqueeze':
+                opname = record.name[shift_name:]
+                if opname == "scaled_dot_product_attention_quant":
+                    opname = "attention_quant"
+                operators.append(opname)
+                types.append(record.type)
+                measured_list.append(record.cycles_patmos)
+                wcet_list.append(record.cycles_wcet)
+
+        measured = np.array(measured_list)
+        wcet = np.array(wcet_list)
+        ratio = measured / wcet
+        x = np.arange(len(operators))
+
+        return operators, types, measured, wcet, ratio, x
+
+    operators_l, types_l, measured_l, wcet_l, ratio_l, x_l = prepare_data(records_left, 15)
+    operators_r, types_r, measured_r, wcet_r, ratio_r, x_r = prepare_data(records_right, 19)
+
+    colors = [
+        "blue", "red", "green", "orange", "purple",
+        "brown", "pink", "gray", "olive", "cyan",
+        "magenta", "yellow", "black"
+    ]
+
+    all_types = sorted(set(types_l) | set(types_r))
+    color_map = {t: colors[i % len(colors)] for i, t in enumerate(all_types)}
+
+    colors_l = [color_map[t] for t in types_l]
+    colors_r = [color_map[t] for t in types_r]
+
+    fig, axs = plt.subplots(
+        2, 2,
+        figsize=(16, 8),
+        sharex='col',
+        gridspec_kw={"height_ratios": [2, 1]}
+    )
+
+    ax1 = axs[0, 0]
+    ax2 = axs[1, 0]
+    ax3 = axs[0, 1]
+    ax4 = axs[1, 1]
+
+    # ---- LEFT COLUMN ----
+    ax1.bar(x_l, measured_l, color=colors_l)
+    ax1.set_ylabel("Measured cycles", fontsize=20)
+    ax1.set_yscale("log")
+    ax1.tick_params(axis='x')
+    ax1.tick_params(axis='y')
+    ax1.set_title(title_left, fontsize=20)
+
+    for t, c in color_map.items():
+        ax1.bar(0, 0, color=c, label=t)
+
+    ax1.legend(title="Operator type")
+
+    ax2.scatter(x_l, ratio_l, c=colors_l)
+    ax2.axhline(1.0, linestyle="--")
+    ax2.set_ylabel("Measured / WCET", fontsize=20)
+    ax2.set_xlabel("Operator", fontsize=20)
+    ax2.set_yscale("log")
+    ax2.set_xticks(x_l)
+    ax2.tick_params(axis='x')
+    ax2.tick_params(axis='y')
+    ax2.set_xticklabels(operators_l, rotation=90, fontsize=18)
+
+    # ---- RIGHT COLUMN ----
+    ax3.bar(x_r, measured_r, color=colors_r)
+    ax3.set_ylabel("Measured cycles", fontsize=20)
+    ax3.set_yscale("log")
+    ax3.tick_params(axis='x')
+    ax3.tick_params(axis='y')
+    ax3.set_title(title_right, fontsize=20)
+
+    ax4.scatter(x_r, ratio_r, c=colors_r)
+    ax4.axhline(1.0, linestyle="--")
+    ax4.set_ylabel("Measured / WCET", fontsize=20)
+    ax4.set_xlabel("Operator", fontsize=20)
+    ax4.set_yscale("log")
+    ax4.set_xticks(x_r)
+    ax4.tick_params(axis='x')
+    ax4.tick_params(axis='y')
+    ax4.set_xticklabels(operators_r, rotation=90, fontsize=18)
+
+    ax1.tick_params(axis='y', labelsize=18)
+    ax2.tick_params(axis='y', labelsize=18)
+    ax3.tick_params(axis='y', labelsize=18)
+    ax4.tick_params(axis='y', labelsize=18)
+    ax1.legend(fontsize=12)
+    plt.tight_layout()
+    plt.show()
+
+    return ax1, ax2, ax3, ax4
 
 def generate_table(records: List[RecordWCET]):
     rows = []
@@ -330,11 +471,31 @@ if __name__ == "__main__":
     get_analysis_files(f"{base}/ops/wcet", f"{base}/ops/patmos", records_ops)
     add_prefix_records(records_ops, "ops")
 
+    records_resnet8 : List[RecordWCET] = []
+    get_analysis_files(f"{base}/resnet8/wcet", f"{base}/resnet8/patmos", records_resnet8)
+    add_prefix_records(records_resnet8, "resnet8")
+
+    records_transformer : List[RecordWCET] = []
+    get_analysis_files(f"{base}/transformer/wcet", f"{base}/transformer/patmos", records_transformer)
+    add_prefix_records(records_transformer, "transformer")
+
     #plot_scatterplot(records_tcn)
     #plot_cycles_bar(records_tcn)
-    plot_combined(records_tcn)
+    
+    #plot_combined(records_tcn)
     plot_combined(records_nsnet2)
-    plot_combined(records_ops)
+    #plot_combined(records_ops)
+    #plot_combined(records_resnet8)
+    #plot_combined(records_transformer)
+    plot_combined2(records_resnet8, records_transformer, "ResNet-8", "Transformer Encoder Layer")
+
+    fig, axs = plt.subplots(2, 2, sharex='col', figsize=(10, 6))
+
+    ax1 = axs[0, 0]
+    ax2 = axs[1, 0]
+
+    ax3 = axs[0, 1]
+    ax4 = axs[1, 1]
 
     print("total cycles nsnet2")
     print(total_cycles_measured(records_nsnet2))
@@ -366,4 +527,19 @@ if __name__ == "__main__":
     print(" ----------------------- ")
     print()
 
+    print("table resnet8")
+    resnet8_table = generate_table(records_resnet8)
+    print(resnet8_table)
+    print(" ----------------------- ")
+    print()
 
+    print("table transformer")
+    transformer_table = generate_table(records_transformer)
+    print(transformer_table)
+    print(" ----------------------- ")
+    print()
+
+    n_cycles = 0
+    for rnr in records_transformer:
+        n_cycles += rnr.cycles_patmos
+    print(f"Cycles: {n_cycles}")
