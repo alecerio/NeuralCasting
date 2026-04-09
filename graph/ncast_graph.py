@@ -119,7 +119,7 @@ class NCastGraph:
             if tensor_name in out_names:
                 return op.out_dict[tensor_name].shape
         for input in self.graph.input:
-            if tensor_name == input:
+            if tensor_name == input.name:
                 shape = [d.dim_value for d in input.type.tensor_type.shape.dim]
                 return shape
         for init in self.graph.initializer:
