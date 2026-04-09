@@ -12,6 +12,24 @@ The framework constructs an internal representation of the neural network and ge
 
 Overall, NeuralCasting is designed to deploy neural networks on resource-constrained and real-time systems, ensuring efficient execution and enabling worst-case execution time (WCET) analysis.
 
+## Structure
+
+The NeuralCasting repository is structured as followed:
+
+- *common*: contains the shared code of the framework.
+- *config*: contains the config files of the repository.
+- *custom_ops*: contains the definition for custom operations not canonical in ONNX. These units can be used within rewrite patterns.
+- *experiments*: contains the results of the experiments.
+- *graph*: constains the definition of the NeuralCasting graph genertaed from the ONNX models.
+- *mem*: contains tools for the memory analysis of the models using the NeuralCasting graph.
+- *ncast_lib*: contains the C code library of NeuralCasting.
+- *node_fusion*: contains the rewrite patterns to modify the NeuralCasting graph.
+- *onnx*: contains the onnx models used for the experiments.
+- *ops*: contains the single operators of the NeuralCasting framework that compose the NeuralCasting graph.
+- *patmos*: contains the code for the Patmos benchmark of the different operators.
+- *wcet*: contains the code for the WCET analysis with Platin of the different operators.
+
+
 ## Setup
 
 Clone the repository:
@@ -41,23 +59,6 @@ Update config/config.py:
 BASE_DIR = "<your-path-to-neuralcasting>/NeuralCasting"
 T_CREST_PATH = "<your-path-to-tcrest>/t-crest"
 ```
-
-## Structure
-
-The NeuralCasting repository is structured as followed:
-
-- *common*: contains the shared code of the framework.
-- *config*: contains the config files of the repository.
-- *custom_ops*: contains the definition for custom operations not canonical in ONNX. These units can be used within rewrite patterns.
-- *experiments*: contains the results of the experiments.
-- *graph*: constains the definition of the NeuralCasting graph genertaed from the ONNX models.
-- *mem*: contains tools for the memory analysis of the models using the NeuralCasting graph.
-- *ncast_lib*: contains the C code library of NeuralCasting.
-- *node_fusion*: contains the rewrite patterns to modify the NeuralCasting graph.
-- *onnx*: contains the onnx models used for the experiments.
-- *ops*: contains the single operators of the NeuralCasting framework that compose the NeuralCasting graph.
-- *patmos*: contains the code for the Patmos benchmark of the different operators.
-- *wcet*: contains the code for the WCET analysis with Platin of the different operators.
 
 ## Tests
 
