@@ -24,7 +24,6 @@ import subprocess
 
 def patmos_model(onnx_path):
     ncgraph = NCastGraph(onnx_path)
-    return
     _clear_patmos_out()
 
     for op in ncgraph.ops:
@@ -32,7 +31,7 @@ def patmos_model(onnx_path):
         if optype == 'QLinearAdd':
             _qlinearadd_analysis(op)
         elif optype == 'QGemm':
-            _qgemm_analysis(op)
+            _qgemm_analysis(op, ncgraph)
         elif optype == 'QLinearConv':
             _qlinearconv_analysis(op, ncgraph)
         elif optype == 'QLinearMatMul':
@@ -52,7 +51,7 @@ def patmos_model(onnx_path):
         elif optype == 'Tanh':
             _qlineartanh_analysis(op)
         elif optype == 'Transpose':
-            _transpose_analysis(op)
+            _transpose_analysis(op, ncgraph)
         elif optype == 'Unsqueeze':
             _unsqueeze_analysis(op)
         else:
@@ -233,7 +232,7 @@ def _qlinearsoftmax_analysis(op):
     size = _extract_output_size(op, 0)
     acctype = "int32_t"
     Q = 15
-    qlinearsigmoid_patmos_analysis(name, size, Q, acctype)
+    qlinearsoftmax_patmos_analysis(name, size, Q, acctype)
 
 def _qlinearsub_analysis(op):
     name = _gen_name(op)
