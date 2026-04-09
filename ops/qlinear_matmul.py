@@ -29,6 +29,19 @@ class QLinearMatmul(NCastOp):
             shapeC = [shapeB[-1]]
         else:
             shapeC = [1]
+        
+        lenA = len(shapeA)
+        lenB = len(shapeB)
+        lenC = len(shapeC)
+
+        if lenA >= lenB:
+            if lenA > lenC:
+                diff = lenA - lenC
+                shapeC = shapeA[:diff] + shapeC
+        else:
+            if lenB > lenC:
+                diff = lenB - lenC
+                shapeC = shapeB[:diff] + shapeC
 
         self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(shapeC, dtypeA)
 
