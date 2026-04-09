@@ -36,7 +36,6 @@ def wcet_model(onnx_path):
     outstr = ",".join(out)
     res = f"[{outstr}]"
     print(res)
-    return
     _clear_wcet_out()
 
     for op in ncgraph.ops:
