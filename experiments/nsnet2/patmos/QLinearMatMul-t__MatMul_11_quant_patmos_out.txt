@@ -1,0 +1,46 @@
+/home/alessandro/t-crest/patmos/../local/bin/config_altera -b USB-Blaster hardware/quartus/altde2-115-sdram/patmos.sof
+Info: *******************************************************************
+Info: Running Quartus Prime Programmer
+    Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
+    Info: Copyright (C) 2025  Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions 
+    Info: and other software and tools, and any partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Altera Program License 
+    Info: Subscription Agreement, the Altera Quartus Prime License Agreement,
+    Info: the Altera IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Altera and sold by Altera or its authorized distributors.  Please
+    Info: refer to the Altera Software License Subscription Agreements 
+    Info: on the Quartus Prime software download page.
+    Info: Processing started: Tue Mar 10 13:01:49 2026
+Info: Command: quartus_pgm -c USB-Blaster -m JTAG -o P;hardware/quartus/altde2-115-sdram/patmos.sof
+Info (213045): Using programming cable "USB-Blaster [5-1.3.1]"
+Info (213011): Using programming file hardware/quartus/altde2-115-sdram/patmos.sof with checksum 0x0108E2FA for device EP4CE115F29@1
+Info (209060): Started Programmer operation at Tue Mar 10 13:02:00 2026
+Info (209016): Configuring device index 1
+Info (209017): Device 1 contains JTAG ID code 0x020F70DD
+Info (209007): Configuration succeeded -- 1 device(s) configured
+Info (209011): Successfully performed operation(s)
+Info (209061): Ended Programmer operation at Tue Mar 10 13:02:07 2026
+Info: Quartus Prime Programmer was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 304 megabytes
+    Info: Processing ended: Tue Mar 10 13:02:07 2026
+    Info: Elapsed time: 00:00:18
+    Info: Total CPU time (on all processors): 00:00:01
+make -C c/apps/nc-ops
+make[1]: Entering directory '/home/alessandro/t-crest/patmos/c/apps/nc-ops'
+patmos-clang -O2 -mserialize-pml=simple.pml /home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c /home/alessandro/t-crest/patmos/c/apps/nc-ops/input.c /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.c -o nc-ops.elf -I /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib -I /home/alessandro/t-crest/patmos/c/apps/nc-ops -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+make[1]: Leaving directory '/home/alessandro/t-crest/patmos/c/apps/nc-ops'
+mkdir -p /home/alessandro/t-crest/patmos/tmp
+cp c/apps/nc-ops/nc-ops.elf /home/alessandro/t-crest/patmos/tmp
+mkdir -p /home/alessandro/t-crest/patmos/tmp/
+make -C c BUILDDIR=/home/alessandro/t-crest/patmos/tmp APP=nc-ops compile
+make[1]: Entering directory '/home/alessandro/t-crest/patmos/c'
+make[1]: Nothing to be done for 'compile'.
+make[1]: Leaving directory '/home/alessandro/t-crest/patmos/c'
+/home/alessandro/t-crest/patmos/../local/bin/patserdow -v /dev/ttyUSB0 /home/alessandro/t-crest/patmos/tmp/nc-ops.elf
+cpu-cycles:2856717

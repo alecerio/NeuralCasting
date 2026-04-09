@@ -1,0 +1,28 @@
+patmos-clang -O2 -mserialize-pml=simple.pml /home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c /home/alessandro/t-crest/patmos/c/apps/nc-ops/input.c /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.c -o nc-ops.elf -I /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib -I /home/alessandro/t-crest/patmos/c/apps/nc-ops -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:5: warning: result of comparison of constant 24792 with expression of type 'volatile int8_t' (aka 'volatile signed char') is always false [-Wtautological-constant-out-of-range-compare]
+
+    NC_QLPRELU_FXS8(xq,-16861,yq,1000,-28342,24792,-12115,-5204,15,int32_t)
+
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:321:11: note: expanded from macro 'NC_QLPRELU_FXS8'
+
+  if(X[i] >= ZFXX) \
+
+     ~~~~ ^  ~~~~
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:5: warning: shifting a negative signed value is undefined [-Wshift-negative-value]
+
+    NC_QLPRELU_FXS8(xq,-16861,yq,1000,-28342,24792,-12115,-5204,15,int32_t)
+
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:325:33: note: expanded from macro 'NC_QLPRELU_FXS8'
+
+  ACCTYPE a1 = (ACCTYPE) (SFXY) << Q; \
+
+               ~~~~~~~~~~~~~~~~ ^
+
+2 warnings generated.
+

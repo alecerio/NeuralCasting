@@ -1,0 +1,16 @@
+patmos-clang -O2 -mserialize-pml=simple.pml /home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c /home/alessandro/t-crest/patmos/c/apps/nc-ops/input.c /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.c -o nc-ops.elf -I /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib -I /home/alessandro/t-crest/patmos/c/apps/nc-ops -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:5: warning: shifting a negative signed value is undefined [-Wshift-negative-value]
+
+    NC_QLINCONV_FXS8(xq,wq,bq,yq,1,100,50,100,50,0,1,1,15604,24608,-10877,23114,-24927,-17919,-20766,20394,15,int32_t)
+
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:206:36: note: expanded from macro 'NC_QLINCONV_FXS8'
+
+        ACCTYPE t1 = (ACCTYPE)SFXY << Q; \
+
+                     ~~~~~~~~~~~~~ ^
+
+1 warning generated.
+

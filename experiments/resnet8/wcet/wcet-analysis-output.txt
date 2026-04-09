@@ -1,0 +1,13 @@
+QLinearConv-t_node_Conv_149_quant_wcet: 90391238
+QLinearConv-t_node_Conv_145_quant_wcet: 181553399
+QLinearConv-t_node_Conv_153_quant_wcet: 12406369
+QLinearAdd-t_node_add_quant_wcet: 1474575
+QGemm-t_node_linear_quant_wcet: 34514
+QLinearConv-t_node_Conv_147_quant_wcet: 12609661
+QLinearConv-t_node_Conv_137_quant_wcet: 34776583
+QLinearConv-t_node_Conv_151_quant_wcet: 181354199
+QLinearConv-t_node_Conv_143_quant_wcet: 90590438
+QLinearConv-t_node_Conv_139_quant_wcet: 181954055
+QLinearConv-t_node_Conv_141_quant_wcet: 181954055
+QLinearAdd-t_node_add_1_quant_wcet: 737295
+QLinearAdd-t_node_add_2_quant_wcet: 368655

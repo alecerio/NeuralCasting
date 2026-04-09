@@ -1,0 +1,2 @@
+patmos-clang -O2 -mserialize-pml=simple.pml /home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c /home/alessandro/t-crest/patmos/c/apps/nc-ops/input.c /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.c -o nc-ops.elf -I /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib -I /home/alessandro/t-crest/patmos/c/apps/nc-ops -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+
