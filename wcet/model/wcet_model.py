@@ -25,7 +25,18 @@ import subprocess
 
 def wcet_model(onnx_path):
     ncgraph = NCastGraph(onnx_path)
-
+    ntypes = ['DequantizeLinear', 'Constant', 'Squeeze', 'QLinearSigmoid', 'QuantizeLinear']
+    i = 0
+    out = []
+    for op in ncgraph.ops:
+        if op.onnx_unit.op_type not in ntypes:
+            print(f"{i} - {op.onnx_unit.op_type}")
+            i = i+1
+            out.append(f"\"{op.onnx_unit.name}\"")
+    outstr = ",".join(out)
+    res = f"[{outstr}]"
+    print(res)
+    return
     _clear_wcet_out()
 
     for op in ncgraph.ops:
@@ -33,7 +44,7 @@ def wcet_model(onnx_path):
         if optype == 'QLinearAdd':
             _qlinearadd_analysis(op)
         elif optype == 'QGemm':
-            _qgemm_analysis(op)
+            _qgemm_analysis(op, ncgraph)
         elif optype == 'QLinearConv':
             _qlinearconv_analysis(op, ncgraph)
         elif optype == 'QLinearMatMul':
@@ -53,7 +64,7 @@ def wcet_model(onnx_path):
         elif optype == 'Tanh':
             _qlineartanh_analysis(op)
         elif optype == 'Transpose':
-            _transpose_analysis(op)
+            _transpose_analysis(op, ncgraph)
         elif optype == 'Unsqueeze':
             _unsqueeze_analysis(op)
         else:
@@ -90,7 +101,7 @@ def _qlinearconv_analysis(op: NCastOp, ncgraph:NCastGraph):
         Q = 15
 
         input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
-        w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[1])
+        w_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[3])
 
         output_names = list(op.out_dict.keys())
         output_shape = op.out_dict[output_names[0]].shape
@@ -250,6 +261,7 @@ def _qlineartanh_analysis(op):
 
 def _transpose_analysis(op, ncgraph):
     name = _gen_name(op)
+    print(op.onnx_unit.input[0])
     input_shape = ncgraph.get_tensor_shape(op.onnx_unit.input[0])
     rows = input_shape[-2]
     cols = input_shape[-1]
