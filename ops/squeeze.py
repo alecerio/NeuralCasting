@@ -15,23 +15,29 @@ class Squeeze(NCastOp):
         result = retrieve_input(graph, ops, self.onnx_unit.input[0])
         shape: List[int] = result[0]
         dtype: int = result[1]
-
-        axes = get_init_data(graph, self.onnx_unit.input[1])
-        if axes != None:
-            shape_np = np.array(shape)
-            axes_np = np.array(axes)
-            mask = np.ones(len(shape_np), dtype=bool)
-            mask[axes_np] = False
-            new_shape_np = shape_np[mask]
-            new_shape = new_shape_np.astype(int).tolist()
+        
+        if len(self.onnx_unit.input) == 1:
+            index = 0
+            while shape[index] == 1 and index <  len(shape):
+                index = index + 1
+            new_shape = shape[index:]
         else:
-            i = 0
-            if shape != []:
-                while shape[i] == 1 and i < len(shape):
-                    i = i+1
-                new_shape = shape[i:]
+            axes = get_init_data(graph, self.onnx_unit.input[1])
+            if axes != None:
+                shape_np = np.array(shape)
+                axes_np = np.array(axes)
+                mask = np.ones(len(shape_np), dtype=bool)
+                mask[axes_np] = False
+                new_shape_np = shape_np[mask]
+                new_shape = new_shape_np.astype(int).tolist()
             else:
-                new_shape = []
+                i = 0
+                if shape != []:
+                    while shape[i] == 1 and i < len(shape):
+                        i = i+1
+                    new_shape = shape[i:]
+                else:
+                    new_shape = []
         self.out_dict[self.onnx_unit.output[0]] = NCastOutputDict(new_shape, dtype)
 
     def emit_includes(self, config: NCastConfig, graph: onnx.onnx_ml_pb2.GraphProto, ops: List[NCastOp]) -> List[str]:
