@@ -1,0 +1,48 @@
+patmos-clang -O2 -mserialize-pml=simple.pml /home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c /home/alessandro/t-crest/patmos/c/apps/nc-ops/input.c /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.c -o nc-ops.elf -I /media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib -I /home/alessandro/t-crest/patmos/c/apps/nc-ops -Wl,--defsym,__heap_end=0x900000,--defsym,_stack_cache_base=0x4000000,-defsym,_shadow_stack_base=0x3fff800 
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:5: warning: implicitly declaring library function 'memcpy' with type 'void *(void *, const void *, unsigned long)' [-Wimplicit-function-declaration]
+
+    NC_UNSQUEEZE(xq,yq,100)
+
+    ^
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:510:3: note: expanded from macro 'NC_UNSQUEEZE'
+
+{ \
+
+  ^
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:5: note: include the header <string.h> or explicitly provide a declaration for 'memcpy'
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:510:3: note: expanded from macro 'NC_UNSQUEEZE'
+
+{ \
+
+  ^
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:21: warning: passing 'volatile int8_t [100]' to parameter of type 'void *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
+
+    NC_UNSQUEEZE(xq,yq,100)
+
+                    ^~
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:511:8: note: expanded from macro 'NC_UNSQUEEZE'
+
+memcpy(Y,X,SIZE*sizeof(*Y)); \
+
+       ^
+
+/home/alessandro/t-crest/patmos/c/apps/nc-ops/main.c:6:18: warning: passing 'volatile int8_t [100]' to parameter of type 'const void *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
+
+    NC_UNSQUEEZE(xq,yq,100)
+
+                 ^~
+
+/media/alessandro/SecondDisk1/ncast/NeuralCasting/ncast_lib/ncast_lib.h:511:10: note: expanded from macro 'NC_UNSQUEEZE'
+
+memcpy(Y,X,SIZE*sizeof(*Y)); \
+
+         ^
+
+3 warnings generated.
+

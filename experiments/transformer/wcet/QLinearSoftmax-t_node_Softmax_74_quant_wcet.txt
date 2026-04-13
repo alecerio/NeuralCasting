@@ -1,0 +1,44 @@
+platin wcet -i simple.pml -b nc-ops.elf --report
+
+[platin] WARNING: Commercial a3 tools is not available; use --disable-ait to hide this warning
+
+[platin] INFO: Finished read symbols                        in 181 ms
+
+[platin] INFO: Finished Flow Fact Transformation ["llvm.bc"] in 0 ms
+
+[platin] INFO: Finished Flow Fact Transformation ["user.bc"] in 22 ms
+
+[platin] INFO: Finished run WCET analysis (platin)          in 49 ms
+
+[platin] INFO: best WCET bound: 14109718 cycles
+
+---
+
+- analysis-entry: main
+
+  source: platin
+
+  cycles: 14109718
+
+  cache-max-cycles-instr: 987
+
+  cache-min-hits-instr: 41979
+
+  cache-max-misses-instr: 6
+
+  cache-max-cycles-stack: 0
+
+  cache-max-misses-stack: 0
+
+  cache-max-cycles-data: 12450816
+
+  cache-min-hits-data: 0
+
+  cache-max-misses-data: 411648
+
+  cache-max-stores-data: 181248
+
+  cache-unknown-address-data: 592896
+
+  cache-max-cycles: 12451803
+

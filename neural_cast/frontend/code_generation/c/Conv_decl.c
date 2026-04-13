@@ -1,6 +1,0 @@
-
-$(DEFINE_CONNECTED_OUTPUT)
-#ifdef CONNECTED_OUTPUT
-float tensor_$(OUTPUT_NAME)[$(OUTPUT_SIZE)];
-#undef CONNECTED_OUTPUT
-#endif
