@@ -85,7 +85,15 @@ To run the benchmark on Patmos, first connect the FPGA to your computer.
 
 Configure the FPGA with Patmos, using the command:
 
+```bash
+make BOARD=altde2-115-sdram APP=nc-nsnet2-i8 synth
+```
 
+To run a specific neural network / operator:
+
+```bash
+PYTHONPATH="<your-path-to-neuralcasting>/NeuralCasting" python3 patmos/model/patmos_<op-name>.py
+```
 
 ## WCET Analysis
 
