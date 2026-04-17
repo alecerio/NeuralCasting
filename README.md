@@ -111,7 +111,7 @@ PYTHONPATH="<your-path-to-neuralcasting>/NeuralCasting" python3 wcet/model/wcet_
 
 ## Authors and Contacts
 
-*NeuralCasting* is a project started by [Alessandro Cerioli](https://dk.linkedin.com/in/alessandro-cerioli-26237231) during his PhD at DTU ([Technical University of Denmark](https://www.dtu.dk/english/)) and funded by the European project [Convolve](https://convolve.eu/). For more information regarding the project or to actively contribute to the development of the repository, use the following contacts:
+*NeuralCasting* is a project started by [Alessandro Cerioli](https://dk.linkedin.com/in/alessandro-cerioli-26237231) during his PhD at DTU ([Technical University of Denmark](https://www.dtu.dk/english/)) and GN, and funded by the European project [Convolve](https://convolve.eu/). For more information regarding the project or to actively contribute to the development of the repository, use the following contacts:
 
 - **DTU email**: alceri@dtu.dk
 
